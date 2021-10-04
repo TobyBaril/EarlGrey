@@ -173,4 +173,4 @@ dependencies:
   - zipp=3.5.0=pyhd8ed1ab_0
   - zlib=1.2.11=h36c2ea0_1011
   - zstd=1.5.0=ha95c52a_0
-prefix: /home/toby/anaconda3/envs/earlGreyDev
+prefix: /home/toby/anaconda3/envs/earlGrey
