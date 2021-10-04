@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Small configuration script to set up Earl Grey for portable use
+
+# Set the script directory and add to Earl Grey so it doesn't need to be set again
+
+SCRIPT_DIR=$(find $(pwd) -name "scripts")
+
+sed -i "s|SCRIPT_DIR=INSERTFILEPATHHERE|SCRIPT_DIR=$SCRIPT_DIR|g" ./earlGrey
+
+echo "Earl Grey is now configured..."
+echo "Please run earlGrey -h to see detailed usage information"
+exit 0
+

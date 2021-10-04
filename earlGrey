@@ -1,0 +1,649 @@
+#!/bin/bash
+
+usage()
+{
+    echo "    #############################
+    earlGrey
+    Required Parameters:
+        -g == genome.fasta
+        -s == species name
+        -o == output directory
+	-r == RepeatMasker search group (e.g arthropoda/eukarya)
+        -t == Number of Threads (DO NOT specify more than are available)
+        
+    Optional Parameters:
+        -l == Repbase species subset library (FASTA format)
+	-i == Number of Iterations to BLAST, Extract, Extend - Only enter a number between 5 and 10 (Iteration outputs are 0-based!) (Default: 5)
+	-f == Number flanking basepairs to extract (Default: 1000)
+	-d == Maximum non-TE distance between annotations to consider a pair to be from the same cluster (100 is recommended)
+	-b == Which elements to remove (L/S/B for LINEs/SINEs/Both - Choose ONLY ONE)
+    
+    Example Usage:
+    
+    earlGrey -g myzPerNic.fasta -s myzPerNic -l myzPerNicRepeats.fasta -o /home/user/myzPerNic/repeatAnnotation/ -r arthropoda -t 48 -f 500 -b B -i 5 -d 100
+    
+    
+    Prerequisites (must be in PATH environment):
+        - RepeatMasker (Tested with 4.0.8) http://www.repeatmasker.org/RMDownload.html
+        - Repbase RepeatMasker Edition (Release 20181026) https://www.girinst.org/server/RepBase/index.php
+        - Dfam (Release 23/09/2015) http://www.dfam.org/web_download/Current_Release/
+        - RepeatModeler (Tested with 1.0.11) http://www.repeatmasker.org/RepeatModeler/
+        - RECON (Tested with 1.08) http://www.repeatmasker.org/RECON-1.08.tar.gz
+        - RepeatScout (Tested with 1.0.5) http://www.repeatmasker.org/RepeatScout-1.0.5.tar.gz
+        - TRF (Tested with 4.09) http://tandem.bu.edu/trf/trf.html
+        - BLAST+ (Tested with 2.6.0) ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/
+        - NSEG ftp://ftp.ncbi.nih.gov/pub/seg/nseg/
+        - BioUtil (Tested with 2015.0728) https://metacpan.org/pod/BioUtil
+        - Miniconda3 https://conda.io/miniconda.html
+        - BioPerl (Tested with 1.007002) https://bioperl.org/INSTALL.html
+        - BioPython (Tested with 1.73) https://biopython.org/wiki/Getting_Started
+        - NumPy (Tested with 1.15.4) https://www.scipy.org/scipylib/download.html
+        - flex.py https://github.com/seankross/flex/blob/master/flex.py
+        - read_fasta.py https://github.com/seankross/flex/blob/master/read_fasta.py
+        - ImHash.py https://github.com/TobyBaril/GreenTEA/blob/master/Tools/ImHash.py
+        - fastagrep.pl https://github.com/mptrsen/mobilome/blob/master/code/fastagrep.pl
+        - RMBlast (Tested with 2.2.28) http://www.repeatmasker.org/RMBlast.html
+        - MUSCLE (Tested with 3.8.31) http://www.drive5.com/muscle
+        - MAFFT (Tested with 7.427) https://mafft.cbrc.jp/alignment/software/
+        - extractAlignTE.pl https://github.com/nealplatt/bioinfoTools/blob/master/extractAlignTEs.pl
+        - rcMergeRepeats (Available from T.Baril)
+        - BedTools Suite https://bedtools.readthedocs.io/en/latest/content/bedtools-suite.html
+    
+    Queries can sent to:
+    toby.baril@icloud.com
+    #############################"
+}
+    
+# Subprocess Make Directories #
+makeDirectory()
+{
+    directory=$(realpath ${directory})
+    mkdir ${directory}/${species}EarlGrey/
+    OUTDIR=${directory}/${species}EarlGrey
+    mkdir $OUTDIR/${species}_RepeatMasker/
+    mkdir $OUTDIR/${species}_Database/
+    mkdir $OUTDIR/${species}_RepeatModeler/
+    mkdir $OUTDIR/${species}_BLASTN/
+    mkdir $OUTDIR/${species}_ExtractAlign/
+    mkdir $OUTDIR/${species}_Curated_Library/
+    mkdir $OUTDIR/${species}_Masked_de_novo_Repeats/
+    mkdir $OUTDIR/${species}_Library_Filtering/
+    mkdir $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
+    mkdir $OUTDIR/${species}_RepeatLandscape/
+    mkdir $OUTDIR/${species}_Library_by_Type/
+    mkdir $OUTDIR/${species}_TE_Size_Analysis/
+    mkdir $OUTDIR/${species}_mergedRepeats/
+    mkdir $OUTDIR/${species}_noLiSi/
+    mkdir $OUTDIR/${species}_clusTErs/
+}
+    
+# Subprocess PrepGenome #
+prepGenome()
+{
+    genome=$(realpath ${genome})
+    cp ${genome} ${genome}.bak && gzip ${genome}.bak
+    sed -i '/>/ s/ .*//g' ${genome}
+    ${SCRIPT_DIR}/headSwap.sh -i ${genome} -o ${genome}.prep
+    sed -i '/^>/! s/D/N/g;/^>/! s/V/N/g;/^>/! s/H/N/g;/^>/! s/B/N/g;/^>/! s/P/N/g;/^>/! s/E/N/g' ${genome}.prep
+    dict=${genome}.dict
+    genome=${genome}.prep
+}
+
+# Subprocess getRepeatMaskerFasta
+getRepeatMaskerFasta()
+{
+    queryRepeatDatabase.pl -species ${RepSpec} > ${OUTDIR}/${RepSpec}.RepeatMasker.lib
+    RepSub=${OUTDIR}/${RepSpec}.RepeatMasker.lib
+}
+
+# Subprocess firstMask
+firstMask()
+{
+    cd ${OUTDIR}/${species}_RepeatMasker
+    RepeatMasker -species $RepSpec -nolow -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
+}
+
+# Subprocess firstCustom
+firstCustom()
+{
+    cd ${OUTDIR}/${species}_RepeatMasker
+    RepeatMasker -lib $RepSub -nolow -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
+}
+
+# Subprocess buildDB
+buildDB()
+{
+    cd ${OUTDIR}/${species}_Database
+    BuildDatabase -name ${species} -engine ncbi ${OUTDIR}/${species}_RepeatMasker/*.masked
+}
+
+# Subprocess deNovo1
+deNovo1()
+{
+    cd ${OUTDIR}/${species}_RepeatModeler
+    RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} 
+    if [ ! -e ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified ]; then
+        echo "ERROR: RepeatModeler Failed"
+        exit 2
+    fi
+}
+
+# Subprocess BEE1
+BEE1()
+{
+    cd ${OUTDIR}/${species}_BLASTN/
+    blastn -query ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+}
+ 
+# Subprocess Format1
+Format1()
+{
+    cd ${OUTDIR}/${species}_RepeatModeler/RM*/
+    cp consensi.fa.classified consensi.fa.classified.no_slash
+    sed -i 's#/#___#g; s/#/__/g' consensi.fa.classified.no_slash
+
+    cd ${OUTDIR}/${species}_BLASTN/
+    cp ${species}_BLAST ${species}_BLAST.no_slash
+    sed -i 's#/#___#g; s/#/__/g' ${species}_BLAST.no_slash
+}
+
+# Subprocess BEE2
+BEE2()
+{
+    cd ${OUTDIR}/${species}_ExtractAlign
+    ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST.no_slash -l ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified.no_slash -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+    mkdir ${OUTDIR}/${species}_ExtractAlign/mafft/ 
+    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/catTEfiles/*.fa 
+    mkdir ${OUTDIR}/${species}_ExtractAlign/trimal/ && cd ${OUTDIR}/${species}_ExtractAlign/trimal/
+    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/mafft/*.mafft
+    mkdir ${OUTDIR}/${species}_ExtractAlign/embossCons/ && cd ${OUTDIR}/${species}_ExtractAlign/embossCons/
+    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/trimal/*.trimal.fa
+}
+
+# Subprocess BEE3
+BEE3()
+{
+    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/embossCons/*_cons.fa
+    cat ${OUTDIR}/${species}_ExtractAlign/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter0.fasta
+}
+
+# Subprocess Iterations
+Iterations()
+{
+    stage="Running BLAST, Extract, Extend Iteration 1"
+    runningCow
+    blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter0.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter1 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+    cd ${OUTDIR}/${species}_ExtractAlign
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter1
+    cd ${OUTDIR}/${species}_ExtractAlign/iter1
+    ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter1 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter0.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/
+    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/catTEfiles/*.fa 
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/
+    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/*.mafft
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/
+    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/*.trimal.fa
+    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/*_cons.fa
+    cat ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter1.fasta
+    
+    stage="Running BLAST, Extract, Extend Iteration 2"
+    runningCow
+    blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter1.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter2 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+    cd ${OUTDIR}/${species}_ExtractAlign
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter2
+    cd ${OUTDIR}/${species}_ExtractAlign/iter2
+    ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter2 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter1.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/
+    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/catTEfiles/*.fa 
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/
+    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/*.mafft
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/
+    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/*.trimal.fa
+    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa
+    cat ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta
+    
+    stage="Running BLAST, Extract, Extend Iteration 3"
+    runningCow
+    blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter3 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+    cd ${OUTDIR}/${species}_ExtractAlign
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter3
+    cd ${OUTDIR}/${species}_ExtractAlign/iter3
+    ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter3 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/
+    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/catTEfiles/*.fa 
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/
+    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/*.mafft
+    mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/
+    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/*.trimal.fa
+    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/*_cons.fa
+    cat ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta
+    latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta
+    
+    if [ $num -gt 4 ]
+        then
+            stage="Running BLAST, Extract, Extend Iteration 4"
+            runningCow
+            blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter4 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+            cd ${OUTDIR}/${species}_ExtractAlign
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter4
+            cd ${OUTDIR}/${species}_ExtractAlign/iter4
+            ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter4 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/
+            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/catTEfiles/*.fa 
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/
+            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/*.mafft
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/
+            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/*.trimal.fa
+            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/*_cons.fa
+            cat ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta
+            latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta
+        else
+            echo "$num iterations complete"
+    fi
+    
+    if [ $num -gt 5 ]
+        then
+            stage="Running BLAST, Extract, Extend Iteration 5"
+            runningCow
+            blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter5 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+            cd ${OUTDIR}/${species}_ExtractAlign
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter5
+            cd ${OUTDIR}/${species}_ExtractAlign/iter5
+            ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter5 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/
+            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/catTEfiles/*.fa 
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/
+            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/*.mafft
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/
+            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/*.trimal.fa
+            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/*_cons.fa
+            cat ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta
+            latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta
+        else
+            echo "$num iterations complete"
+    fi
+    
+    if [ $num -gt 6 ]
+        then
+            stage="Running BLAST, Extract, Extend Iteration 6"
+            runningCow
+            blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter6 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+            cd ${OUTDIR}/${species}_ExtractAlign
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter6
+            cd ${OUTDIR}/${species}_ExtractAlign/iter6
+            ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter6 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/
+            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/catTEfiles/*.fa 
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/
+            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/*.mafft
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/
+            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/*.trimal.fa
+            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/*_cons.fa
+            cat ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta
+            latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta
+        else
+            echo "$num iterations complete"
+    fi
+    
+    
+    if [ $num -gt 7 ]
+        then
+            stage="Running BLAST, Extract, Extend Iteration 7"
+            runningCow
+            blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter7 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+            cd ${OUTDIR}/${species}_ExtractAlign
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter7
+            cd ${OUTDIR}/${species}_ExtractAlign/iter7
+            ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter7 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/
+            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/catTEfiles/*.fa 
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/
+            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/*.mafft
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/
+            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/*.trimal.fa
+            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/*_cons.fa
+            cat ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta
+            latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta
+        else
+            echo "$num iterations complete"
+    fi
+    
+    if [ $num -gt 8 ]
+        then
+            stage="Running BLAST, Extract, Extend Iteration 8"
+            runningCow
+            blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter8 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+            cd ${OUTDIR}/${species}_ExtractAlign
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter8
+            cd ${OUTDIR}/${species}_ExtractAlign/iter8
+            ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter8 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/
+            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/catTEfiles/*.fa 
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/
+            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/*.mafft
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/
+            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/*.trimal.fa
+            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/*_cons.fa
+            cat ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta
+            latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta
+        else
+            echo "$num iterations complete"
+    fi
+    
+    if [ $num -gt 9 ]
+        then
+            stage="Running BLAST, Extract, Extend Iteration 9"
+            runningCow
+            blastn -query ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter9 -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+            cd ${OUTDIR}/${species}_ExtractAlign
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter9
+            cd ${OUTDIR}/${species}_ExtractAlign/iter9
+            ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter9 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/
+            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/catTEfiles/*.fa 
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/
+            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/*.mafft
+            mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/
+            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/*.trimal.fa
+            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/*_cons.fa
+            cat ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter9.fasta
+            latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter9.fasta
+        else
+            echo "$num iterations complete"
+    fi
+    
+    
+}
+
+# Subprocess BClass
+BClass()
+{
+    cd ${OUTDIR}/${species}_Masked_de_novo_Repeats
+    RepeatMasker -species $RepSpec -nolow -norna -lcambig -s -pa $ProcNum -dir ${OUTDIR}/${species}_Masked_de_novo_Repeats $latestFile
+    awk '{OFS="\t"}{print $5, $5, $11}' ${OUTDIR}/${species}_Masked_de_novo_Repeats/${species}_de_novo_repeat_library_iter*.fasta.out | sort -u -k1,1 > TE_Class_Identities
+    awk '{OFS="\t"}{gsub(/__.*/,"#",$2); print}' TE_Class_Identities | sed 's/#\t/#/g; s/^/sed -i "s|/g; s/\t/|/g; s/$/|g" /g' | sed "s|$|\"$latestFile\"|g" | grep "rnd" > TE_Class_Identities.script3
+    chmod 777 ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities.script3
+    ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities.script3
+    rm ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities*
+}
+
+# Subprocess appLib
+appLib()
+{
+    cd ${OUTDIR}/${species}_Curated_Library
+    cp $RepSub RepBase_formatted.fasta
+    sed -i 's#___#/#g; s/__/#/g' $latestFile
+    cat ${OUTDIR}/${species}_Curated_Library/RepBase_formatted.fasta $latestFile > ${species}_combined_library.fasta
+}
+
+
+# Subprocess novoMask
+novoMask()
+{
+    cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
+    RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -cutoff 400 -nolow -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+}
+
+# Subprocess calcDivRL
+calcDivRL()
+{
+    cd ${OUTDIR}/${species}_RepeatLandscape
+    genome_size=$(sed -n '4p' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
+    align_file=$(readlink -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.align)
+    calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
+    div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
+    createRepeatLandscape.pl -g $genome_size -t $species -div $div_file > ${species}_RL.html
+}
+
+# Subprocess splitLib
+splitLib()
+{
+cd ${OUTDIR}/${species}_Library_by_Type
+grep ">" ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta | sed 's/.*#//g; s#/.*##g' | sort -u > ${OUTDIR}/${species}_Library_by_Type/TE_Type_List
+sed "s#^#awk '/^>/ { p = ($0 ~ /#g" ${OUTDIR}/${species}_Library_by_Type/TE_Type_List > ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
+sed -i "s|$|/)} p' ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta|g; s|$| > |g" ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
+awk '{print}' ${OUTDIR}/${species}_Library_by_Type/TE_Type_List | paste ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh - | sed 's/\t//g' > ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh.1
+mv ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh{.1,}
+chmod 777 ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
+${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
+#rm ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh ${OUTDIR}/${species}_Library_by_Type/TE_Type_List
+for file in ${OUTDIR}/${species}_Library_by_Type/*
+    do mv $file ${file}.fasta
+        done
+}
+
+# Subprocess quantSize
+quantSize()
+{
+    cd ${OUTDIR}/${species}_TE_Size_Analysis/
+    sed '1, 3d' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out > ${OUTDIR}/${species}_TE_Size_Analysis/${species}_rm.out
+    awk '{te_len = $7 - $6; print $5, $11, $6, $7, te_len + 1}' ${OUTDIR}/${species}_TE_Size_Analysis/${species}_rm.out > ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab
+    awk '{gsub("/.*","",$2)}1' OFS="\t" ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab > ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab.1
+    mv ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab{.1,}
+}
+
+# Subprocess rcMergeRepeats
+mergeRep()
+{
+    cd ${OUTDIR}/${species}_mergedRepeats/
+    ${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -c ~/Programs/repeatCraft/example/repeatcraft.cfg -t $ProcNum -b ${dict}
+    mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
+    ${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -c ~/Programs/repeatCraft/example/repeatcraft.cfg -t $ProcNum -b ${dict}
+}
+
+# Subprocess clusTErPluck
+clusTErPluck()
+{
+    cd ${OUTDIR}/${species}_clusTErs/
+    mergeBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/*.rmerge.gff | sed '1 i\Scaffold\tStart\tEnd' > ${OUTDIR}/${species}_clusTErs/${species}.clusTErs.bed
+    clusterBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/*.rmerge.gff | sed '1 i\Scaffold\tSource\tRepeatFamily\tStart\tEnd\tScore\tStrand\tPhase\tAttributes\tClusterId' > ${OUTDIR}/${species}_clusTErs/${species}.detailedClusTErs.gff
+}
+
+# Subprocess remove LiSi
+LiSiGone()
+{
+    cd ${OUTDIR}/${species}_noLiSi/
+    awk '{OFS="\t"}{print $5, $6, $7, ".", $1, $9, "RepeatMasker", "dispersed_repeat", ".", $11}' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out | sed '1,3d' | egrep -i "LINE|SINE|CR1|Crack|CRE|Daphne|\bI\b|Ingi|Jockey|Kiri|L1|L2|\bLoa\b|\bNon-LTR\b|Outcast|Penelope|Proto2|\bR1\b|\bR2\b|\bR4\b|RTE|Tx1|Vingi" > ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed
+    bedtools maskfasta -fi $genome -bed ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed -fo ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta -mc X
+    sed -i '/>/! s/X//g' ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta
+}
+
+# Subprocess remove Li
+LiGone()
+{
+    cd ${OUTDIR}/${species}_noLiSi/
+    awk '{OFS="\t"}{print $5, $6, $7, ".", $1, $9, "RepeatMasker", "dispersed_repeat", ".", $11}' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out | sed '1,3d' | egrep -i "LINE|CR1|Crack|CRE|Daphne|\bI\b|Ingi|Jockey|Kiri|L1|L2|\bLoa\b|\bNon-LTR\b|Outcast|Penelope|Proto2|\bR1\b|\bR2\b|\bR4\b|RTE|Tx1|Vingi" > ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed
+    bedtools maskfasta -fi $genome -bed ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed -fo ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta -mc X
+    sed -i '/>/! s/X//g' ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta
+}
+
+# Subprocess remove Si
+SiGone()
+{
+    cd ${OUTDIR}/${species}_noLiSi/
+    awk '{OFS="\t"}{print $5, $6, $7, ".", $1, $9, "RepeatMasker", "dispersed_repeat", ".", $11}' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out | sed '1,3d' | egrep -i "SINE" > ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed
+    bedtools maskfasta -fi $genome -bed ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed -fo ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta -mc X
+    sed -i '/>/! s/X//g' ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta 
+}
+
+
+# Subprocess runningCow
+runningCow()
+{
+    echo " ____________________
+< $stage >
+ --------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                
+                ||----w |
+                ||     ||"
+}
+
+# Subprocess GetTime
+convertsecs() 
+{
+ h=$(bc <<< "${1}/3600")
+ m=$(bc <<< "(${1}%3600)/60")
+ s=$(bc <<< "${1}%60")
+ printf "%02d:%02d:%05.2f\n" $h $m $s
+}
+
+# Subprocess Checks
+Checks()
+{
+    if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] || [ -z "$ProcNum" ]; then
+        usage; exit 1
+    fi
+
+    if [[ -z "$RepSub" && -z "$RepSpec" ]]; then
+	echo "Error: No RepeatMasker Species or Custom Repeat Library Specified"; exit 2
+    fi
+
+    if [ -z "$num"] || [ -a "$num" -lt 5 -a "$num" -gt 10 ]; then
+        num=5; echo "De Novo Sequences Will Be Extended Through $num Iterations"
+    fi
+    
+    if [ -z "$dist" ]; then
+        dist=100; echo "Clusters Will Be Considered When TEs Are <${dist}bp Apart"
+    fi
+
+    if [ -z "$Flank"]; then
+	Flank=1000; echo "Blast, Extract, Extend Process Will Add 1000bp to Each End in Each Iteration"
+    fi
+
+    if [ ! -d "$SCRIPT_DIR" ]; then
+	echo "ERROR: Script directory variable not set, please run the configure script in the Earl Grey directory before attempting to run Earl Grey"; exit 1
+    fi
+}
+
+# Main #
+
+while getopts g:s:l:o:t:f:b:r:i:d:h option
+do
+    case "${option}" 
+        in
+        g) genome=${OPTARG};;
+        s) species=${OPTARG};;
+        l) RepSub=${OPTARG};;
+        o) directory=${OPTARG};;
+        r) RepSpec=${OPTARG};;
+        t) ProcNum=${OPTARG};;
+        f) Flank=${OPTARG};;
+        b) both=${OPTARG};;
+        i) num=${OPTARG};;
+        d) dist=${OPTARG};;
+        h) usage; exit 1;; 
+    esac
+done
+
+SECONDS=0
+
+# Step 1
+
+stage="Checking Parameters"
+runningCow
+SCRIPT_DIR=/home/toby/projects/earlGreyDevelopment/packagingForAnaconda/earlGrey/scripts
+Checks
+stage="Making Directories"
+runningCow
+makeDirectory
+stage="Cleaning Genome"
+runningCow
+prepGenome
+sleep 1
+
+# Step 2
+
+if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+	if [ -z "$RepSpec" ]
+		then
+			stage="Running Initial Mask with Custom Library" && runningCow
+			firstCustom
+	elif [ ! -z "$RepSpec" ] 
+		then
+			stage="Getting RepeatMasker Sequences for $RepSpec and Saving as Fasta" && runningCow
+			getRepeatMaskerFasta
+			stage="Running Initial Mask with RepBase" && runningCow
+			firstMask
+	fi 
+	sleep 1
+else 
+	stage="Genome has already been masked, skipping..."
+	runningCow
+	sleep 5
+fi 
+
+# Step 3
+if [ ! -f ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified ]; then
+	stage="Detecting New Repeats"
+	runningCow
+	buildDB
+	deNovo1
+	sleep 1
+else
+	stage="De novo repeats have already been detected, skipping..."
+fi
+
+# Step 4
+stage="BLASTing, Extracting, Extending for $num Iterations"
+runningCow
+BEE1
+Format1
+BEE2
+BEE3
+Iterations
+sleep 1
+
+# Stage 5
+stage="Building Species-Specific Library"
+runningCow
+BClass
+appLib
+sleep 1
+
+# Stage 6
+stage="Identifying Repeats Using Species-Specific Library"
+runningCow
+novoMask
+calcDivRL
+sleep 1
+
+# Stage 7
+#stage="Splitting Library by Repeat Type"
+#runningCow
+#splitLib
+#sleep 1
+
+# Stage 8
+stage="Calculating Repeat Sizes"
+runningCow
+quantSize
+sleep 1
+
+# Stage 9
+stage="Running LTR_Finder and Defragmenting Repeats"
+runningCow
+mergeRep
+sleep 1
+
+# Stage 10
+stage="Identifying TE Clusters and Member Sequences"
+runningCow
+clusTErPluck
+sleep 1
+
+# Stage 11
+case $both in
+    B) stage="Removing LINE and SINE Elements" && runningCow; LiSiGone;;
+    L) stage="Removing LINE Elements" && runningCow; LiGone;;
+    S) stage="Removing SINE Elements" && runningCow; SiGone;;
+    *) ;;
+esac
+
+# Stage 12 
+time=$(convertsecs $SECONDS)
+stage="Done in $time"
+runningCow
+sleep 5
