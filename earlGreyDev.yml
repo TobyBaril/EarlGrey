@@ -1,4 +1,4 @@
-name: earlGreyDev
+name: earlGrey
 channels:
   - bioconda
   - biocore
