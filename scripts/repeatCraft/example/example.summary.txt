@@ -1,0 +1,90 @@
+#1. Number of repeats (by class) before and after merge
+=============================================================
+repeat class	no. before merge	no. after merge
+DNA/Academ	4	4
+DNA	1449	1404
+LTR/Gypsy	53	52
+Unknown	1103	1076
+Simple_repeat	598	598
+RC/Helitron	314	307
+LTR/Ngaro	9	6
+LINE/RTE-X	11	11
+LTR/DIRS	3	3
+DNA/hAT-Tip100	201	199
+DNA/PIF-Harbinger	306	294
+DNA/Kolobok-T2	386	379
+DNA/hAT-Ac	1	1
+DNA/TcMar-Tc2	141	140
+LINE/L2	35	33
+Low_complexity	91	91
+DNA/PiggyBac	63	62
+DNA/hAT	20	20
+LINE/Penelope	108	107
+LINE/I-Jockey	6	6
+DNA/MULE-MuDR	30	30
+DNA/Sola-3	17	17
+DNA/TcMar-Tigger	12	11
+LTR	19	19
+DNA/hAT-hAT5	82	82
+SINE/tRNA-L2	26	26
+SINE/tRNA-Deu-L2	30	29
+SINE?	2	2
+LINE/Rex-Babar	12	11
+Satellite	63	63
+SINE/tRNA-Deu	45	45
+snRNA	1	1
+DNA/TcMar-Pogo	25	25
+DNA/Academ-1	31	31
+DNA/hAT-Blackjack	31	29
+DNA/hAT-hAT1	8	8
+DNA/Ginger	4	4
+LINE/CRE	1	1
+DNA/Crypton-H	23	23
+DNA/MULE-F	7	6
+DNA/CMC-EnSpm	32	32
+LTR/Copia	12	12
+SINE/tRNA-V	16	16
+LINE/CR1	25	25
+DNA/Academ-2	52	50
+DNA/Kolobok-Hydra	4	4
+DNA/Kolobok	14	14
+LTR/Pao	7	5
+LINE	3	3
+DNA/PIF-ISL2EU	3	3
+DNA/Sola	17	17
+LINE/RTE-BovB	12	11
+LINE/L1-Tx1	4	4
+rRNA	8	8
+DNA/hAT-hAT6	10	9
+DNA/TcMar-ISRm11	9	9
+DNA/Crypton-A	1	1
+DNA/Maverick	25	25
+DNA/MULE-NOF	3	3
+DNA/Crypton	2	2
+SINE/tRNA-Rex	1	1
+DNA/CMC-Chapaev	1	1
+
+
+#2. Number of repeats (by class) merged by TEgroup and LTRgroup
+=============================================================
+LTR/Ngaro	2	4
+Unknown	54	
+DNA	87	
+DNA/Kolobok-T2	14	
+LINE/Rex-Babar	2	
+DNA/TcMar-Tc2	2	
+DNA/PIF-Harbinger	24	
+DNA/MULE-F	2	
+LINE/L2	4	
+LTR/Pao	2	4
+SINE/tRNA-Deu-L2	2	
+DNA/Academ-2	4	
+RC/Helitron	14	
+DNA/TcMar-Tigger	2	
+LTR/Gypsy	2	3
+DNA/hAT-Blackjack	4	
+LINE/Penelope	2	
+LINE/RTE-BovB	2	
+DNA/PiggyBac	2	
+DNA/hAT-Tip100	4	
+DNA/hAT-hAT6	2	
