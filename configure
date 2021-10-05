@@ -1,14 +1,21 @@
-#!/bin/bash
+# Short script to configure Earl Grey to run on any system in a portable manner
 
-# Small configuration script to set up Earl Grey for portable use
+# check presence of RepeatMasker and RepeatModeler
+echo "Checking RepeatMasker and RepeatModeler configuration"
+type RepeatMasker >/dev/null 2>&1 || { echo >&2 "Earl Grey requires RepeatMasker but it's not installed.  Aborting."; exit 1; }
+type RepeatModeler >/dev/null 2>&1 || { echo >&2 "Earl Grey requires RepeatMasker but it's not installed.  Aborting."; exit 1; }
 
-# Set the script directory and add to Earl Grey so it doesn't need to be set again
+# set paths in Earl Grey Script
 
-SCRIPT_DIR=$(find $(pwd) -name "scripts")
+echo "Setting path variables in script"
+SCRIPT_DIR=$(realpath ./scripts/)
+sed -i "s|INSERTFILEPATHHERE|${SCRIPT_DIR}|g" ./earlGrey
+sed -i "s|INSERTFILEPATHHERE|${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
+sleep 3
+echo "Path variables set"
+sleep 3
 
-sed -i "s|SCRIPT_DIR=INSERTFILEPATHHERE|SCRIPT_DIR=$SCRIPT_DIR|g" ./earlGrey
-
-echo "Earl Grey is now configured..."
-echo "Please run earlGrey -h to see detailed usage information"
-exit 0
-
+# Message Complete
+echo "Remember to activate the earl grey conda environment before running earlGrey"
+sleep 3
+echo "earlGrey command can be added to path to be run from any directory"

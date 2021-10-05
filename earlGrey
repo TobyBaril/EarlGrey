@@ -8,7 +8,7 @@ usage()
         -g == genome.fasta
         -s == species name
         -o == output directory
-	-r == RepeatMasker search group (e.g arthropoda/eukarya)
+	-r == RepeatMasker search term (e.g arthropoda/eukarya)
         -t == Number of Threads (DO NOT specify more than are available)
         
     Optional Parameters:
@@ -23,31 +23,12 @@ usage()
     earlGrey -g myzPerNic.fasta -s myzPerNic -l myzPerNicRepeats.fasta -o /home/user/myzPerNic/repeatAnnotation/ -r arthropoda -t 48 -f 500 -b B -i 5 -d 100
     
     
-    Prerequisites (must be in PATH environment):
-        - RepeatMasker (Tested with 4.0.8) http://www.repeatmasker.org/RMDownload.html
-        - Repbase RepeatMasker Edition (Release 20181026) https://www.girinst.org/server/RepBase/index.php
-        - Dfam (Release 23/09/2015) http://www.dfam.org/web_download/Current_Release/
-        - RepeatModeler (Tested with 1.0.11) http://www.repeatmasker.org/RepeatModeler/
-        - RECON (Tested with 1.08) http://www.repeatmasker.org/RECON-1.08.tar.gz
-        - RepeatScout (Tested with 1.0.5) http://www.repeatmasker.org/RepeatScout-1.0.5.tar.gz
-        - TRF (Tested with 4.09) http://tandem.bu.edu/trf/trf.html
-        - BLAST+ (Tested with 2.6.0) ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/
-        - NSEG ftp://ftp.ncbi.nih.gov/pub/seg/nseg/
-        - BioUtil (Tested with 2015.0728) https://metacpan.org/pod/BioUtil
-        - Miniconda3 https://conda.io/miniconda.html
-        - BioPerl (Tested with 1.007002) https://bioperl.org/INSTALL.html
-        - BioPython (Tested with 1.73) https://biopython.org/wiki/Getting_Started
-        - NumPy (Tested with 1.15.4) https://www.scipy.org/scipylib/download.html
-        - flex.py https://github.com/seankross/flex/blob/master/flex.py
-        - read_fasta.py https://github.com/seankross/flex/blob/master/read_fasta.py
-        - ImHash.py https://github.com/TobyBaril/GreenTEA/blob/master/Tools/ImHash.py
-        - fastagrep.pl https://github.com/mptrsen/mobilome/blob/master/code/fastagrep.pl
-        - RMBlast (Tested with 2.2.28) http://www.repeatmasker.org/RMBlast.html
-        - MUSCLE (Tested with 3.8.31) http://www.drive5.com/muscle
-        - MAFFT (Tested with 7.427) https://mafft.cbrc.jp/alignment/software/
-        - extractAlignTE.pl https://github.com/nealplatt/bioinfoTools/blob/master/extractAlignTEs.pl
-        - rcMergeRepeats (Available from T.Baril)
-        - BedTools Suite https://bedtools.readthedocs.io/en/latest/content/bedtools-suite.html
+    Prerequisites - These must be configured prior to using Earl Grey:
+        - RepeatMasker (Version 4.1.2)
+	- RepeatModeler (version 2.0.2)
+
+    Ensure you have run the ./configure script from the earlGrey installation directory
+    Ensure RepeatMasker has been configured with the desired repeat libraries (RepBase and Dfam 3.2 are recommended)
     
     Queries can sent to:
     toby.baril@icloud.com
@@ -390,9 +371,8 @@ calcDivRL()
     cd ${OUTDIR}/${species}_RepeatLandscape
     genome_size=$(sed -n '4p' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
     align_file=$(readlink -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.align)
-    calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
+    ${SCRIPT_DIR}/calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
     div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
-    createRepeatLandscape.pl -g $genome_size -t $species -div $div_file > ${species}_RL.html
 }
 
 # Subprocess splitLib
@@ -544,7 +524,7 @@ SECONDS=0
 
 stage="Checking Parameters"
 runningCow
-SCRIPT_DIR=/home/toby/projects/earlGreyDevelopment/packagingForAnaconda/earlGrey/scripts
+SCRIPT_DIR=/home/toby/Documents/earlGrey/scripts
 Checks
 stage="Making Directories"
 runningCow
