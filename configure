@@ -15,6 +15,12 @@ sleep 3
 echo "Path variables set"
 sleep 3
 
+# Extract tRNAdb
+echo "Extracting zip archives"
+unzip ./scripts/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.zip
+echo "Extracted required archives"
+sleep 3
+
 # Message Complete
 echo "Remember to activate the earl grey conda environment before running earlGrey"
 sleep 3
