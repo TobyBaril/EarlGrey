@@ -23,9 +23,11 @@ dependencies:
   - bwidget=1.9.14=ha770c72_0
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.17.2=h7f98852_0
-  - ca-certificates=2021.7.5=h06a4308_1
+  - ca-certificates=2021.5.30=ha878542_0
+  - cached-property=1.5.2=hd8ed1ab_1
+  - cached_property=1.5.2=pyha770c72_1
   - cairo=1.16.0=h6cf1ce9_1008
-  - certifi=2021.5.30=py36h06a4308_0
+  - certifi=2021.5.30=py36h5fab9bb_0
   - cffi=1.14.6=py36hd8eec40_1
   - chardet=4.0.0=py36h5fab9bb_1
   - charset-normalizer=2.0.0=pyhd8ed1ab_0
@@ -60,9 +62,9 @@ dependencies:
   - gsl=2.7=he838d99_0
   - gxx_impl_linux-64=9.4.0=h03d3576_9
   - gxx_linux-64=9.4.0=h0316aca_1
-  - harfbuzz=2.9.1=h83ec7ef_1
-  - hdf5=1.12.1=nompi_h2750804_100
   - h5py=3.1.0=nompi_py36hc1bc4f5_100
+  - harfbuzz=2.9.1=h83ec7ef_1
+  - hdf5=1.10.6=nompi_h6a2412b_1114
   - htseq=0.13.5=py36h7d1f7ee_1
   - icu=68.1=h58526e2_0
   - idna=3.1=pyhd3deb0d_0
@@ -148,65 +150,23 @@ dependencies:
   - pcre=8.45=h9c3ff4c_0
   - pcre2=10.37=h032f7d1_0
   - perl=5.26.2=h36c2ea0_1008
-  - perl-app-cpanminus=1.7044=pl526_1
   - perl-archive-tar=2.32=pl526_0
-  - perl-base=2.23=pl526_1
-  - perl-business-isbn=3.004=pl526_0
-  - perl-business-isbn-data=20140910.003=pl526_0
   - perl-carp=1.38=pl526_3
   - perl-common-sense=3.74=pl526_2
   - perl-compress-raw-bzip2=2.087=pl526he1b5a44_0
   - perl-compress-raw-zlib=2.087=pl526hc9558a2_0
-  - perl-constant=1.33=pl526_1
-  - perl-data-dumper=2.173=pl526_0
-  - perl-devel-size=0.83=pl526h14c3975_0
-  - perl-digest-hmac=1.03=pl526_3
-  - perl-digest-md5=2.55=pl526_0
-  - perl-encode=2.88=pl526_1
-  - perl-encode-locale=1.05=pl526_6
   - perl-exporter=5.72=pl526_1
   - perl-exporter-tiny=1.002001=pl526_0
   - perl-extutils-makemaker=7.36=pl526_1
-  - perl-file-listing=6.04=pl526_1
-  - perl-file-path=2.16=pl526_0
-  - perl-file-temp=0.2304=pl526_2
-  - perl-file-which=1.23=pl526_0
-  - perl-html-parser=3.72=pl526h6bb024c_5
-  - perl-html-tagset=3.20=pl526_3
-  - perl-http-cookies=6.04=pl526_0
-  - perl-http-daemon=6.01=pl526_1
-  - perl-http-date=6.02=pl526_3
-  - perl-http-message=6.18=pl526_0
-  - perl-http-negotiate=6.01=pl526_3
   - perl-io-compress=2.087=pl526he1b5a44_0
-  - perl-io-html=1.001=pl526_2
-  - perl-io-socket-ssl=2.066=pl526_0
   - perl-io-zlib=1.10=pl526_2
   - perl-json=4.02=pl526_0
   - perl-json-xs=2.34=pl526h6bb024c_3
-  - perl-libwww-perl=6.39=pl526_0
   - perl-list-moreutils=0.428=pl526_1
   - perl-list-moreutils-xs=0.428=pl526_0
-  - perl-lwp-mediatypes=6.04=pl526_0
-  - perl-lwp-protocol-https=6.07=pl526_4
-  - perl-lwp-simple=6.15=pl526h470a237_4
-  - perl-mime-base64=3.15=pl526_1
-  - perl-mozilla-ca=20180117=pl526_1
-  - perl-net-http=6.19=pl526_0
-  - perl-net-ssleay=1.88=pl526h90d6eec_0
-  - perl-ntlm=1.09=pl526_4
-  - perl-parent=0.236=pl526_1
   - perl-pathtools=3.75=pl526h14c3975_1
   - perl-scalar-list-utils=1.52=pl526h516909a_0
-  - perl-socket=2.027=pl526_1
-  - perl-storable=3.15=pl526h14c3975_0
-  - perl-test-requiresinternet=0.05=pl526_0
-  - perl-test-simple=1.302164=pl526_0
-  - perl-time-local=1.28=pl526_1
-  - perl-try-tiny=0.30=pl526_1
   - perl-types-serialiser=1.0=pl526_2
-  - perl-uri=1.76=pl526_0
-  - perl-www-robotrules=6.02=pl526_3
   - perl-xsloader=0.24=pl526_0
   - pexpect=4.8.0=pyh9f0ad1d_2
   - pickleshare=0.7.5=py_1003
@@ -225,7 +185,7 @@ dependencies:
   - pyrsistent=0.17.3=py36h8f6f2f9_2
   - pysam=0.17.0=py36h61e5637_0
   - pysocks=1.7.1=py36h5fab9bb_3
-  - pytables=3.6.1=py36he0b5dfd_4
+  - pytables=3.6.1=py36hb7ec5aa_3
   - python=3.6.13=hb7a2778_2_cpython
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python_abi=3.6=2_cp36m
