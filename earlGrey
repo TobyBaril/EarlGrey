@@ -8,30 +8,29 @@ usage()
         -g == genome.fasta
         -s == species name
         -o == output directory
-	-r == RepeatMasker search term (e.g arthropoda/eukarya)
+        -r == RepeatMasker search term (e.g arthropoda/eukarya)
         -t == Number of Threads (DO NOT specify more than are available)
-        
+
     Optional Parameters:
         -l == Repbase species subset library (FASTA format)
-	-i == Number of Iterations to BLAST, Extract, Extend - Only enter a number between 5 and 10 (Iteration outputs are 0-based!) (Default: 5)
-	-f == Number flanking basepairs to extract (Default: 1000)
-	-d == Maximum non-TE distance between annotations to consider a pair to be from the same cluster (100 is recommended)
-	-b == Which elements to remove (L/S/B for LINEs/SINEs/Both - Choose ONLY ONE)
-    
-    Example Usage:
-    
-    earlGrey -g myzPerNic.fasta -s myzPerNic -l myzPerNicRepeats.fasta -o /home/user/myzPerNic/repeatAnnotation/ -r arthropoda -t 48 -f 500 -b B -i 5 -d 100
-    
-    
-    Prerequisites - These must be configured prior to using Earl Grey:
-        - RepeatMasker (Version 4.1.2)
-	- RepeatModeler (version 2.0.2)
+        -i == Number of Iterations to BLAST, Extract, Extend - Only enter a number between 5 and 10 (Iteration outputs are 0-based!) (Default: 5)
+        -f == Number flanking basepairs to extract (Default: 1000)
+        -d == Maximum non-TE distance between annotations to consider a pair to be from the same cluster (100 is recommended)
+        -b == Which elements to remove (L/S/B for LINEs/SINEs/Both - Choose ONLY ONE)
 
-    Ensure you have run the ./configure script from the earlGrey installation directory
+    Example Usage:
+
+    earlGrey -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -r arthropoda -t 16
+
+
+    Prerequisites - These must be configured prior to using Earl Grey:
+        - RepeatMasker (Version 4.1.2)                                                                                                                                                                                                               - RepeatModeler (version 2.0.2)                                                                                                                                                                                                                                                                                                                                                                                                                                                       Ensure you have run the ./configure script from the earlGrey installation directory
     Ensure RepeatMasker has been configured with the desired repeat libraries (RepBase and Dfam 3.2 are recommended)
-    
-    Queries can sent to:
-    toby.baril@icloud.com
+
+    Queries can be sent to:
+    tb529@exeter.ac.uk
+
+    Please make use of the GitHub Issues and Discussion Tabs at: https://github.com/TobyBaril/EarlGrey
     #############################"
 }
     
