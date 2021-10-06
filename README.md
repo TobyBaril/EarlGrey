@@ -83,15 +83,6 @@ Download TRF from https://tandem.bu.edu/trf/trf.download.html - In most cases th
 
 ```realpath ./trf409*```
 
-Download python3-pip and h5py - Note for RepeatMasker configuration in /usr/local/ root priveleges are required for h5py, hence installation with sudo!
-
-```
-sudo apt update
-sudo apt install python3-pip -y
-sudo pip install h5py
-```
-
-
 Download RepeatMasker (this will download it to the current directory)
 
 ```wget http://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.2-p1.tar.gz```
