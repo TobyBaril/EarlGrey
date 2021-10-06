@@ -102,7 +102,7 @@ deNovo1()
 {
     cd ${OUTDIR}/${species}_RepeatModeler
     RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} 
-    if [ ! -e ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified ]; then
+    if [ ! -e ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa ]; then
         echo "ERROR: RepeatModeler Failed"
         exit 2
     fi
