@@ -97,7 +97,7 @@ genomesize()
 
 # Step 1 - Run ltr_finder
 
-SCRIPT_DIR=/home/toby/Documents/earlGrey/scripts
+SCRIPT_DIR=INSERTFILEPATHHERE
 stage="Running LTR Finder"
 runningCow
 ltrfinder 
