@@ -7,6 +7,59 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 Before using Earl Grey, please ensure RepeatMasker (version 4.1.2) and RepeatModeler (version 2.0.2) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
 NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo priveleges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
 
+## Earl Grey Installation and Configuration
+
+If you do not currently have RepeatMasker and RepeatModeler installed, please scroll down for instructions. If you do have them installed, ensure the executables are in your PATH environment, including the RepeatMasker/util/ directory!
+
+All of the scripts and associated modules are contained within this github repository. Earl Grey runs inside an anaconda environment to ensure all required packages are present and are the correct version. Therefore to run Earl Grey, you will require anaconda to be installed on your system. 
+
+If anaconda is NOT installed on your system, please install it following these instructions:
+
+```
+# Change to /tmp directory as we won't need the script after running it
+cd /tmp
+
+# Download the anaconda installation script
+curl https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh --output anaconda.sh
+
+# Run the script to install anaconda
+bash anaconda.sh
+# answer yes when asked, and install anaconda3 in the specified location (recommended) unless you want it to be installed elsewhere.
+# When asked "Do you wish the installer to initialize Anaconda3 by running conda init?", answer "yes" for ease of use.
+# Activate conda by refreshing terminal session
+
+source ~/.bashrc
+
+# If successful, you should now see (base) on the left of your username on the command line
+```
+
+Clone the Earl Grey github repo
+
+```
+# Clone into a home directory, or somewhere you want to install Earl Grey
+git clone https://github.com/TobyBaril/EarlGrey
+```
+
+Enter the Earl Grey directory and configure the program
+
+```
+cd ./EarlGrey
+chmod +x ./configure
+./configure
+```
+
+Once this is complete, remember to activate the earlGrey conda environment before attempting to run the Earl Grey pipeline
+
+```
+conda activate earlGrey
+
+earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -t threads
+```
+
+For suggestions or questions, please use the discussion and issues functions in github.
+
+Thank you for trying Earl Grey!
+
 ### To install RepeatMasker
 
 RepeatMasker can be downloaded from: http://www.repeatmasker.org/RepeatMasker/. Installation instructions can be found on the website. Alternatively, please use the code below:
@@ -190,55 +243,4 @@ sudo perl ./configure
 Add RepeatModeler directory to your path environment
 
 ```export PATH=$PATH:/usr/local/RepeatModeler-2.0.2a/```
-
-## Earl Grey Installation and Configuration
-
-All of the scripts and associated modules are contained within this github repository. Earl Grey runs inside an anaconda environment to ensure all required packages are present and are the correct version. Therefore, to run Earl Grey, you will require anaconda to be installed on your system. 
-
-If anaconda is NOT installed on your system, please install it following these instructions:
-
-```
-# Change to /tmp directory as we won't need the script after running it
-cd /tmp
-
-# Download the anaconda installation script
-curl https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh --output anaconda.sh
-
-# Run the script to install anaconda
-bash anaconda.sh
-# answer yes when asked, and install anaconda3 in the specified location (recommended) unless you want it to be installed elsewhere.
-# When asked "Do you wish the installer to initialize Anaconda3 by running conda init?", answer "yes" for ease of use.
-# Activate conda by refreshing terminal session
-
-source ~/.bashrc
-
-# If successful, you should now see (base) on the left of your username on the command line
-```
-
-Clone the Earl Grey github repo
-
-```
-# Clone into a home directory, or somewhere you want to install Earl Grey
-git clone https://github.com/TobyBaril/EarlGrey
-```
-
-Enter the Earl Grey directory and configure the program
-
-```
-cd ./EarlGrey
-chmod +x ./configure
-./configure
-```
-
-Once this is complete, remember to activate the earlGrey conda environment before attempting to run the Earl Grey pipeline
-
-```
-conda activate earlGrey
-
-earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -t threads
-```
-
-For suggestions or questions, please use the discussion and issues functions in github.
-
-Thank you for trying Earl Grey!
 
