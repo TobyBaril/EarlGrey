@@ -24,8 +24,6 @@ dependencies:
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.17.2=h7f98852_0
   - ca-certificates=2021.7.5=h06a4308_1
-  - cached-property=1.5.2=hd8ed1ab_1	
-  - cached_property=1.5.2=pyha770c72_1
   - cairo=1.16.0=h6cf1ce9_1008
   - certifi=2021.5.30=py36h06a4308_0
   - cffi=1.14.6=py36hd8eec40_1
