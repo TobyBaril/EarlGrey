@@ -28,8 +28,8 @@ chmod +x ./earlGrey
 
 echo "Setting path variables in script"
 SCRIPT_DIR=$(realpath ./scripts/)
-sed -i "s|INSERTFILEPATHHERE|${SCRIPT_DIR}|g" ./earlGrey
-sed -i "s|INSERTFILEPATHHERE|${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./earlGrey
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
 sleep 3
 echo "Path variables set"
 sleep 3
@@ -43,5 +43,6 @@ sleep 3
 # Message Complete
 echo "Remember to activate the earl grey conda environment before running earlGrey"
 sleep 3
-export PATH=$PATH:$(realpath ./earlGrey)
-echo "earlGrey command has been added to path to be run from any directory"
+export PATH=$PATH:$(realpath .)
+echo "earlGrey is ready to use. To execute from any directory, add earlGrey to path..."
+echo '[export PATH=$PATH:$(realpath .)]'
