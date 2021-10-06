@@ -24,6 +24,8 @@ dependencies:
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.17.2=h7f98852_0
   - ca-certificates=2021.5.30=ha878542_0
+  - cached-property=1.5.2=hd8ed1ab_1
+  - cached_property=1.5.2=pyha770c72_1
   - cairo=1.16.0=h6cf1ce9_1008
   - certifi=2021.5.30=py36h5fab9bb_0
   - cffi=1.14.6=py36hd8eec40_1
@@ -60,8 +62,9 @@ dependencies:
   - gsl=2.7=he838d99_0
   - gxx_impl_linux-64=9.4.0=h03d3576_9
   - gxx_linux-64=9.4.0=h0316aca_1
+  - h5py=3.1.0=nompi_py36hc1bc4f5_100
   - harfbuzz=2.9.1=h83ec7ef_1
-  - hdf5=1.12.1=nompi_h2750804_100
+  - hdf5=1.10.6=nompi_h6a2412b_1114
   - htseq=0.13.5=py36h7d1f7ee_1
   - icu=68.1=h58526e2_0
   - idna=3.1=pyhd3deb0d_0
@@ -182,7 +185,7 @@ dependencies:
   - pyrsistent=0.17.3=py36h8f6f2f9_2
   - pysam=0.17.0=py36h61e5637_0
   - pysocks=1.7.1=py36h5fab9bb_3
-  - pytables=3.6.1=py36he0b5dfd_4
+  - pytables=3.6.1=py36hb7ec5aa_3
   - python=3.6.13=hb7a2778_2_cpython
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python_abi=3.6=2_cp36m
