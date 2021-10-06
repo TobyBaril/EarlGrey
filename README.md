@@ -128,7 +128,7 @@ Now to finally configure RepeatMasker! - Run these lines and then follow the on-
 
 Add RepeatMasker and util directory to your path environment
 
-```export PATH=$PATH:/usr/local/RepeatMasker:/usr/local/RepeatMasker/util/```
+```echo "export PATH=$PATH:/usr/local/RepeatMasker:/usr/local/RepeatMasker/util/" >> ~/.bashrc```
 
 ### To install RepeatModeler
 
@@ -227,5 +227,5 @@ sudo perl ./configure
 
 Add RepeatModeler directory to your path environment
 
-```export PATH=$PATH:/usr/local/RepeatModeler-2.0.2a/```
+```echo "export PATH=$PATH:/usr/local/RepeatModeler-2.0.2a/" >> ~/.bashrc```
 
