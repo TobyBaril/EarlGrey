@@ -201,12 +201,6 @@ wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/twoBitDup
 chmod +x ~/ucscTwoBitTools/*
 ```
 
-Some perl modules are required by RepeatModeler. Install these:
-
-```
-sudo cpan install JSON File::Which URI LWP::UserAgent Devel::Size
-```
-
 For Earl Grey, the LTR structural pipeline of RepeatModeler is not required, as this is run as part of Earl Grey's defragmentation process.
 
 Download RepeatModeler
