@@ -100,12 +100,17 @@ deNovo1()
 {
     cd ${OUTDIR}/${species}_RepeatModeler
     RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species}
-    mv ${OUTDIR}/${species}_Database/${species}-families.fa ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa
-    mv ${OUTDIR}/${species}_Database/${species}-families.stk ${OUTDIR}/${species}_RepeatModeler/${species}-families.stk
-    if [ ! -e ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa ]; then
+    if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
         echo "ERROR: RepeatModeler Failed"
         exit 2
     fi
+}
+
+# Subprocess moveFiles
+moveFiles()
+{
+    mv ${OUTDIR}/${species}_Database/${species}-families.fa ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa
+    mv ${OUTDIR}/${species}_Database/${species}-families.stk ${OUTDIR}/${species}_RepeatModeler/${species}-families.stk
 }
 
 # Subprocess BEE1
@@ -518,14 +523,17 @@ else
 fi 
 
 # Step 3
-if [ ! -f ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified ]; then
+if [ ! -f ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
 	stage="Detecting New Repeats"
 	runningCow
 	buildDB
 	deNovo1
+	moveFiles
 	sleep 1
 else
 	stage="De novo repeats have already been detected, skipping..."
+	moveFiles
+	sleep 1
 fi
 
 # Step 4
