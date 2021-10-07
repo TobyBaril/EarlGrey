@@ -538,6 +538,7 @@ if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 else 
 	stage="Genome has already been masked, skipping..."
 	runningCow
+	getRepeatMaskerFasta
 	sleep 5
 fi 
 
