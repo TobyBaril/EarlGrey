@@ -464,7 +464,7 @@ Checks()
 	echo "Error: No RepeatMasker Species or Custom Repeat Library Specified"; exit 2
     fi
 
-    if [ -z "$num"] || [ -a "$num" -lt 5 -a "$num" -gt 10 ]; then
+    if [ -z "$num" ] || [ -a "$num" -lt 5 -a "$num" -gt 10 ]; then
         num=5; echo "De Novo Sequences Will Be Extended Through $num Iterations"
     fi
     
@@ -472,7 +472,7 @@ Checks()
         dist=100; echo "Clusters Will Be Considered When TEs Are <${dist}bp Apart"
     fi
 
-    if [ -z "$Flank"]; then
+    if [ -z "$Flank" ]; then
 	Flank=1000; echo "Blast, Extract, Extend Process Will Add 1000bp to Each End in Each Iteration"
     fi
 
