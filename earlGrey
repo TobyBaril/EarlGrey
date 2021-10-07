@@ -50,10 +50,8 @@ makeDirectory()
     mkdir $OUTDIR/${species}_Library_Filtering/
     mkdir $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
     mkdir $OUTDIR/${species}_RepeatLandscape/
-    mkdir $OUTDIR/${species}_Library_by_Type/
-    mkdir $OUTDIR/${species}_TE_Size_Analysis/
     mkdir $OUTDIR/${species}_mergedRepeats/
-    mkdir $OUTDIR/${species}_noLiSi/
+    mkdir ${OUTDIR}/${species}_summaryFiles/
     mkdir $OUTDIR/${species}_clusTErs/
 }
     
@@ -374,33 +372,6 @@ calcDivRL()
     div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
 }
 
-# Subprocess splitLib
-splitLib()
-{
-cd ${OUTDIR}/${species}_Library_by_Type
-grep ">" ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta | sed 's/.*#//g; s#/.*##g' | sort -u > ${OUTDIR}/${species}_Library_by_Type/TE_Type_List
-sed "s#^#awk '/^>/ { p = ($0 ~ /#g" ${OUTDIR}/${species}_Library_by_Type/TE_Type_List > ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
-sed -i "s|$|/)} p' ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta|g; s|$| > |g" ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
-awk '{print}' ${OUTDIR}/${species}_Library_by_Type/TE_Type_List | paste ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh - | sed 's/\t//g' > ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh.1
-mv ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh{.1,}
-chmod 777 ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
-${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh
-#rm ${OUTDIR}/${species}_Library_by_Type/TE_Library_Filter.sh ${OUTDIR}/${species}_Library_by_Type/TE_Type_List
-for file in ${OUTDIR}/${species}_Library_by_Type/*
-    do mv $file ${file}.fasta
-        done
-}
-
-# Subprocess quantSize
-quantSize()
-{
-    cd ${OUTDIR}/${species}_TE_Size_Analysis/
-    sed '1, 3d' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out > ${OUTDIR}/${species}_TE_Size_Analysis/${species}_rm.out
-    awk '{te_len = $7 - $6; print $5, $11, $6, $7, te_len + 1}' ${OUTDIR}/${species}_TE_Size_Analysis/${species}_rm.out > ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab
-    awk '{gsub("/.*","",$2)}1' OFS="\t" ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab > ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab.1
-    mv ${OUTDIR}/${species}_TE_Size_Analysis/${species}_TE_Size.tab{.1,}
-}
-
 # Subprocess rcMergeRepeats
 mergeRep()
 {
@@ -408,6 +379,14 @@ mergeRep()
     ${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -c ~/Programs/repeatCraft/example/repeatcraft.cfg -t $ProcNum -b ${dict}
     mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
     ${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -c ~/Programs/repeatCraft/example/repeatcraft.cfg -t $ProcNum -b ${dict}
+}
+
+# Subprocess pieChart
+charts()
+{
+    cd ${OUTDIR}/${species}_summaryFiles/
+    ${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
+    Rscript ${SCRIPT_DIR}/autoLand.R $div_file $genome_size $species ${OUTDIR}/${species}_summaryFiles/${species}.repeatLandscape.pdf
 }
 
 # Subprocess clusTErPluck
@@ -418,33 +397,12 @@ clusTErPluck()
     clusterBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/*.rmerge.gff | sed '1 i\Scaffold\tSource\tRepeatFamily\tStart\tEnd\tScore\tStrand\tPhase\tAttributes\tClusterId' > ${OUTDIR}/${species}_clusTErs/${species}.detailedClusTErs.gff
 }
 
-# Subprocess remove LiSi
-LiSiGone()
+# Subprocess sweepUp
+sweepUp()
 {
-    cd ${OUTDIR}/${species}_noLiSi/
-    awk '{OFS="\t"}{print $5, $6, $7, ".", $1, $9, "RepeatMasker", "dispersed_repeat", ".", $11}' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out | sed '1,3d' | egrep -i "LINE|SINE|CR1|Crack|CRE|Daphne|\bI\b|Ingi|Jockey|Kiri|L1|L2|\bLoa\b|\bNon-LTR\b|Outcast|Penelope|Proto2|\bR1\b|\bR2\b|\bR4\b|RTE|Tx1|Vingi" > ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed
-    bedtools maskfasta -fi $genome -bed ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed -fo ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta -mc X
-    sed -i '/>/! s/X//g' ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta
+    cd ${OUTDIR}/${species}_summaryFiles/
+    cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
 }
-
-# Subprocess remove Li
-LiGone()
-{
-    cd ${OUTDIR}/${species}_noLiSi/
-    awk '{OFS="\t"}{print $5, $6, $7, ".", $1, $9, "RepeatMasker", "dispersed_repeat", ".", $11}' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out | sed '1,3d' | egrep -i "LINE|CR1|Crack|CRE|Daphne|\bI\b|Ingi|Jockey|Kiri|L1|L2|\bLoa\b|\bNon-LTR\b|Outcast|Penelope|Proto2|\bR1\b|\bR2\b|\bR4\b|RTE|Tx1|Vingi" > ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed
-    bedtools maskfasta -fi $genome -bed ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed -fo ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta -mc X
-    sed -i '/>/! s/X//g' ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta
-}
-
-# Subprocess remove Si
-SiGone()
-{
-    cd ${OUTDIR}/${species}_noLiSi/
-    awk '{OFS="\t"}{print $5, $6, $7, ".", $1, $9, "RepeatMasker", "dispersed_repeat", ".", $11}' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.out | sed '1,3d' | egrep -i "SINE" > ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed
-    bedtools maskfasta -fi $genome -bed ${OUTDIR}/${species}_noLiSi/${species}_LiSi_coordinates.bed -fo ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta -mc X
-    sed -i '/>/! s/X//g' ${OUTDIR}/${species}_noLiSi/${species}_noLiSi.fasta 
-}
-
 
 # Subprocess runningCow
 runningCow()
@@ -503,7 +461,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:l:o:t:f:b:r:i:d:h option
+while getopts g:s:l:o:t:f:r:i:d:h option
 do
     case "${option}" 
         in
@@ -514,7 +472,6 @@ do
         r) RepSpec=${OPTARG};;
         t) ProcNum=${OPTARG};;
         f) Flank=${OPTARG};;
-        b) both=${OPTARG};;
         i) num=${OPTARG};;
         d) dist=${OPTARG};;
         h) usage; exit 1;; 
@@ -594,39 +551,36 @@ calcDivRL
 sleep 1
 
 # Stage 7
-#stage="Splitting Library by Repeat Type"
-#runningCow
-#splitLib
-#sleep 1
-
-# Stage 8
-stage="Calculating Repeat Sizes"
-runningCow
-quantSize
-sleep 1
-
-# Stage 9
 stage="Running LTR_Finder and Defragmenting Repeats"
 runningCow
 mergeRep
 sleep 1
 
-# Stage 10
+# Stage 8
+stage="Generating Summary Plots"
+runningCow
+charts
+sleep 1
+
+# Stage 11
 stage="Identifying TE Clusters and Member Sequences"
 runningCow
 clusTErPluck
 sleep 1
 
-# Stage 11
-case $both in
-    B) stage="Removing LINE and SINE Elements" && runningCow; LiSiGone;;
-    L) stage="Removing LINE Elements" && runningCow; LiGone;;
-    S) stage="Removing SINE Elements" && runningCow; SiGone;;
-    *) ;;
-esac
-
 # Stage 12 
+stage="Tidying Directories and Organising Important Files"
+runningCow
+sweepUp
+sleep 1
+
+# Stage 13
 time=$(convertsecs $SECONDS)
 stage="Done in $time"
+runningCow
+sleep 5
+
+# Stage 14
+stage="De Novo Library, Combined Library, Summary Figures, and TE Quantifications in Standard Formats Can Be Found in ${OUTDIR}/${species}_summaryFiles/"
 runningCow
 sleep 5
