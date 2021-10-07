@@ -150,7 +150,7 @@ BEE2()
     mkdir ${OUTDIR}/${species}_ExtractAlign/mafft/ 
     parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/trimal/ && cd ${OUTDIR}/${species}_ExtractAlign/trimal/
-    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/mafft/*.mafft
+    parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/embossCons/ && cd ${OUTDIR}/${species}_ExtractAlign/embossCons/
     parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/trimal/*.trimal.fa
 }
@@ -175,7 +175,7 @@ Iterations()
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/
     parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/
-    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/*.mafft
+    parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/
     parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/*.trimal.fa
     parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/*_cons.fa
@@ -191,7 +191,7 @@ Iterations()
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/
     parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/
-    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/*.mafft
+    parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/
     parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/*.trimal.fa
     parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa
@@ -207,7 +207,7 @@ Iterations()
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/
     parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/
-    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/*.mafft
+    parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/
     parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/*.trimal.fa
     parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/*_cons.fa
@@ -226,7 +226,7 @@ Iterations()
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/
             parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/
-            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/*.mafft
+            parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/
             parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/*.trimal.fa
             parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/*_cons.fa
@@ -248,7 +248,7 @@ Iterations()
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/
             parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/
-            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/*.mafft
+            parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/
             parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/*.trimal.fa
             parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/*_cons.fa
@@ -270,7 +270,7 @@ Iterations()
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/
             parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/
-            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/*.mafft
+            parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/
             parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/*.trimal.fa
             parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/*_cons.fa
@@ -293,7 +293,7 @@ Iterations()
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/
             parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/
-            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/*.mafft
+            parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/
             parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/*.trimal.fa
             parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/*_cons.fa
@@ -315,7 +315,7 @@ Iterations()
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/
             parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/
-            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/*.mafft
+            parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/
             parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/*.trimal.fa
             parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/*_cons.fa
@@ -337,7 +337,7 @@ Iterations()
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/
             parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/
-            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/*.mafft
+            parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/
             parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/*.trimal.fa
             parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/*_cons.fa
