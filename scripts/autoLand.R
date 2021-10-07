@@ -60,9 +60,9 @@ piv$Divergence <- as.numeric(piv$Divergence)
 colourOrder <- c("DNA",
                  "Rolling Circle",
                  "Penelope",
-                 "LTR",
                  "LINE",
                  "SINE",
+                 "LTR",
                  "Other (Simple Repeat, Microsatellite, RNA)",
                  "Unclassified")
 
@@ -107,13 +107,29 @@ piv2 <- piv %>% group_by(species, Divergence, classif) %>% summarise(proportion 
 limits <- piv2 %>% group_by(Divergence) %>% summarise(perc = sum(proportion * 100))
 ylimit <- max(limits$perc) * 1.1
 
+# set colours
+
+colours <- as.data.frame(matrix(c("DNA", "#E32017",
+                                  "Rolling Circle", "#EE7C0E",
+                                  "Penelope", "#7156A5",
+                                  "LINE", "#0098D4",
+                                  "SINE", "#9B0056",
+                                  "LTR", "#00782A",
+                                  "Other (Simple Repeat, Microsatellite, RNA)", "#F3A9BB",
+                                  "Unclassified", "#A0A5A9",
+                                  "Non-Repeat", "#000000"), ncol = 2, byrow = TRUE))
+
+colnames(colours) <- c("tclassif", "colour")
+col <- colours$colour
+names(col) <- colours$tclassif
+
 # plot
 
 plot <- ggplot(piv2[! piv2$classif %like% "Other",], aes(x = Divergence, y = proportion*100, fill = classif)) +
   geom_bar(stat = "identity") +
   ylim(0, ylimit) +
   scale_x_reverse() +
-  scale_fill_manual(values = c("#E32017", "#EE7C0E", "#7156A5", "#00782A", "#0098D4", "#9B0056","#A0A5A9")) +
+  scale_fill_manual(values = col)) +
   theme_classic() +
   theme(strip.background = element_blank(), strip.text.y = element_text(face = "italic", angle = 0),
         axis.text.y = element_text(size = 8)) +
