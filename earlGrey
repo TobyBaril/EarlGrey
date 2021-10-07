@@ -148,17 +148,17 @@ BEE2()
     cd ${OUTDIR}/${species}_ExtractAlign
     python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST.no_slash -l ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa.filtered.no_slash -lb $Flank -rb $Flank -n 20 -a n -t n -e n
     mkdir ${OUTDIR}/${species}_ExtractAlign/mafft/ 
-    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/catTEfiles/*.fa 
+    parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/trimal/ && cd ${OUTDIR}/${species}_ExtractAlign/trimal/
-    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/mafft/*.mafft
+    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/embossCons/ && cd ${OUTDIR}/${species}_ExtractAlign/embossCons/
-    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/trimal/*.trimal.fa
+    parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/trimal/*.trimal.fa
 }
 
 # Subprocess BEE3
 BEE3()
 {
-    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/embossCons/*_cons.fa
+    parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/embossCons/*_cons.fa
     cat ${OUTDIR}/${species}_ExtractAlign/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter0.fasta
 }
 
@@ -173,12 +173,12 @@ Iterations()
     cd ${OUTDIR}/${species}_ExtractAlign/iter1
     python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter1 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter0.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/
-    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/catTEfiles/*.fa 
+    parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/
-    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/*.mafft
+    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter1/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/
-    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/*.trimal.fa
-    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/*_cons.fa
+    parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter1/trimal/*.trimal.fa
+    parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/*_cons.fa
     cat ${OUTDIR}/${species}_ExtractAlign/iter1/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter1.fasta
     
     stage="Running BLAST, Extract, Extend Iteration 2"
@@ -189,12 +189,12 @@ Iterations()
     cd ${OUTDIR}/${species}_ExtractAlign/iter2
     python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter2 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter1.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/
-    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/catTEfiles/*.fa 
+    parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/
-    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/*.mafft
+    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter2/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/
-    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/*.trimal.fa
-    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa
+    parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/*.trimal.fa
+    parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa
     cat ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta
     
     stage="Running BLAST, Extract, Extend Iteration 3"
@@ -205,12 +205,12 @@ Iterations()
     cd ${OUTDIR}/${species}_ExtractAlign/iter3
     python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter3 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/
-    parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/catTEfiles/*.fa 
+    parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/
-    parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/*.mafft
+    parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter3/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/
-    parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/*.trimal.fa
-    parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/*_cons.fa
+    parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter3/trimal/*.trimal.fa
+    parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/*_cons.fa
     cat ${OUTDIR}/${species}_ExtractAlign/iter3/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta
     latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta
     
@@ -224,12 +224,12 @@ Iterations()
             cd ${OUTDIR}/${species}_ExtractAlign/iter4
             python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter4 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter3.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/
-            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/catTEfiles/*.fa 
+            parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/
-            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/*.mafft
+            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter4/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/
-            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/*.trimal.fa
-            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/*_cons.fa
+            parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter4/trimal/*.trimal.fa
+            parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/*_cons.fa
             cat ${OUTDIR}/${species}_ExtractAlign/iter4/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta
             latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta
         else
@@ -246,12 +246,12 @@ Iterations()
             cd ${OUTDIR}/${species}_ExtractAlign/iter5
             python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter5 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter4.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/
-            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/catTEfiles/*.fa 
+            parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/
-            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/*.mafft
+            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter5/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/
-            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/*.trimal.fa
-            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/*_cons.fa
+            parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter5/trimal/*.trimal.fa
+            parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/*_cons.fa
             cat ${OUTDIR}/${species}_ExtractAlign/iter5/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta
             latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta
         else
@@ -268,12 +268,12 @@ Iterations()
             cd ${OUTDIR}/${species}_ExtractAlign/iter6
             python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter6 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter5.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/
-            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/catTEfiles/*.fa 
+            parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/
-            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/*.mafft
+            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter6/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/
-            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/*.trimal.fa
-            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/*_cons.fa
+            parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter6/trimal/*.trimal.fa
+            parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/*_cons.fa
             cat ${OUTDIR}/${species}_ExtractAlign/iter6/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta
             latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta
         else
@@ -291,12 +291,12 @@ Iterations()
             cd ${OUTDIR}/${species}_ExtractAlign/iter7
             python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter7 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter6.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/
-            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/catTEfiles/*.fa 
+            parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/
-            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/*.mafft
+            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter7/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/
-            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/*.trimal.fa
-            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/*_cons.fa
+            parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter7/trimal/*.trimal.fa
+            parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/*_cons.fa
             cat ${OUTDIR}/${species}_ExtractAlign/iter7/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta
             latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta
         else
@@ -313,12 +313,12 @@ Iterations()
             cd ${OUTDIR}/${species}_ExtractAlign/iter8
             python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter8 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter7.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/
-            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/catTEfiles/*.fa 
+            parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/
-            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/*.mafft
+            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter8/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/
-            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/*.trimal.fa
-            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/*_cons.fa
+            parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter8/trimal/*.trimal.fa
+            parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/*_cons.fa
             cat ${OUTDIR}/${species}_ExtractAlign/iter8/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta
             latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta
         else
@@ -335,12 +335,12 @@ Iterations()
             cd ${OUTDIR}/${species}_ExtractAlign/iter9
             python ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST_iter9 -l ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter8.fasta -lb $Flank -rb $Flank -n 20 -a n -t n -e n
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/
-            parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/catTEfiles/*.fa 
+            parallel --jobs ${ProcNum} "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/catTEfiles/*.fa 
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/
-            parallel trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/*.mafft
+            parallel --jobs ${ProcNum} trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/{/.}.trimal.fa ::: ${OUTDIR}/${species}_ExtractAlign/iter9/mafft/*.mafft
             mkdir ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/
-            parallel cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/*.trimal.fa
-            parallel "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/*_cons.fa
+            parallel --jobs ${ProcNum} cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3) ::: ${OUTDIR}/${species}_ExtractAlign/iter9/trimal/*.trimal.fa
+            parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/*_cons.fa
             cat ${OUTDIR}/${species}_ExtractAlign/iter9/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter9.fasta
             latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter9.fasta
         else
