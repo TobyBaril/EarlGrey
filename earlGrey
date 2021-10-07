@@ -59,7 +59,7 @@ makeDirectory()
 prepGenome()
 {
     genome=$(realpath ${genome})
-    cp ${genome} ${genome}.bak && gzip ${genome}.bak
+    cp ${genome} ${genome}.bak && gzip -f ${genome}.bak 
     sed -i '/>/ s/ .*//g' ${genome}
     ${SCRIPT_DIR}/headSwap.sh -i ${genome} -o ${genome}.prep
     sed -i '/^>/! s/D/N/g;/^>/! s/V/N/g;/^>/! s/H/N/g;/^>/! s/B/N/g;/^>/! s/P/N/g;/^>/! s/E/N/g' ${genome}.prep
