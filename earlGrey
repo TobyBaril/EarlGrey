@@ -99,7 +99,8 @@ buildDB()
 deNovo1()
 {
     cd ${OUTDIR}/${species}_RepeatModeler
-    RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} 
+    RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species}
+    cp ${OUTDIR}/${species}_Database/${species}-families.fa ${OUTDIR}/${species}_Database/${species}-families.stk ${OUTDIR}/${species}_RepeatModeler/
     if [ ! -e ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa ]; then
         echo "ERROR: RepeatModeler Failed"
         exit 2
