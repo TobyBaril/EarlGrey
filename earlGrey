@@ -196,6 +196,7 @@ Iterations()
     parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/trimal/*.trimal.fa
     parallel --jobs ${ProcNum} "sed -i '/^>/ s/.trimal.*//g' {}" ::: ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa
     cat ${OUTDIR}/${species}_ExtractAlign/iter2/embossCons/*_cons.fa > ${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta
+    latestFile=${OUTDIR}/${species}_Curated_Library/${species}_de_novo_repeat_library_iter2.fasta
     
     if [ $num -gt 3 ]
         then
