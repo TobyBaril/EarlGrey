@@ -13,8 +13,10 @@ dependencies:
   - backcall=0.2.0=pyh9f0ad1d_0
   - backports=1.0=py_2
   - backports.functools_lru_cache=1.6.4=pyhd8ed1ab_0
+  - bedtools=2.30.0=h7d7f7ad_2
   - binutils_impl_linux-64=2.36.1=h193b22a_2
   - binutils_linux-64=2.36=hf3e587d_1
+  - biopython=1.78=py36h7f8727e_0
   - blast=2.12.0=pl5262h3289130_0
   - bleach=4.1.0=pyhd8ed1ab_0
   - blosc=1.21.0=h9c3ff4c_0
@@ -137,7 +139,7 @@ dependencies:
   - numpy=1.19.5=py36hfc0c790_2
   - olefile=0.46=pyh9f0ad1d_1
   - openjpeg=2.4.0=hb52868f_1
-  - openssl=1.1.1l=h7f98852_0
+  - openssl=1.1.1l=h7f8727e_0
   - packaging=21.0=pyhd8ed1ab_0
   - pandas=1.1.5=py36h284efc9_0
   - pandoc=2.14.2=h7f98852_0
@@ -218,7 +220,9 @@ dependencies:
   - prompt-toolkit=3.0.20=pyha770c72_0
   - pthread-stubs=0.4=h36c2ea0_1001
   - ptyprocess=0.7.0=pyhd3deb0d_0
+  - pybedtools=0.8.2=py36hb377018_1
   - pycparser=2.20=pyh9f0ad1d_2
+  - pyfaidx=0.6.2=pyh5e36f6f_0
   - pygments=2.10.0=pyhd8ed1ab_0
   - pymongo=3.12.0=py36hc4f0c31_0
   - pyopenssl=21.0.0=pyhd8ed1ab_0
