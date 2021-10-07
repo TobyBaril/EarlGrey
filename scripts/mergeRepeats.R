@@ -3,8 +3,6 @@ library(plyr)
 library(dplyr)
 library(magrittr)
 library(data.table)
-library(doMC)
-library(GenomicRanges)
 options(scipen = 100, stringsAsFactors = FALSE)
 
   #####
