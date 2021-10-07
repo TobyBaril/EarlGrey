@@ -391,7 +391,7 @@ calcDivRL()
     cd ${OUTDIR}/${species}_RepeatLandscape
     genome_size=$(sed -n '4p' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
     align_file=$(readlink -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.align)
-    ${SCRIPT_DIR}/calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
+    perl ${SCRIPT_DIR}/calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
     div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
 }
 
@@ -399,9 +399,9 @@ calcDivRL()
 mergeRep()
 {
     cd ${OUTDIR}/${species}_mergedRepeats/
-    ${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -c ~/Programs/repeatCraft/example/repeatcraft.cfg -t $ProcNum -b ${dict}
+    ${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
     mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
-    ${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -c ~/Programs/repeatCraft/example/repeatcraft.cfg -t $ProcNum -b ${dict}
+    ${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
 }
 
 # Subprocess pieChart
