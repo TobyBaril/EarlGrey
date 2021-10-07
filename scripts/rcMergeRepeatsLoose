@@ -35,7 +35,7 @@ ltrfinder()
 
 convert()
 {
-    perl ${SCRIPT_DIR}/rmOutToGFF3.pl $rmOut > $dir/${spe}.out.gff3;
+    rmOutToGFF3.pl $rmOut > $dir/${spe}.out.gff3;
     cat $dir/${spe}.out.gff3 | sed '1,2d; s/Target=/Target "Motif:/g' | awk '{OFS="\t"}{gsub(/$/,"\"", $10); print}' | sed "s/Target\t/Target /g; 1s/^/##gff-version 2\n##date xxxx-xx-xx\n/; s/\(.*\)\t/\1 /; s/\(.*\)\t/\1 /" > ${dir}/${spe}.out.gff2
     sed -i '/##sequence-region.*/d' ${dir}/${spe}.out.gff2
 }
