@@ -152,7 +152,7 @@ BEE2()
     mkdir ${OUTDIR}/${species}_ExtractAlign/trimal/ && cd ${OUTDIR}/${species}_ExtractAlign/trimal/
     parallel --jobs ${ProcNum} "trimal -in {} -gt 0.6 -fasta -out ${OUTDIR}/${species}_ExtractAlign/trimal/{/.}.trimal.fa" ::: ${OUTDIR}/${species}_ExtractAlign/mafft/*.mafft
     mkdir ${OUTDIR}/${species}_ExtractAlign/embossCons/ && cd ${OUTDIR}/${species}_ExtractAlign/embossCons/
-    parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity $(expr $(grep '>' {} | wc -l) / 3)" ::: ${OUTDIR}/${species}_ExtractAlign/trimal/*.trimal.fa
+    parallel --jobs ${ProcNum} "cons -sequence {} -outseq ${OUTDIR}/${species}_ExtractAlign/embossCons/{/.}_cons.fa -name {/.}  -plurality 3 -identity 3)" ::: ${OUTDIR}/${species}_ExtractAlign/trimal/*.trimal.fa
 }
 
 # Subprocess BEE3
