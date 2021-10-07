@@ -115,7 +115,6 @@ deNovo1()
 moveFiles()
 {
     mv ${OUTDIR}/${species}_Database/${species}-families.fa ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa
-    mv ${OUTDIR}/${species}_Database/${species}-families.stk ${OUTDIR}/${species}_RepeatModeler/${species}-families.stk
 }
 
 # Subprocess clusterDeNovo
