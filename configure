@@ -47,5 +47,5 @@ sleep 3
 echo "Remember to activate the earl grey conda environment before running earlGrey"
 sleep 3
 export PATH=$PATH:$(realpath .)
-echo "earlGrey is ready to use. To execute from any directory, add earlGrey to path..."
+echo "earlGrey is ready to use. To execute from any directory, add earlGrey to path by pasting the code (minus the square brackets) below..."
 echo '[export PATH=$PATH:$(realpath .)]'
