@@ -31,6 +31,7 @@ SCRIPT_DIR=$(realpath ./scripts/)
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./earlGrey
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/headSwap.sh
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/autoPie.sh
 chmod +x ${SCRIPT_DIR}/* > /dev/null 2>&1
 sleep 3
 echo "Path variables set"
