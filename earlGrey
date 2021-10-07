@@ -100,7 +100,8 @@ deNovo1()
 {
     cd ${OUTDIR}/${species}_RepeatModeler
     RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species}
-    cp ${OUTDIR}/${species}_Database/${species}-families.fa ${OUTDIR}/${species}_Database/${species}-families.stk ${OUTDIR}/${species}_RepeatModeler/
+    mv ${OUTDIR}/${species}_Database/${species}-families.fa ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa
+    mv ${OUTDIR}/${species}_Database/${species}-families.stk ${OUTDIR}/${species}_RepeatModeler/${species}-families.stk
     if [ ! -e ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa ]; then
         echo "ERROR: RepeatModeler Failed"
         exit 2
@@ -111,15 +112,15 @@ deNovo1()
 BEE1()
 {
     cd ${OUTDIR}/${species}_BLASTN/
-    blastn -query ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+    blastn -query ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa -subject ${genome} -out ${OUTDIR}/${species}_BLASTN/${species}_BLAST -evalue 1e-50 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
 }
  
 # Subprocess Format1
 Format1()
 {
-    cd ${OUTDIR}/${species}_RepeatModeler/RM*/
-    cp consensi.fa.classified consensi.fa.classified.no_slash
-    sed -i 's#/#___#g; s/#/__/g' consensi.fa.classified.no_slash
+    cd ${OUTDIR}/${species}_RepeatModeler/
+    cp ${species}-families.fa ${species}-families.fa.no_slash
+    sed -i 's#/#___#g; s/#/__/g' ${species}-families.fa.no_slash
 
     cd ${OUTDIR}/${species}_BLASTN/
     cp ${species}_BLAST ${species}_BLAST.no_slash
@@ -130,7 +131,7 @@ Format1()
 BEE2()
 {
     cd ${OUTDIR}/${species}_ExtractAlign
-    ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST.no_slash -l ${OUTDIR}/${species}_RepeatModeler/RM*/consensi.fa.classified.no_slash -lb $Flank -rb $Flank -n 20 -a n -t n -e n
+    ${SCRIPT_DIR}/extract_align.py -g ${genome} -b ${OUTDIR}/${species}_BLASTN/${species}_BLAST.no_slash -l ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa.no_slash -lb $Flank -rb $Flank -n 20 -a n -t n -e n
     mkdir ${OUTDIR}/${species}_ExtractAlign/mafft/ 
     parallel "mafft --auto {} > ${OUTDIR}/${species}_ExtractAlign/mafft/{/.}.mafft" ::: ${OUTDIR}/${species}_ExtractAlign/catTEfiles/*.fa 
     mkdir ${OUTDIR}/${species}_ExtractAlign/trimal/ && cd ${OUTDIR}/${species}_ExtractAlign/trimal/
