@@ -33,6 +33,7 @@ sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/headSwap.sh
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/autoPie.sh
 chmod +x ${SCRIPT_DIR}/* > /dev/null 2>&1
+chmod +x ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/ltr_finder
 sleep 3
 echo "Path variables set"
 sleep 3
