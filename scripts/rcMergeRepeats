@@ -47,7 +47,7 @@ repeatcraft()
 {
     mkdir ${dir}/${spe}RepeatCraft/
     sed -i "s#ltr_finder_gff:.*#ltr_finder_gff: ${dir}/${spe}LtrFinder/$(basename ${genome}).finder.combine.gff3 #g" ${SCRIPT_DIR}/repeatcraft/example/repeatcraft.cfg
-    ${SCRIPT_DIR}/repeatcraft/repeatcraft.py -r ${dir}/${spe}.out.gff2 -u $rmOut -c ${SCRIPT_DIR}/repeatcraft/example/repeatcraft.cfg -o ${dir}/${spe} -m strict
+    ${SCRIPT_DIR}/repeatcraft/repeatcraft.py -r ${dir}/${spe}.out.gff2 -u $rmOut -c ${SCRIPT_DIR}/repeatCraft/example/repeatcraft.cfg -o ${dir}/${spe} -m strict
 }
 
 ##### Subprocess mergeRepeats
