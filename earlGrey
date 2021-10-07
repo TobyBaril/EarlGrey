@@ -506,10 +506,13 @@ Checks
 stage="Making Directories"
 runningCow
 makeDirectory
+# Start Logs
+exec > >(tee "${OUTDIR}/${species}EarlGrey.log") 2>&1
 stage="Cleaning Genome"
 runningCow
 prepGenome
 sleep 1
+
 
 # Step 2
 
