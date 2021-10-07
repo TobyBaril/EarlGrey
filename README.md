@@ -11,11 +11,11 @@ NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and
 
 ## Earl Grey Installation and Configuration
 
-If you do not currently have RepeatMasker and RepeatModeler installed, please scroll down for instructions. If you do have them installed, ensure the executables are in your PATH environment, including the RepeatMasker/util/ directory!
+If you do not currently have RepeatMasker and RepeatModeler installed, please scroll down for instructions. If you do have them installed, **ensure the executables are in your PATH environment, including the RepeatMasker/util/ directory!**
 
 All of the scripts and associated modules are contained within this github repository. Earl Grey runs inside an anaconda environment to ensure all required packages are present and are the correct version. Therefore to run Earl Grey, you will require anaconda to be installed on your system. 
 
-If anaconda is NOT installed on your system, please install it following these instructions:
+**If anaconda is NOT installed on your system, please install it following these instructions:**
 
 ```
 # Change to /tmp directory as we won't need the script after running it
@@ -34,6 +34,8 @@ source ~/.bashrc
 
 # If successful, you should now see (base) on the left of your username on the command line
 ```
+
+**Now that Anaconda is installed, we can install Earl Grey**
 
 Clone the Earl Grey github repo
 
