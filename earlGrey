@@ -391,7 +391,7 @@ calcDivRL()
     cd ${OUTDIR}/${species}_RepeatLandscape
     genome_size=$(sed -n '4p' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
     align_file=$(readlink -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.align)
-    perl ${SCRIPT_DIR}/calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
+    calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
     div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
 }
 
