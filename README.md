@@ -107,6 +107,7 @@ Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains 
 We recommend that you download Dfam 3.3 as a minimum before using Earl Grey. The Dfam library is large - this could take a while!
 
 We recommend downloading Dfam into your home directory (~/) or a subdirectory of home
+
 Change directory to home
 
 ```cd ~/```
