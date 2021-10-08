@@ -9,9 +9,9 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 Before using Earl Grey, please ensure RepeatMasker (version 4.1.2) and RepeatModeler (version 2.0.2) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
 NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo priveleges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
 
-## Earl Grey Installation and Configuration
+## Earl Grey Installation and Configuration (If you already have RepeatMasker and RepeatModeler)
 
-If you do not currently have RepeatMasker and RepeatModeler installed, the instructions are provided further down this page. Please install RepeatMasker and RepeatModeler first.  If you do have them installed, **ensure the executables are in your PATH environment, including the RepeatMasker/util/ directory!**
+If you do not currently have RepeatMasker and RepeatModeler installed, the instructions are provided further down this page. If you do have them installed, **ensure the executables are in your PATH environment, including the RepeatMasker/util/ directory!**
 
 All of the scripts and associated modules are contained within this github repository. Earl Grey runs inside an anaconda environment to ensure all required packages are present and are the correct version. Therefore to run Earl Grey, you will require anaconda to be installed on your system. 
 
@@ -63,6 +63,35 @@ earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -
 For suggestions or questions, please use the discussion and issues functions in github.
 
 Thank you for trying Earl Grey!
+
+
+## Earl Grey Installation and Configuration (If you DO NOT have RepeatMasker and RepeatModeler)
+
+These instructions will guide you through configuring all required programs and scripts to run Earl Grey.
+
+All of the scripts and associated modules are contained within this github repository. Earl Grey runs inside an anaconda environment to ensure all required packages are present and are the correct version. Therefore to run Earl Grey, you will require anaconda to be installed on your system. 
+
+**If anaconda is NOT installed on your system, please install it following these instructions:**
+
+```
+# Change to /tmp directory as we won't need the script after running it
+cd /tmp
+
+# Download the anaconda installation script
+curl https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh --output anaconda.sh
+
+# Run the script to install anaconda
+bash anaconda.sh
+# answer yes when asked, and install anaconda3 in the specified location (recommended) unless you want it to be installed elsewhere.
+# When asked "Do you wish the installer to initialize Anaconda3 by running conda init?", answer "yes" for ease of use.
+# Activate conda by refreshing terminal session
+
+source ~/.bashrc
+
+# If successful, you should now see (base) on the left of your username on the command line
+```
+
+**Now that Anaconda is installed, we can install Earl Grey**
 
 ### To install RepeatMasker
 
@@ -125,13 +154,7 @@ NOTE, a warning might come up that this will overwrite the existing file, allow 
 
 ```mv Dfam.h5 /usr/local/RepeatMasker/Libraries/```
 
-Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
-
-```cd /usr/local/RepeatMasker```
-
-```sudo perl ./configure```
-
-NOTE: You may get an error during the configuration if the h5py module is not installed. If this is the case, follow the Earl Grey installation instructions above and activate the earlGrey conda environment before configuring RepeatMasker
+DO NOT configure RepeatMasker just yet...
 
 Add RepeatMasker and util directory to your path environment
 
@@ -225,6 +248,36 @@ Change directory to /usr/local, and extract the RepeatModeler package. This migh
 
 ```sudo tar -zxvf RepeatModeler-2.0.2a.tar.gz```
 
+DO NOT configure RepeatModeler just yet...
+
+Add RepeatModeler directory to your path environment
+
+```echo 'export PATH=$PATH:/usr/local/RepeatModeler-2.0.2a/' >> ~/.bashrc```
+
+### To Install Earl Grey and Configure all Programs
+
+Clone the Earl Grey github repo
+
+```
+# Clone into a home directory, or somewhere you want to install Earl Grey
+git clone https://github.com/TobyBaril/EarlGrey
+```
+
+Enter the Earl Grey directory and configure the program
+
+```
+cd ./EarlGrey
+chmod +x ./configure
+./configure
+```
+
+Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
+
+```
+cd /usr/local/RepeatMasker
+sudo perl ./configure
+```
+
 Time to configure RepeatModeler! You need to enter the paths to lots of the directories of programs we have installed, please note them down before running the configuration script!!
 
 ```
@@ -232,7 +285,10 @@ cd /usr/local/RepeatModeler-2.0.2a/
 sudo perl ./configure
 ```
 
-Add RepeatModeler directory to your path environment
+Once this is complete, remember to activate the earlGrey conda environment before attempting to run the Earl Grey pipeline
 
-```echo 'export PATH=$PATH:/usr/local/RepeatModeler-2.0.2a/' >> ~/.bashrc```
+```
+conda activate earlGrey
 
+earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -t threads
+```
