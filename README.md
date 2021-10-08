@@ -131,6 +131,8 @@ Now to finally configure RepeatMasker! - Run these lines and then follow the on-
 
 ```sudo perl ./configure```
 
+NOTE: You may get an error during the configuration if the h5py module is not installed. If this is the case, follow the Earl Grey installation instructions above and activate the earlGrey conda environment before configuring RepeatMasker
+
 Add RepeatMasker and util directory to your path environment
 
 ```echo 'export PATH=$PATH:/usr/local/RepeatMasker:/usr/local/RepeatMasker/util/' >> ~/.bashrc```
