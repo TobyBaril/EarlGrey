@@ -271,17 +271,37 @@ chmod +x ./configure
 ./configure
 ```
 
+Activate the conda environment
+
+```
+conda activate earlGrey
+```
+
 Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
 
 ```
 cd /usr/local/RepeatMasker
+# check which perl interpreter you should use - COPY THIS
+which perl
+# replace perl in the below command with the path printed from the command above and use this as your perl interpreter
 sudo perl ./configure
 ```
 
-Time to configure RepeatModeler! You need to enter the paths to lots of the directories of programs we have installed, please note them down before running the configuration script!!
+NOTE: some users might get a warning that h5py is not installed when trying to configure RepeatMasker. If this is the case, run the following code before trying again
+
+```
+sudo apt install python3-pip
+sudo pip install h5py
+```
+
+Time to configure RepeatModeler! You need to enter the paths to lots of the directories of programs we have installed, please note them down before running the configuration script!! 
+
 
 ```
 cd /usr/local/RepeatModeler-2.0.2a/
+# check which perl interpreter you should use - COPY THIS
+which perl
+# replace perl in the below command with the path printed from the command above and use this as your perl interpreter
 sudo perl ./configure
 ```
 
