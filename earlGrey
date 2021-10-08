@@ -465,7 +465,7 @@ Checks()
 	echo "Error: No RepeatMasker Species or Custom Repeat Library Specified"; exit 2
     fi
 
-    if [ -z "$num" -a "$num" -lt 3 -a "$num" -gt 10 ]; then
+    if [ -z "$num" ] || [ -a "$num" -lt 3 -a "$num" -gt 10 ]; then
         num=5; echo "De Novo Sequences Will Be Extended Through $num Iterations"
     fi
     
