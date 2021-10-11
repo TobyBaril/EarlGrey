@@ -40,7 +40,7 @@ sleep 3
 
 # Extract tRNAdb
 echo "Extracting zip archives"
-tar -zxf ./scripts/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz
+tar -zxf ./scripts/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory ./scripts/bin/LTR_FINDER.x86_64-1.0.7/
 echo "Extracted required archives"
 sleep 3
 
