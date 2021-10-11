@@ -136,7 +136,7 @@ Change directory to /usr/local, and extract the RepeatMasker package. This might
 ```sudo tar -zxvf RepeatMasker-4.1.2-p1.tar.gz```
 
 Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.3 and RepBase. 
-Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase. 
+Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase, although inclusion of RepBase can improve classification of repeats by RepeatModeler. If you have access to this database, please include it in your configuration of RepeatMasker. 
 We recommend that you download Dfam 3.3 as a minimum before using Earl Grey. The Dfam library is large - this could take a while!
 
 We recommend downloading Dfam into your home directory (~/) or a subdirectory of home
