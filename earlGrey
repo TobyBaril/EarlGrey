@@ -480,6 +480,12 @@ Checks()
     if [ ! -d "$SCRIPT_DIR" ]; then
 	echo "ERROR: Script directory variable not set, please run the configure script in the Earl Grey directory before attempting to run Earl Grey"; exit 1
     fi
+    
+    if [ "$CONDA_DEFAULT_ENV" == "earlGrey" ]; then
+    	echo "Conda environment is active"
+    else
+    	echo "Conda environment is inactive, please activate conda environment before using Earl Grey"; exit 1
+    fi
 }
 
 # Main #
