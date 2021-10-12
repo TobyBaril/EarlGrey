@@ -129,7 +129,7 @@ plot <- ggplot(piv2[! piv2$classif %like% "Other",], aes(x = Divergence, y = pro
   geom_bar(stat = "identity") +
   ylim(0, ylimit) +
   scale_x_reverse() +
-  scale_fill_manual(values = col)) +
+  scale_fill_manual(values = col) +
   theme_classic() +
   theme(strip.background = element_blank(), strip.text.y = element_text(face = "italic", angle = 0),
         axis.text.y = element_text(size = 8)) +
