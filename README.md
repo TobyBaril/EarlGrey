@@ -281,21 +281,21 @@ Activate the conda environment
 conda activate earlGrey
 ```
 
-Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
-
-```
-cd /usr/local/RepeatMasker
-# check which perl interpreter you should use - COPY THIS
-which perl
-# replace perl in the below command with the path printed from the command above and use this as your perl interpreter
-sudo perl ./configure
-```
-
-NOTE: some users might get a warning that h5py is not installed when trying to configure RepeatMasker. If this is the case, run the following code before trying again
+For configuring RepeatMasker with sudo, h5py is required in the root path. The easiest way to do this is to run the following two lines:
 
 ```
 sudo apt install python3-pip
 sudo pip install h5py
+```
+
+Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
+
+```
+cd /usr/local/RepeatMasker
+# check which perl interpreter you should use 
+which perl
+# replace [perl] in the below command with the path printed from the command above and use this as your perl interpreter (this should be the anaconda perl interpreter)
+sudo [perl] ./configure
 ```
 
 Time to configure RepeatModeler! You need to enter the paths to lots of the directories of programs we have installed, please note them down before running the configuration script!! 
@@ -381,8 +381,9 @@ tar -zxvf RepeatMasker-4.1.2-p1.tar.gz
 ```
 
 Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.3 and RepBase. 
-Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase. 
+Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase, although inclusion of RepBase can improve classification of repeats by RepeatModeler. If you have access to this database, please include it in your configuration of RepeatMasker. 
 We recommend that you download Dfam 3.3 as a minimum before using Earl Grey. The Dfam library is large - this could take a while!
+
 
 Change directory to RepeatMasker Libraries
 
