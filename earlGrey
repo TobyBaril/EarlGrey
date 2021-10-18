@@ -75,8 +75,8 @@ prepGenome()
 # Subprocess getRepeatMaskerFasta
 getRepeatMaskerFasta()
 {
-    famdb.py -i $(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5 families -f fasta_name --include-class-in-name -a -d arthropoda > ${OUTDIR}/${RepSpec}.RepeatMasker.lib
-    RepSub=${OUTDIR}/${RepSpec}.RepeatMasker.lib
+    famdb.py -i $(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5 families -f fasta_name --include-class-in-name -a -d arthropoda > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+    RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 }
 
 # Subprocess firstMask
@@ -375,9 +375,8 @@ BClass()
 appLib()
 {
     cd ${OUTDIR}/${species}_Curated_Library
-    cp $RepSub RepBase_formatted.fasta
     sed -i 's#___#/#g; s/__/#/g' $latestFile
-    cat ${OUTDIR}/${species}_Curated_Library/RepBase_formatted.fasta $latestFile > ${species}_combined_library.fasta
+    cat $RepSub $latestFile > ${species}_combined_library.fasta
 }
 
 
