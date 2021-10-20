@@ -4,6 +4,10 @@
 
 Earl Grey is a full-automated transposable element (TE) annotation pipeline, leveraging the most widely-used tools and combining these with a consensus elongation process to better define _de novo_ consensus sequences when annotating new genome assemblies.
 
+# References
+
+This pipeline has been designed to be used and shared openly by the community. All we ask is that you reference this github repository if you make use of this pipeline in your projects (github.com/TobyBaril/EarlGrey).
+
 # Installation
 
 Before using Earl Grey, please ensure RepeatMasker (version 4.1.2) and RepeatModeler (version 2.0.2) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
