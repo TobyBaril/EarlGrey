@@ -120,10 +120,6 @@ If you are not certain of the full path, please run the following command
 
 ```realpath ./rmblast-2.11.0/bin/```
 
-Download TRF from https://tandem.bu.edu/trf/trf.download.html - In most cases the linux 64-bit will be approprite, but please check and download the version applicable to your system. Once TRF has been downloaded, make a note of the full path to the trf409 file. If you are not certain of the full path, please run the following command
-
-```realpath ./trf409*```
-
 Download RepeatMasker (this will download it to the current directory)
 
 ```wget http://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.2-p1.tar.gz```
@@ -292,6 +288,10 @@ sudo apt install python3-pip
 sudo pip install h5py
 ```
 
+The linux64 version of TRF is included in the modules directory of Earl Grey. Make a note of the full path to this file as this will be needed in the RepeatMasker configuration.
+
+```realpath ./modules/trf409*```
+
 Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
 
 ```
@@ -369,10 +369,6 @@ Make a note of the full path to rmblast-2.11.0/bin/ as you will need this in the
 If you are not certain of the full path, please run the following command
 
 ```realpath ./rmblast-2.11.0/bin/```
-
-Download TRF from https://tandem.bu.edu/trf/trf.download.html - In most cases the linux 64-bit will be approprite, but please check and download the version applicable to your system. Once TRF has been downloaded, make a note of the full path to the trf409 file. If you are not certain of the full path, please run the following command
-
-```realpath ./trf409*```
 
 Download RepeatMasker (this will download it to the current directory)
 
@@ -519,6 +515,10 @@ Activate the conda environment
 ```
 conda activate earlGrey
 ```
+
+The linux64 version of TRF is included in the modules directory of Earl Grey. Make a note of the full path to this file as this will be needed in the RepeatMasker configuration.
+
+```realpath ./modules/trf409*```
 
 Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
 
