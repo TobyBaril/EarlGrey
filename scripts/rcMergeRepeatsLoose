@@ -64,9 +64,9 @@ mergeRepeats()
 scafDeedPoll()
 {
     cp ${dir}/${spe}.filteredRepeats.bed ${dir}/${spe}.filteredRepeats.bed.bak
-    ${SCRIPT_DIR}/backSwap.py ${dir}/${spe}.filteredRepeats.bed ${dict} ${dir}/${spe}.filteredRepeats.bed.2
+    python ${SCRIPT_DIR}/backSwap.py ${dir}/${spe}.filteredRepeats.bed ${dict} ${dir}/${spe}.filteredRepeats.bed.2
     mv ${dir}/${spe}.filteredRepeats.bed{.2,}
-    ${SCRIPT_DIR}/backSwapGFF.py ${dir}/${spe}.rmerge.gff.filtered ${dict} ${dir}/${spe}.rmerge.gff.filtered.2
+    python ${SCRIPT_DIR}/backSwapGFF.py ${dir}/${spe}.rmerge.gff.filtered ${dict} ${dir}/${spe}.rmerge.gff.filtered.2
     mv ${dir}/${spe}.rmerge.gff.filtered{.2,}
     Rscript ${SCRIPT_DIR}/makeGff.R ${dir}/${spe}.filteredRepeats.bed ${dir}/${spe}.rmerge.gff.filtered ${dir}/${spe}.filteredRepeats.gff
 }
