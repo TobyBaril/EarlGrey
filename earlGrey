@@ -94,6 +94,9 @@ firstCustom()
 {
     cd ${OUTDIR}/${species}_RepeatMasker
     RepeatMasker -lib $RepSub -nolow -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
+    if [ ! -e "${OUTDIR}/${species}_RepeatMasker/*.masked" ]; then
+    	echo "ERROR: RepeatMasker failed, please check logs and custom repeat FASTA file"; exit 2
+    fi
 }
 
 # Subprocess buildDB
