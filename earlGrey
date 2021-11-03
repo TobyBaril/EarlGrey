@@ -84,7 +84,7 @@ firstMask()
 {
     cd ${OUTDIR}/${species}_RepeatMasker
     RepeatMasker -species $RepSpec -nolow -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
-    if [ ! -e "${OUTDIR}/${species}_RepeatMasker/*.masked" ]; then
+    if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
     	echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid species search term, if issue persists please use NCBI Taxids (E.G Drosophila is replaced with 7125)"; exit 2
     fi
 }
