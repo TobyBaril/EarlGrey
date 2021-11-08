@@ -14,6 +14,12 @@ This pipeline has been designed to be used and shared openly by the community.
 
 Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo [doi:10.5281/zenodo.5654616](https://doi.org/10.5281/zenodo.5654616)
 
+### This pipeline makes use of scripts from:
+
+[Bioinfo Tools (David Ray)](https://github.com/davidaray/bioinfo_tools)
+
+[RepeatCraft](https://github.com/niccw/repeatcraftp)
+
 ### Along with open-source software leveraged by this pipeline:
 
 Platt RN, Blanco-Berdugo L, Ray DA. Accurate transposable element annotation is vital when analyzing new genome assemblies. Genome Biol Evol 2016;8:403–10. https://doi.org/10.1093/gbe/evw009.
