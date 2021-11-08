@@ -16,6 +16,8 @@ Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo [do
 
 ### Along with open-source software leveraged by this pipeline:
 
+Platt RN, Blanco-Berdugo L, Ray DA. Accurate transposable element annotation is vital when analyzing new genome assemblies. Genome Biol Evol 2016;8:403–10. https://doi.org/10.1093/gbe/evw009.
+
 Smit AFA, Hubley RR, Green PR. RepeatMasker Open-4.0. Http://RepeatmaskerOrg 2013.
 
 Smit A, Hubley R. RepeatModeler Open-1.0. Http://RepeatmaskerOrg 2015.
