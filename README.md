@@ -18,7 +18,7 @@ Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo [do
 
 [Bioinfo Tools (David Ray)](https://github.com/davidaray/bioinfo_tools) - which provides the extraction script for the automated version of the "BLAST, Extract, Extend" desrcibed in: Platt RN, Blanco-Berdugo L, Ray DA. Accurate transposable element annotation is vital when analyzing new genome assemblies. Genome Biol Evol 2016;8:403–10. https://doi.org/10.1093/gbe/evw009.
 
-[RepeatCraft](https://github.com/niccw/repeatcraftp)
+[RepeatCraft](https://github.com/niccw/repeatcraftp) - Wong WY, Simakov O. RepeatCraft: a meta-pipeline for repetitive element de-fragmentation and annotation. Bioinformatics 2018;35:1051–2. https://doi.org/10.1093/bioinformatics/bty745.
 
 ### Please also cite the following open source software utilised by this pipeline:
 
@@ -41,8 +41,6 @@ Rice P, Longden L, Bleasby A. EMBOSS: The European Molecular Biology Open Softwa
 Xu Z, Wang H. LTR_FINDER: an efficient tool for the prediction of full-length LTR retrotransposons. Nucleic Acids Res 2007;35:W265–8. https://doi.org/10.1093/nar/gkm286.
 
 Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid identification of long terminal repeat retrotransposons. BioRxiv 2019:2–6.
-
-Wong WY, Simakov O. RepeatCraft: a meta-pipeline for repetitive element de-fragmentation and annotation. Bioinformatics 2018;35:1051–2. https://doi.org/10.1093/bioinformatics/bty745.
 
 Rubino F, Creevey CJ. MGkit: Metagenomic framework for the study of microbial communities 2014.
 
