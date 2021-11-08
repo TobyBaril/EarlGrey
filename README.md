@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/412126708.svg)](https://zenodo.org/badge/latestdoi/412126708)
 
-[![Github All Releases](https://img.shields.io/github/downloads/TobyBaril/EarlGrey/total.svg?style=social&logo=github&label=Download)](https://github.com/TobyBaril/EarlGrey/releases)
+![GitHub all releases](https://img.shields.io/github/downloads/TobyBaril/EarlGrey/total?style=for-the-badge)
 
 # Earl Grey
 
