@@ -11,6 +11,7 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 This pipeline has been designed to be used and shared openly by the community. Please cite using the DOI flag above.
 
 Citation:
+
 Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo doi:10.5281/zenodo.5654616.
 
 # Installation
