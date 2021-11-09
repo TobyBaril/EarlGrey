@@ -6,6 +6,98 @@
 
 Earl Grey is a full-automated transposable element (TE) annotation pipeline, leveraging the most widely-used tools and combining these with a consensus elongation process to better define _de novo_ consensus sequences when annotating new genome assemblies.
 
+# Contents
+
+[Example Run](#example)
+
+[References and Acknowledgements](#references-and-acknowledgements)
+
+[Installation](#installation)
+
+
+<!-- toc -->
+
+# Example
+
+Given an input genome, Earl Grey will run through numerous steps to identify and mask transposable elements (TEs). We recommend running earlGrey within a tmux or screen session, so that you can log off and leave Earl Grey running.
+
+```
+# remember to activate the conda environment before running
+
+conda activate earlGrey
+
+# run earl grey
+
+earlGrey -g [genome.fasta] -s [speciesName] -r [repeatmasker-search-term] -o [outputDirectory] -t [numberThreads]
+
+# e.g
+
+earlGrey -g myzusPersicae.fasta -s myzusPersicae -r arthropoda -o ./earlGreyOutputs -t 8
+
+```
+
+The runtime of Earl Grey will depend on the repeat content of your input genome. Once finished, you will notice that a number of directories have been created by Earl Grey. The most important results are found within the "summaryFiles" folder, however intermediate results are kept in case you wish to use alignments for further manual curation or investigation, for example. 
+
+Directories created by earl grey:
+
+- [speciesName]EarlGrey/
+  * [speciesName]_RepeatMasker/
+    + Results of the initial RepeatMasker run used to mask previously characterised TEs
+  * [speciesName]_Database/
+    + Database created from the masked genome output of the initial RepeatMasker run. Required for RepeatModeler.
+  * [speciesName]_RepeatModeler/
+    + Results of the RepeatModeler _de novo_ TE identification step
+  * [speciesName]_BLASTN/
+    + Results of the first BLASTn search of _de novo_ TEs against the input genome (Step 1 of the "BLAST, Extract, Extend" process)
+  * [speciesName]_ExtractAlign/
+    + Results of all iterations of the "BLAST, Extract, Extend" process
+  * [speciesName]_Masked_de_novo_Repeats/
+    + Intermediate results for the reclassification of _de novo_ TEs following the iterative "BLAST, Extract, Extend" process
+  * [speciesName]_Curated_Library/
+    + Contains the _de novo_ repeat libraries generated with each iteration of the "BLAST, Extract, Extend" process, the library of known repeats used by RepeatMasker, and a combined library containing both sets of repeats (used in the final RepeatMasker run)
+  * [speciesName]_RepeatMasker_Against_Custom_Library/
+    + Results of the ReepatMasker run using known repeats AND _de novo_ identified repeats
+  * [speciesName]_RepeatLandscape/
+    + Intermediate files for the generation of RepeatLandscapes (RepeatMasker .divsum files)
+  * [speciesName]_mergedRepeats/
+    + Intermediate files and results of TE defragmentation step using RepeatCraft.
+  * [speciesName]_summaryFiles/
+    + Results and plots from Earl Grey:
+    + TE annotations in GFF3 and BED format
+    + Repeat Landscape showing TE activity (PDF)
+    + Pie chart of genome repeat content (PDF)
+    + _de novo_ repeat library in FASTA format
+    + Combined repeat library in FASTA format (used by final repeat mask)
+  * [speciesName]_clusTErs/
+    + BED file containing coordinates of TE clusters across genome scaffolds
+
+### Example Outputs (NOTE: example data has been used here):
+
+- Pie chart summarising TE content in input genome
+
+![image](https://user-images.githubusercontent.com/46785187/140897482-fc80c30a-3e5f-4bf6-99b0-0f18b11b33d1.png)
+
+- RepeatLandscape summarising relative TE activity (recent activity towards the RHS)
+
+![image](https://user-images.githubusercontent.com/46785187/140897874-5a2cbc9b-808e-4f51-b781-3b3a22b1b223.png)
+
+- TE annotations
+
+```
+# BED format
+NC_045808.1     4964941 4965925 LINE/Penelope   5073    +
+NC_045808.1     7291353 7291525 LINE/L2 1279    +
+NC_045808.1     8922477 8923791 DNA/TcMar-Tc1   11957   +
+NC_045808.1     9848807 9849591 LTR/Copia       734     -
+
+
+# GFF3 format
+NC_045808.1     RepeatMasker    LINE/Penelope   4964942 4965925 5073    +       .       ID="RND-1_FAMILY-48";Tend="2677";Tstart="1700";shortTE="F";uid="cb016329-11ac-492a-b11c-db2dc50e9d89"
+NC_045808.1     RepeatMasker    LINE/L2 7291354 7291525 1279    +       .       ID="RND-5_FAMILY-151";Tend="1398";Tstart="1226";shortTE="F";uid="b1ffaec9-e362-4ffe-89c2-5830cea00ab7"
+NC_045808.1     RepeatMasker    DNA/TcMar-Tc1   8922478 8923791 11957   +       .       ID="RND-1_FAMILY-124";Tend="3292";Tstart="1979";shortTE="F";uid="1e507e68-39f3-45f0-b62b-65bd9b7919c8"
+NC_045808.1     RepeatMasker    LTR/Copia       9848808 9849591 734     -       .       ID="COPIA-3_BTA-I";Tend="2057";Tstart="1246";shortTE="F";uid="2a786d4d-4d0d-4013-824e-92f97c60ecfe"
+```
+
 # References and Acknowledgements
 
 This pipeline has been designed to be used and shared openly by the community.
@@ -43,6 +135,7 @@ Xu Z, Wang H. LTR_FINDER: an efficient tool for the prediction of full-length LT
 Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid identification of long terminal repeat retrotransposons. BioRxiv 2019:2–6.
 
 Rubino F, Creevey CJ. MGkit: Metagenomic framework for the study of microbial communities 2014.
+
 
 # Installation
 
