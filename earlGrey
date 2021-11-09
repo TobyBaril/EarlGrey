@@ -47,7 +47,6 @@ makeDirectory()
     mkdir -p $OUTDIR/${species}_ExtractAlign/
     mkdir -p $OUTDIR/${species}_Curated_Library/
     mkdir -p $OUTDIR/${species}_Masked_de_novo_Repeats/
-    mkdir -p $OUTDIR/${species}_Library_Filtering/
     mkdir -p $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
     mkdir -p $OUTDIR/${species}_RepeatLandscape/
     mkdir -p $OUTDIR/${species}_mergedRepeats/
