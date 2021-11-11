@@ -111,8 +111,16 @@ deNovo1()
     cd ${OUTDIR}/${species}_RepeatModeler
     RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species}
     if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
-        echo "ERROR: RepeatModeler Failed"
-        exit 2
+        echo "ERROR: RepeatModeler Failed, Retrying with limit set as Round 5"
+        RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} -genomeSampleSizeMax 81000000
+	if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
+		echo "ERROR: RepeatModeler Failed, Retrying with limit set as Round 4"
+		RepeatModeler -engine ncbi -pa ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} -genomeSampleSizeMax 27000000
+		if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
+			echo "ERROR: RepeatModeler Failed"
+			exit 2
+		fi
+	fi
     fi
 }
 
