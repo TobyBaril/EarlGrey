@@ -81,7 +81,7 @@ Directories created by earl grey:
 
 ![image](https://user-images.githubusercontent.com/46785187/140897874-5a2cbc9b-808e-4f51-b781-3b3a22b1b223.png)
 
-- TE annotations
+- TE annotations - These are in standard genomic information formats to be compatible with downstream analyses.
 
 ```
 # BED format
