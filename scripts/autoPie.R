@@ -13,9 +13,10 @@ options(scipen = 100, stringsAsFactors = FALSE)
 args <- commandArgs()
 print(args)
 inBed <- args[6]
-gen <- args[7]
-savePie <- args[8]
-saveTab <- args[9]
+inGff <- args[7]
+gen <- args[8]
+savePie <- args[9]
+saveTab <- args[10]
 ## bed file
 ## genome size
 ## pieName
@@ -24,12 +25,14 @@ saveTab <- args[9]
 
 #inBed <- "~/projects/butterfly/importantFiles/filterRep/brenthisIno.filteredRepeats.bed"
 input <- read.table(inBed, header = FALSE, sep = "\t")
+input2 <- read.table(inGff, header = FALSE, sep = "\t")
 gen <- as.numeric(gen)
 #gen <- 406860652
 
 # set colnames
 
 colnames(input) <- c("scaf", "start", "end", "classif", "score", "strand")
+colnames(input2) <- c("scaf", "method", "classif", "start", "end", "score", "strand", "dot", "attributes")
 
 # simple classification
 
@@ -42,6 +45,17 @@ input$tclassif <- gsub("^SINE.*", "SINE", input$tclassif)
 input$tclassif <- gsub("^LTR.*", "LTR", input$tclassif)
 input$tclassif <- gsub("^Unknown.*|Retroposon.*|Unspecified.*", "Unclassified", input$tclassif)
 input$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*", "Other (Simple Repeat, Microsatellite, RNA)", input$tclassif)
+
+input2$tclassif <- input2$classif
+input2$tclassif <- gsub("^DNA.*", "DNA", input2$tclassif)
+input2$tclassif <- gsub("^RC.*", "Rolling Circle", input2$tclassif)
+input2$tclassif <- gsub(".*Penelope", "Penelope", input2$tclassif)
+input2$tclassif <- gsub("^LINE.*", "LINE", input2$tclassif)
+input2$tclassif <- gsub("^SINE.*", "SINE", input2$tclassif)
+input2$tclassif <- gsub("^LTR.*", "LTR", input2$tclassif)
+input2$tclassif <- gsub("^Unknown.*|Retroposon.*|Unspecified.*", "Unclassified", input2$tclassif)
+input2$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*", "Other (Simple Repeat, Microsatellite, RNA)", input2$tclassif)
+
 
 # set colours
 
@@ -118,5 +132,11 @@ ggsave(savePie,
        units = "mm",
        dpi = 300,
        limitsize = FALSE)
+
+# add number of classifications for each of the main (ie how many families)
+
+input2$family <- gsub(";.*", "", input2$attributes)
+classCount <- input2 %>% group_by(tclassif, family) %>% tally(name = "Number_of_Copies") %>% group_by(tclassif) %>% tally(name = "Number_of_Distinct_Classifications")
+pieSum <- merge(pieSum, classCount)
 
 write.table(pieSum, saveTab, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
