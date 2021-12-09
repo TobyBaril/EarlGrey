@@ -23,11 +23,9 @@ saveTab <- args[10]
 
 # read table
 
-#inBed <- "~/projects/butterfly/importantFiles/filterRep/brenthisIno.filteredRepeats.bed"
 input <- read.table(inBed, header = FALSE, sep = "\t")
 input2 <- read.table(inGff, header = FALSE, sep = "\t")
 gen <- as.numeric(gen)
-#gen <- 406860652
 
 # set colnames
 
