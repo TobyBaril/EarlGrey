@@ -111,12 +111,12 @@ pieSum$tclassif %<>% as.factor() %>% ordered(levels = c("DNA",
 
 # get proportions
 
-pieSum$percentage <- pieSum$cov / gen
+pieSum$proportion <- pieSum$cov / gen
 pieSum$gen <- gen
 
 # plot pie
 
-plot <- ggplot(pieSum, aes(x = as.numeric(gen/2), y = percentage, fill = tclassif, width = as.numeric(gen))) +
+plot <- ggplot(pieSum, aes(x = as.numeric(gen/2), y = proportion, fill = tclassif, width = as.numeric(gen))) +
         geom_bar(stat = "identity", position = "fill") +
         coord_polar("y", start = 0) +
         scale_fill_manual(values = col) +
