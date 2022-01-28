@@ -133,7 +133,7 @@ moveFiles()
 # Subprocess clusterDeNovo
 clusterDeNovo()
 {
-    cd-hit-est -n 10 -c 0.95 -r 1 -i ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa -o ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa.filtered
+    cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa -o ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa.filtered
 }
 
 # Subprocess BEE1
@@ -369,6 +369,13 @@ Iterations()
     
 }
 
+# Subprocess clusterDeNovo
+clusterDeNovoPost()
+{
+    cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clustered.fa
+    latestFile=$(latestFile}.clustered.fa
+}
+
 # Subprocess BClass
 BClass()
 {
@@ -581,35 +588,55 @@ else
 	sleep 1
 fi
 
-# Step 4
-stage="BLASTing, Extracting, Extending for $num Iterations"
-runningCow
-BEE1
-Format1
-BEE2
-BEE3
-Iterations
-sleep 1
-
-# Stage 5
-stage="Building Species-Specific Library"
-runningCow
-BClass
-appLib
-sleep 1
+# Step 4 and 5
+if [ ! -f ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta ]; then
+        stage="BLASTing, Extracting, Extending for $num Iterations"
+        runningCow
+        BEE1
+        Format1
+        BEE2
+        BEE3
+        Iterations
+        sleep 1
+        stage="Building Species-Specific Library"
+        runningCow
+	clusterDeNovoPost
+        BClass
+        appLib
+        sleep 1
+else
+        stage="BEE already completed, skipping..."
+        runningCow
+        sleep 1
+fi
 
 # Stage 6
-stage="Identifying Repeats Using Species-Specific Library"
-runningCow
-novoMask
-calcDivRL
-sleep 1
+if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
+        stage="Identifying Repeats Using Species-Specific Library"
+        runningCow
+        novoMask
+        calcDivRL
+        sleep 1
+else
+        stage="Final masking already complete, skipping..."
+        runningCow
+        div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
+        genome_size=$(sed -n '4p' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
+        sleep 1
+fi
 
 # Stage 7
-stage="Running LTR_Finder and Defragmenting Repeats"
-runningCow
-mergeRep
-sleep 1
+if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ]; then
+        stage="Running LTR_Finder and Defragmenting Repeats"
+        runningCow
+        mergeRep
+        sleep 1
+else
+        stage="Repeats already defragmented, skipping..."
+        runningCow
+        sleep 1
+fi
+
 
 # Stage 8
 stage="Generating Summary Plots"
