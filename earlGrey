@@ -373,7 +373,7 @@ Iterations()
 clusterDeNovoPost()
 {
     cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clustered.fa
-    latestFile=$(latestFile}.clustered.fa
+    latestFile=${latestFile}.clustered.fa
 }
 
 # Subprocess BClass
