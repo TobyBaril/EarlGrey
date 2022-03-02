@@ -275,12 +275,21 @@ Change directory to home
 ```cd ~/```
 
 Download lastest Dfam release - This may take a while
+*** NOTE: There are two releases of Dfam, one conatining all repeats and one only curated. There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
 
+For whole Dfam library (including uncurated elements):
 ```wget https://www.dfam.org/releases/current/families/Dfam.h5.gz```
+
+For curated Dfam library:
+```wget https://www.dfam.org/releases/current/families/Dfam_curatedonly.h5.gz```
 
 Unzip the Dfam release - This may take a while with no indication that anything is happening, please be patient!
 
+For whole Dfam library (including uncurated elements):
 ```gunzip Dfam.h5.gz```
+
+For curated Dfam library:
+```gunzip Dfam_curatedonly.h5.gz && mv Dfam_curatedonly.h5 Dfam.h5```
 
 Move the Dfam library to the RepeatMasker library folder
 NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
@@ -519,12 +528,26 @@ Change directory to RepeatMasker Libraries
 ```cd ./RepeatMasker/Libraries/```
 
 Download lastest Dfam release - This may take a while
+*** NOTE: There are two releases of Dfam, one conatining all repeats and one only curated. There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
 
+For whole Dfam library (including uncurated elements):
 ```wget https://www.dfam.org/releases/current/families/Dfam.h5.gz```
+
+For curated Dfam library:
+```wget https://www.dfam.org/releases/current/families/Dfam_curatedonly.h5.gz```
 
 Unzip the Dfam release - This may take a while with no indication that anything is happening, please be patient!
 
+For whole Dfam library (including uncurated elements):
 ```gunzip Dfam.h5.gz```
+
+For curated Dfam library:
+```gunzip Dfam_curatedonly.h5.gz && mv Dfam_curatedonly.h5 Dfam.h5```
+
+Move the Dfam library to the RepeatMasker library folder
+NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
+
+```mv Dfam.h5 /usr/local/RepeatMasker/Libraries/```
 
 NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
 
