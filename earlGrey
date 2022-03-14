@@ -9,9 +9,9 @@ usage()
         -s == species name
         -o == output directory
         -r == RepeatMasker search term (e.g arthropoda/eukarya)
-        -t == Number of Threads (DO NOT specify more than are available)
 
     Optional Parameters:
+        -t == Number of Threads (DO NOT specify more than are available)
         -l == Repbase species subset library (FASTA format)
         -i == Number of Iterations to BLAST, Extract, Extend - Only enter a number between 5 and 10 (Iteration outputs are 0-based!) (Default: 5)
         -f == Number flanking basepairs to extract (Default: 1000)
