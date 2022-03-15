@@ -16,7 +16,7 @@ usage()
         -i == Number of Iterations to BLAST, Extract, Extend - Only enter a number between 5 and 10 (Iteration outputs are 0-based!) (Default: 5)
         -f == Number flanking basepairs to extract (Default: 1000)
         -d == Maximum non-TE distance between annotations to consider a pair to be from the same cluster (100 is recommended)
-        -b == Which elements to remove (L/S/B for LINEs/SINEs/Both - Choose ONLY ONE)
+	-h == Show help
 
     Example Usage:
 
