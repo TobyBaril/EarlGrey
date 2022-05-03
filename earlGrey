@@ -421,8 +421,8 @@ calcDivRL()
 # Subprocess rcMergeRepeats
 mergeRep()
 {
-    cd ${OUTDIR}/${species}_mergedRepeats/
-    ${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
+    #cd ${OUTDIR}/${species}_mergedRepeats/
+    #${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
     mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
     ${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
 }
