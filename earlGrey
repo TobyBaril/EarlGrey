@@ -439,8 +439,8 @@ charts()
 clusTErPluck()
 {
     cd ${OUTDIR}/${species}_clusTErs/
-    mergeBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/*.rmerge.gff | sed '1 i\Scaffold\tStart\tEnd' > ${OUTDIR}/${species}_clusTErs/${species}.clusTErs.bed
-    clusterBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/*.rmerge.gff | sed '1 i\Scaffold\tSource\tRepeatFamily\tStart\tEnd\tScore\tStrand\tPhase\tAttributes\tClusterId' > ${OUTDIR}/${species}_clusTErs/${species}.detailedClusTErs.gff
+    mergeBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed | sed '1 i\Scaffold\tStart\tEnd' > ${OUTDIR}/${species}_clusTErs/${species}.clusTErs.bed
+    clusterBed -d ${dist} -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed | sed '1 i\Scaffold\tStart\tEnd\tRepeatFamily\tScore\tStrand\tClusterId' > ${OUTDIR}/${species}_clusTErs/${species}.detailedClusTErs.bed
 }
 
 # Subprocess sweepUp
