@@ -134,8 +134,6 @@ Xu Z, Wang H. LTR_FINDER: an efficient tool for the prediction of full-length LT
 
 Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid identification of long terminal repeat retrotransposons. BioRxiv 2019:2–6.
 
-Rubino F, Creevey CJ. MGkit: Metagenomic framework for the study of microbial communities 2014.
-
 
 # Installation
 
