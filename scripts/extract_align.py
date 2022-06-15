@@ -188,12 +188,12 @@ def main():
 	shutil.rmtree('tmpbedfiles/')
 	shutil.rmtree('tmpextracts/')
 	shutil.rmtree('tmpTEfiles/')
-	FILES = [F for F in os.listdir('muscle/') if F.endswith('_cons.fa')]
-	for FILE in FILES:
-		os.remove('muscle/' + FILE)
-	FILES = [F for F in os.listdir('muscle/') if F.endswith('_trimal.fa')]
-	for FILE in FILES:
-		os.remove('muscle/' + FILE)
+	#FILES = [F for F in os.listdir('muscle/') if F.endswith('_cons.fa')]
+	#for FILE in FILES:
+	#	os.remove('muscle/' + FILE)
+	#FILES = [F for F in os.listdir('muscle/') if F.endswith('_trimal.fa')]
+	#for FILE in FILES:
+	#	os.remove('muscle/' + FILE)
 	
 	end_time = time.time()
 	LOGGER.info('Run time: ' + str(datetime.timedelta(seconds=end_time-start_time)))
