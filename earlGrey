@@ -385,7 +385,7 @@ BClass()
 {
     cd ${OUTDIR}/${species}_Masked_de_novo_Repeats
     RepeatMasker -species $RepSpec -nolow -norna -lcambig -s -pa $ProcNum -dir ${OUTDIR}/${species}_Masked_de_novo_Repeats $latestFile
-    awk '{OFS="\t"}{print $5, $5, $11}' ${OUTDIR}/${species}_Masked_de_novo_Repeats/${species}_de_novo_repeat_library_iter*.fasta.out | sort -u -k1,1 > TE_Class_Identities
+    awk '{OFS="\t"}{print $5, $5, $11}' ${OUTDIR}/${species}_Masked_de_novo_Repeats/${latestFile}.out | sort -u -k1,1 > TE_Class_Identities
     awk '{OFS="\t"}{gsub(/__.*/,"#",$2); print}' TE_Class_Identities | sed 's/#\t/#/g; s/^/sed -i "s|/g; s/\t/|/g; s/$/|g" /g' | sed "s|$|\"$latestFile\"|g" | grep "rnd" > TE_Class_Identities.script3
     chmod 777 ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities.script3
     ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities.script3
