@@ -137,7 +137,7 @@ moveFiles()
 # Subprocess clusterDeNovo
 clusterDeNovo()
 {
-    cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa -o ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa.filtered
+    cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -T ${ProcNum} -M 0 -i ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa -o ${OUTDIR}/${species}_RepeatModeler/${species}-families.fa.filtered
 }
 
 # Subprocess BEE1
@@ -376,7 +376,7 @@ Iterations()
 # Subprocess clusterDeNovo
 clusterDeNovoPost()
 {
-    cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clustered.fa
+    cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -T ${ProcNum} -M 0 -i $latestFile -o ${latestFile}.clustered.fa
     latestFile=${latestFile}.clustered.fa
 }
 
