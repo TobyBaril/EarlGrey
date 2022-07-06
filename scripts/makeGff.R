@@ -23,5 +23,6 @@ tab2 <- tab2 %>% distinct()
 
 fil <- tab2[tab2$id %in% tab1$id,]
 fil <- fil[,c(1:9)]
+fil$V8 <- "." #set phase to be Geneious-Friendly
 
 write.table(fil, gffOut, quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
