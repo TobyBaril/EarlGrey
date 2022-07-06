@@ -702,8 +702,8 @@ To install the docker container, make sure Docker is installed and configured on
 First, download all dependencies using the getsrc.sh script:
 
 ```
-chmod +x getsrc.sh
-./getsrc.sh
+chmod +x getFiles.sh
+./getFiles.sh
 ```
 
 Next, download the latest version of Dfam.h5.gz from dfam, and save in the ./src directory that was created by the previous command:
