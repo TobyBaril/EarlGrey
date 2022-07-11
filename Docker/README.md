@@ -18,7 +18,10 @@ note there are only ~6000 seqs in the basic RepeatMasker library in this contain
 If you need to download these,
 Dfam.h5.gz can be downloaded by running:
 
-```wget https://www.dfam.org/releases/current/families/Dfam.h5.gz # THIS IS A BIG FILE!```
+```
+wget https://www.dfam.org/releases/current/families/Dfam.h5.gz 
+# THIS IS A BIG FILE!
+```
 
 Repbase is now behind a paywall, if you do not have access, please comment out the following lines in the Dockerfile (lines 105-107)
 ```
@@ -28,13 +31,18 @@ Repbase is now behind a paywall, if you do not have access, please comment out t
 ```
 
 ## Build a docker container (run from inside the directory where the Dockerfile for EarlGrey is stored)
-```docker build . -t earlgrey```
+```
+docker build . -t earlgrey
+```
 
 ## start the docker container
 
-```docker run -it --rm --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" earlgrey "$@"```
+```
+docker run -it --rm --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" earlgrey "$@"
+```
 
 ## IMPORTANT - once the docker container has started, run these commands to activate the conda environment for EarlGrey
 
-```eval "$(/anaconda3/bin/conda shell.bash  hook)"```
-```conda activate earlGrey```
+```
+eval "$(/anaconda3/bin/conda shell.bash  hook)"
+conda activate earlGrey```
