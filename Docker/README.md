@@ -1,5 +1,7 @@
 # Get Earl Grey to run in Docker
 
+Run the following from inside the EarlGrey/Docker/ directory
+
 ## Download dependencies
 
 First, run the getFiles.sh script to download the required packages:
@@ -21,14 +23,14 @@ Repbase is now behind a paywall, if you do not have access, please comment out t
 && tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
 ```
 
-# Build a docker container (run from inside the directory where the Dockerfile for EarlGrey is stored)
+## Build a docker container (run from inside the directory where the Dockerfile for EarlGrey is stored)
 ```docker build . -t earlgrey```
 
-# start the docker container
+## start the docker container
 
 ```docker run -it --rm --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" earlgrey "$@"```
 
-# IMPORTANT - once the docker container has started, run these commands to activate the conda environment for EarlGrey
+## IMPORTANT - once the docker container has started, run these commands to activate the conda environment for EarlGrey
 
 ```eval "$(/anaconda3/bin/conda shell.bash  hook)"```
 ```conda activate earlGrey```
