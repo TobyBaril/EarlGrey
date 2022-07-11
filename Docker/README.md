@@ -1,7 +1,8 @@
 # Get Earl Grey to run in Docker
 
-# Download dependencies
+## Download dependencies
 
+First, run the getFiles.sh script to download the required packages:
 ```./getFiles.sh```
 
 NOTE: please make sure that Dfam.h5.gz and RepBase libraries tar.gz are inside the ./src directory after running ./getFiles.sh . 
