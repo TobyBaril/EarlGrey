@@ -5,7 +5,11 @@ Run the following from inside the EarlGrey/Docker/ directory
 ## Download dependencies
 
 First, run the getFiles.sh script to download the required packages:
-```./getFiles.sh```
+
+```
+chmod +x getFiles.sh
+./getFiles.sh
+```
 
 NOTE: please make sure that Dfam.h5.gz and RepBase libraries tar.gz are inside the ./src directory after running ./getFiles.sh . 
 we strongly recommend upgrading the RepeatMasker contained within Docker with the Dfam libraries and RepBase, information on this is found: https://github.com/Dfam-consortium/TETools
