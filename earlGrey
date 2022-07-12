@@ -387,7 +387,7 @@ BClass()
     RMTEMPLIB=$(echo $(which RepeatMasker) | sed 's|/RepeatMasker$||g')/Libraries/RepeatMasker.lib
     RepeatMasker -lib $RMTEMPLIB -nolow -norna -lcambig -s -pa $ProcNum -dir ${OUTDIR}/${species}_Masked_de_novo_Repeats $latestFile
     awk '{OFS="\t"}{print $1, $5, $5, $11}' ${OUTDIR}/${species}_Masked_de_novo_Repeats/$(basename ${latestFile}.out) | sed '1,3d' | sort -k1,1nr | awk '{OFS="\t"} !x[$2]++ {print $2, $4}' > TE_Class_Identities
-    awk awk '{OFS="\t"}{print $1, $1, $2}' TE_Class_Identities | awk '{OFS="\t"} {gsub(/__.*/, "#", $2); print}' | sed 's/#\t/#/g; s/^/sed -i "s|/g; s/\t/|/g; s/$/|g" /g' | sed "s|$|\"$latestFile\"|g" | grep "rnd" > TE_Class_Identities.script3
+    awk '{OFS="\t"}{print $1, $1, $2}' TE_Class_Identities | awk '{OFS="\t"} {gsub(/__.*/, "#", $2); print}' | sed 's/#\t/#/g; s/^/sed -i "s|/g; s/\t/|/g; s/$/|g" /g' | sed "s|$|\"$latestFile\"|g" | grep "rnd" > TE_Class_Identities.script3
     chmod 777 ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities.script3
     ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities.script3
     rm ${OUTDIR}/${species}_Masked_de_novo_Repeats/TE_Class_Identities*
