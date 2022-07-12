@@ -154,7 +154,7 @@ RUN cd /opt/ \
         && eval "$(/anaconda3/bin/conda shell.bash  hook)"
 
 
-ENV PATH=$PATH:/opt/RepeatMasker:/opt/RepeatMasker/util:/opt/RepeatModeler:/opt/RepeatModeler/util:/opt/coseg:/opt/ucsc_tools:/opt:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=$PATH:/opt/RepeatMasker:/opt/RepeatMasker/util:/opt/RepeatModeler:/opt/RepeatModeler/util:/opt/coseg:/opt/ucsc_tools:/opt:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/cd-hit/
 
 COPY --from=builder /opt /opt
 RUN echo "PS1='(earlgrey \$(pwd))\\\$ '" >> /etc/bash.bashrc
