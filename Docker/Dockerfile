@@ -157,7 +157,7 @@ RUN cd /opt/ \
 ENV PATH=$PATH:/opt/RepeatMasker:/opt/RepeatMasker/util:/opt/RepeatModeler:/opt/RepeatModeler/util:/opt/coseg:/opt/ucsc_tools:/opt:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 COPY --from=builder /opt /opt
-RUN echo "PS1='(dfam-tetools \$(pwd))\\\$ '" >> /etc/bash.bashrc
+RUN echo "PS1='(earlgrey \$(pwd))\\\$ '" >> /etc/bash.bashrc
 ENV LANG=C
 ENV PYTHONIOENCODING=utf8
 
