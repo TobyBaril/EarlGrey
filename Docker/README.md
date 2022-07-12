@@ -45,4 +45,5 @@ docker run -it --rm --init --mount type=bind,source="$(pwd)",target=/work --user
 
 ```
 eval "$(/anaconda3/bin/conda shell.bash  hook)"
-conda activate earlGrey```
+conda activate earlGrey
+```
