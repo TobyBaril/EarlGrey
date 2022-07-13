@@ -104,6 +104,7 @@ This pipeline has been designed to be used and shared openly by the community.
 
 ### When using Earl Grey, please cite:
 
+Baril, T., Imrie, R.M. and Hayward, A., 2022. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.21203/rs.3.rs-1812599/v1](https://doi.org/10.21203/rs.3.rs-1812599/v1)
 Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo [doi:10.5281/zenodo.5654616](https://doi.org/10.5281/zenodo.5654616)
 
 ### This pipeline makes use of scripts from:
