@@ -35,21 +35,27 @@ def rcstat(rclabelp,rmergep,outfile,ltrgroup=True):
 			if not line.startswith("#"):
 				cnt -= 1
 				break
+		
+	# delete shitty file headers
+	with open(rlabel, "r") as f:
+		lines = f.readlines()
+	with open(rlabel, "w") as f:
+		for line in lines:
+			if line.strip("\n") != "##gff-version 3":
+				f.write(line)
+
+	with open(rmerge, "r") as f:
+		lines = f.readlines()
+	with open(rmerge, "w") as f:
+		for line in lines:
+			if line.strip("\n") != "##gff-version 3":
+				f.write(line)
 
 	with open(rlabel,"r") as f:
 		for i in range(cnt):
 			next(f)
 		for line in f:
 			col = line.rstrip().split("\t")
-
-			'''
-			# Extract attribute
-			cattrD = {}
-			cattr = col[8].split(";")
-			for i in cattr:
-				k, v = i.split("=")
-				cattrD[k] = v
-			'''
 
 			if rowRaw.get(col[2]):
 				rowRaw[col[2]] += 1
@@ -60,26 +66,26 @@ def rcstat(rclabelp,rmergep,outfile,ltrgroup=True):
 				teflag = True
 				telabel += 1
 
-				if teD.get(col[2]):
-					teD[col[2]] += 1
-				else:
-					teD[col[2]] = 1
+			if teD.get(col[2]):
+				teD[col[2]] += 1
+			else:
+				teD[col[2]] = 1
 
 			if re.search("LTRgroup=",col[8]):
 				ltrflag = True
 				ltrlabel += 1
 
-				if ltrD.get(col[2]):
-					ltrD[col[2]] += 1
-				else:
-					ltrD[col[2]] = 1
+			if ltrD.get(col[2]):
+				ltrD[col[2]] += 1
+			else:
+				ltrD[col[2]] = 1
 
 			if teflag and ltrflag:
 				teltrlabel += 1
-				if teltrD.get(col[2]):
-					teltrD[col[2]] += 1
-				else:
-					teltrD[col[2]] = 1
+			if teltrD.get(col[2]):
+				teltrD[col[2]] += 1
+			else:
+				teltrD[col[2]] = 1
 
 			teflag = False
 			ltrflag = False
@@ -99,7 +105,7 @@ def rcstat(rclabelp,rmergep,outfile,ltrgroup=True):
 			next(f)
 		for line in f:
 			col = line.rstrip().split("\t")
-
+	
 			if rowMerge.get(col[2]):
 				rowMerge[col[2]] += 1
 			else:
@@ -127,8 +133,4 @@ def rcstat(rclabelp,rmergep,outfile,ltrgroup=True):
 
 	sys.stdout.close()
 	sys.stdout = stdout
-
-
-
-
 
