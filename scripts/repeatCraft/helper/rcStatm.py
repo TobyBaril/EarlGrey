@@ -35,21 +35,28 @@ def rcstat(rclabelp,rmergep,outfile,ltrgroup=True):
 			if not line.startswith("#"):
 				cnt -= 1
 				break
+		
+# delete shitty file headers
+with open(rlabel, "r") as f:
+    lines = f.readlines()
+with open(rlabel, "w") as f:
+    for line in lines:
+        if line.strip("\n") != "##gff-version 3":
+            f.write(line)
+
+with open(rmerge, "r") as f:
+    lines = f.readlines()
+with open(rmerge, "w") as f:
+    for line in lines:
+        if line.strip("\n") != "##gff-version 3":
+            f.write(line)
+
 
 	with open(rlabel,"r") as f:
 		for i in range(cnt):
 			next(f)
 		for line in f:
 			col = line.rstrip().split("\t")
-
-			'''
-			# Extract attribute
-			cattrD = {}
-			cattr = col[8].split(";")
-			for i in cattr:
-				k, v = i.split("=")
-				cattrD[k] = v
-			'''
 
 			if rowRaw.get(col[2]):
 				rowRaw[col[2]] += 1
@@ -105,14 +112,14 @@ def rcstat(rclabelp,rmergep,outfile,ltrgroup=True):
 			else:
 				rowMerge[col[2]] = 1
 
-	print("#1. Number of repeats (by class) before and after merge")
-	print("=============================================================")
-	print(*["repeat class","no. before merge","no. after merge"], sep="\t")
-	for c in list(rowRaw.keys()):
-		print(*[c,rowRaw[c],rowMerge[c]],sep="\t")
-	print("\n")
-	print("#2. Number of repeats (by class) merged by TEgroup and LTRgroup")
-	print("=============================================================")
+print("#1. Number of repeats (by class) before and after merge")
+print("=============================================================")
+print(*["repeat class","no. before merge","no. after merge"], sep="\t")
+for c in list(rowRaw.keys()):
+  print(*[c,rowRaw[c],rowMerge[c]],sep="\t")
+print("\n")
+print("#2. Number of repeats (by class) merged by TEgroup and LTRgroup")
+print("=============================================================")
 	for c in list(teD.keys()):
 		if ltrgroup:
 			if re.search("LTR",c):
