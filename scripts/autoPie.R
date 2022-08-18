@@ -133,7 +133,8 @@ ggsave(savePie,
 
 # add number of classifications for each of the main (ie how many families)
 
-input2$family <- gsub(";.*", "", input2$attributes)
+input2$family <- gsub(".*ID=", "", input2$attributes)
+input2$family <- gsub(";.*", "", input2$family)
 input2$family <- toupper(input2$family)
 classCount <- input2 %>% group_by(tclassif, family) %>% tally(name = "Number_of_Copies") %>% group_by(tclassif) %>% tally(name = "Number_of_Distinct_Classifications")
 pieSum <- merge(pieSum, classCount)
