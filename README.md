@@ -140,7 +140,7 @@ Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid
 # Installation
 
 Before using Earl Grey, please ensure RepeatMasker (version 4.1.2) and RepeatModeler (version 2.0.2) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
-NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo priveleges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
+NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo privileges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
 
 
 #==============================================================================================================================================================================#
@@ -202,7 +202,7 @@ Thank you for trying Earl Grey!
 
 #==============================================================================================================================================================================#
 
-## Earl Grey Installation and Configuration (If you DO NOT have RepeatMasker and RepeatModeler) - WITH SUDO PRIVELAGES
+## Earl Grey Installation and Configuration (If you DO NOT have RepeatMasker and RepeatModeler) - WITH SUDO PRIVILEGES
 
 These instructions will guide you through configuring all required programs and scripts to run Earl Grey.
 
@@ -254,11 +254,11 @@ Download RepeatMasker (this will download it to the current directory)
 ```wget http://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.2-p1.tar.gz```
 
 Copy the RepeatMasker package to /usr/local/, or somewhere that all users will be able to access the installation. 
-Copying to /usr/local/ might require sudo priveleges
+Copying to /usr/local/ might require sudo privileges
 
 ```sudo cp RepeatMasker-4.1.2-p1.tar.gz /usr/local/```
 
-Change directory to /usr/local, and extract the RepeatMasker package. This might require sudo priveleges.
+Change directory to /usr/local, and extract the RepeatMasker package. This might require sudo privileges.
 
 ```cd /usr/local/```
 
@@ -380,11 +380,11 @@ Download RepeatModeler
 ```wget http://www.repeatmasker.org/RepeatModeler/RepeatModeler-2.0.2a.tar.gz```
 
 Copy the RepeatModeler package to /usr/local/, or somewhere that all users will be able to access the installation. 
-Copying to /usr/local/ might require sudo priveleges
+Copying to /usr/local/ might require sudo privileges
 
 ```sudo cp RepeatModeler-2.0.2a.tar.gz /usr/local/```
 
-Change directory to /usr/local, and extract the RepeatModeler package. This might require sudo priveleges.
+Change directory to /usr/local, and extract the RepeatModeler package. This might require sudo privileges.
 
 ```cd /usr/local/```
 
@@ -430,7 +430,7 @@ The linux64 version of TRF is included in the modules directory of Earl Grey. Ma
 
 ```realpath ./modules/trf409*```
 
-Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
+Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo privileges.
 
 ```
 cd /usr/local/RepeatMasker
@@ -461,7 +461,7 @@ earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -
 
 #==============================================================================================================================================================================#
 
-## Earl Grey Installation and Configuration (If you DO NOT have RepeatMasker and RepeatModeler) - WITHOUT SUDO PRIVELAGES
+## Earl Grey Installation and Configuration (If you DO NOT have RepeatMasker and RepeatModeler) - WITHOUT SUDO PRIVILEGES
 
 These instructions will guide you through configuring all required programs and scripts to run Earl Grey.
 
@@ -600,7 +600,7 @@ realpath ./RECON-1.08/bin/
 realpath ./RepeatScout-1.0.6/
 ```
 
-Install CD-Hit - This step will require SUDO privelages, if you are working on a cluster, this might already be installed. Please check with your sysadmin.
+Install CD-Hit - This step will require SUDO privilages, if you are working on a cluster, this might already be installed. Please check with your sysadmin.
 
 ```
 sudo apt install cd-hit
@@ -672,7 +672,7 @@ The linux64 version of TRF is included in the modules directory of Earl Grey. Ma
 
 ```realpath ./modules/trf409*```
 
-Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo priveleges.
+Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo privileges.
 
 ```
 cd /path/to/RepeatMasker
