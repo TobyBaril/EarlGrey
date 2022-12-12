@@ -18,7 +18,11 @@ fi
 
 # create new conda environment
 
-conda env create -f ./earlGrey.yml
+if [ ! -z $(conda env list | awk '{OFS="\t"}{print $1}' | grep -w "earlGrey") ]; then
+        conda env update --name earlGrey -f ./earlGrey.yml --prune
+else
+        conda env create -f ./earlGrey.yml
+fi
 eval "$(conda shell.bash hook)"
 conda activate earlGrey
 
