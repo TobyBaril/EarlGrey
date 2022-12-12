@@ -139,4 +139,23 @@ input2$family <- toupper(input2$family)
 classCount <- input2 %>% group_by(tclassif, family) %>% tally(name = "Number_of_Copies") %>% group_by(tclassif) %>% tally(name = "Number_of_Distinct_Classifications")
 pieSum <- merge(pieSum, classCount)
 
+# generate summary of TE family abundance
+
+familyAbundance <- input2 %>%
+        mutate(name = paste0(family, "#", classif)) %>%
+        group_by(name) %>%
+        summarise(coverage = sum((end - start))) %>% 
+        arrange(-coverage)
+
+familyTally <- input2 %>% 
+        mutate(name = paste0(family, "#", classif)) %>%
+        group_by(name) %>%
+        tally(name = "copy_number")
+
+familyAbundance <- merge(familyAbundance, familyTally) %>%
+        arrange(-coverage)
+
+saveFam <- gsub("highLevelCount", "familyLevelCount", saveTab)
+
 write.table(pieSum, saveTab, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+write.table(familyAbundance, saveFam, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")

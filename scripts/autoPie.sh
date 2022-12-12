@@ -32,5 +32,5 @@ done
 
 # step 1 - Get genome size and run Rscript
 
-SCRIPT_DIR=INSERTFILEPATHHERE
+SCRIPT_DIR=/home/toby/projects/earlGreyREwrite/EarlGreyUpdate/scripts
 main

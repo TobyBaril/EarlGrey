@@ -7,6 +7,7 @@
 #BiocManager::install("GenomicRanges")
 library(GenomicRanges)
 library(ape)
+library(tidyverse)
 
 # set options
 
@@ -22,42 +23,31 @@ gff.out <- args[7]
 # read gff
 
 input <- read.gff(gff.in)
-#input <- read.gff("/media/toby/projectDrive/earlGrey/analysis/simulatedData/simulatingSequencesRoundTwo/benchmarkingAnalysis/overlappingAnnotations/simulatedDataset.400mb_out_sequence_nest.fasta.mod.EDTA.TEanno.gff3.sorted")
+#input <- read.gff("/home/toby/projects/earlGreyREwrite/TESTENV/autoTest_RM_EarlGrey/autoTest_RM_mergedRepeats/looseMerge/autoTest_RM.rmerge.gff.sorted")
+#input <- read.gff("/home/toby/projects/earlGreyREwrite/TESTENV/autoTest_newOverlapFilter_EarlGrey/autoTest_newOverlapFilter_mergedRepeats/looseMerge/autoTest_newOverlapFilter.rmerge.gff.sorted")
 
-# add ID column
+# sort table by scaffold and start
 
-input$id <- paste(input[, 3], input[, 9], sep = "---")
+input <- input %>% 
+  arrange(seqid, start)
 
-# convert to GRanges object
+# cut overlapping regions in half
 
-gr <- with(input, GRanges(
-  seqnames = input[, 1],
-  IRanges(start = input[, 4], end = input[, 5]),
-  id = input[, 10]))
-
-# find overlaps
-
-hits <- findOverlaps(gr, gr, minoverlap = 1)
-
-# remove self hits
-
-hits <- hits[queryHits(hits) != subjectHits(hits)]
-
-# Determine features that are shorter than the overlapping feature
-
-mcols(hits)$queryWidth = width(gr[queryHits(hits)]);
-mcols(hits)$subjectWidth = width(gr[subjectHits(hits)]);
-mcols(hits)$hit <- ifelse(
-  mcols(hits)$queryWidth < mcols(hits)$subjectWidth, 
-  queryHits(hits), 
-  subjectHits(hits));
-
-# Remove those shorter overlapping features
-gr.final <- gr[-unique(mcols(hits)$hit)]
-output <- input[input$id %in% gr.final$id,1:9]
+for (i in 2:length(input$seqid)) {
+  if (input$seqid[i] == input$seqid[i-1]) {
+    if (input$start[i] < input$end[i-1]) {
+      ovr <- (input$end[i-1] - input$start[i]) / 2
+      input$start[i] <- as.integer(input$start[i] + ovr)
+      input$end[i-1] <- as.integer(input$end[i-1] - ovr)
+      if (input$start[i] == input$end[i-1]) {
+        input$start[i] <- as.integer(input$start[i] + 1)
+      }
+    }
+  }
+}
 
 # Write Table
 
-write.table(output, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
+write.table(input, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
 
 

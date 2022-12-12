@@ -27,45 +27,6 @@ repeats$size <- abs((repeats$End - repeats$Start)) + 1
 repeats$Start <- as.double(repeats$Start) - 1
 repeats$End <- as.double(repeats$End)
 
-# Step 3 - Rectify overlaps
-
-# Make GenomicRanges Matrix
-#gr <- makeGRangesFromDataFrame(repeats,
-#                               keep.extra.columns = TRUE,
-#                               seqinfo = NULL,
-#                               seqnames.field = "Scaffold",
-#                               start.field = as.character("Start"),
-#                               end.field = as.character("End"),
-#                               strand.field = "Strand")
-
-# Find overlaps
-#hits <- findOverlaps(gr, gr, ignore.strand = TRUE)
-# Remove self-overlaps as query and subject are the same
-#hits <- hits[queryHits(hits) != subjectHits(hits)]
-
-# Determine features that are shorter than the overlapping feature
-#mcols(hits)$querysize = size(gr[queryHits(hits)])
-#mcols(hits)$subjectsize = size(gr[subjectHits(hits)])
-#mcols(hits)$hit <- ifelse(
-#  mcols(hits)$querysize < mcols(hits)$subjectsize,
-#  queryHits(hits),
-#  subjectHits(hits))
-
-# Remove shorter overlapping features
-#gr.final <- gr[-unique(mcols(hits)$hit)]
-
-# Check there are no overlaps
-#test <- findOverlaps(gr.final, gr.final, ignore.strand = TRUE)
-# Remove self-overlaps and there should be none left
-#test <- test[queryHits(test) != subjectHits(test)]
-# There are now no overlaps
-#rm(test)
-      
-# Turn back into dataframe
-#mergedRepeats <- as.data.frame(gr.final)
-#mergedRepeatsOut <- mergedRepeats[,c(1:3,7,8,5)]
-#write.table(mergedRepeatsOut, file = output, quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
-
 mergedRepeats <- repeats
 mergedRepeatsOut <- repeats[,c(1,4,5,3,6,7)]
 write.table(mergedRepeatsOut, file = output, quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
@@ -124,7 +85,7 @@ size <- c(rep(genomeSize, 9))
 summary <- data.frame(eleTyp, numEle, lenOcc, perSeq, size)
 colnames(summary) <- c("Family", "Number of Elements", "Length Occupied", "Percentage of Sequence", "GenomeSize")
 
-    # Print table
+# Print table
 write.table(summary, output2, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 
 filteredRepeatsOut <- mergedRepeatsOut
