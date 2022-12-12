@@ -19,20 +19,20 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Example
 
-Given an input genome, Earl Grey will run through numerous steps to identify and mask transposable elements (TEs). We recommend running earlGrey within a tmux or screen session, so that you can log off and leave Earl Grey running.
+Given an input genome, Earl Grey will run through numerous steps to identify and annotate transposable elements (TEs). We recommend running earlGrey within a tmux or screen session, so that you can log off and leave Earl Grey running.
 
 ```
 # remember to activate the conda environment before running
 
 conda activate earlGrey
 
-# run earl grey
+# run earl grey with minimum command options
 
-earlGrey -g [genome.fasta] -s [speciesName] -r [repeatmasker-search-term] -o [outputDirectory] -t [numberThreads]
+earlGrey -g [genome.fasta] -s [speciesName] -o [outputDirectory]
 
 # e.g
 
-earlGrey -g myzusPersicae.fasta -s myzusPersicae -r arthropoda -o ./earlGreyOutputs -t 8
+earlGrey -g myzusPersicae.fasta -s myzusPersicae -o ./earlGreyOutputs
 
 ```
 
@@ -42,21 +42,17 @@ Directories created by earl grey:
 
 - [speciesName]EarlGrey/
   * [speciesName]_RepeatMasker/
-    + Results of the initial RepeatMasker run used to mask previously characterised TEs
+    + Results of the optional initial RepeatMasker run used to mask previously characterised TEs
   * [speciesName]_Database/
     + Database created from the masked genome output of the initial RepeatMasker run. Required for RepeatModeler.
   * [speciesName]_RepeatModeler/
-    + Results of the RepeatModeler _de novo_ TE identification step
-  * [speciesName]_BLASTN/
-    + Results of the first BLASTn search of _de novo_ TEs against the input genome (Step 1 of the "BLAST, Extract, Extend" process)
-  * [speciesName]_ExtractAlign/
-    + Results of all iterations of the "BLAST, Extract, Extend" process
-  * [speciesName]_Masked_de_novo_Repeats/
-    + Intermediate results for the reclassification of _de novo_ TEs following the iterative "BLAST, Extract, Extend" process
+    + Results of the RepeatModeler2 _de novo_ TE identification step
+  * [speciesName]_strainer/
+    + Results of the "BLAST, Extract, Align, Trim" process
   * [speciesName]_Curated_Library/
-    + Contains the _de novo_ repeat libraries generated with each iteration of the "BLAST, Extract, Extend" process, the library of known repeats used by RepeatMasker, and a combined library containing both sets of repeats (used in the final RepeatMasker run)
+    + Contains the _de novo_ repeat library generated with the "BLAST, Extract, Align, Trim" process, the library of known repeats used by RepeatMasker (OPTIONAL), and a combined library containing both sets of repeats (OPTIONAL)
   * [speciesName]_RepeatMasker_Against_Custom_Library/
-    + Results of the ReepatMasker run using known repeats AND _de novo_ identified repeats
+    + Results of the RepeatMasker run using the final curated library
   * [speciesName]_RepeatLandscape/
     + Intermediate files for the generation of RepeatLandscapes (RepeatMasker .divsum files)
   * [speciesName]_mergedRepeats/
@@ -67,9 +63,7 @@ Directories created by earl grey:
     + Repeat Landscape showing TE activity (PDF)
     + Pie chart of genome repeat content (PDF)
     + _de novo_ repeat library in FASTA format
-    + Combined repeat library in FASTA format (used by final repeat mask)
-  * [speciesName]_clusTErs/
-    + BED file containing coordinates of TE clusters across genome scaffolds
+    + Combined repeat library in FASTA format (OPTIONAL)
 
 ### Example Outputs (NOTE: example data has been used here):
 
@@ -88,14 +82,12 @@ Directories created by earl grey:
 NC_045808.1     4964941 4965925 LINE/Penelope   5073    +
 NC_045808.1     7291353 7291525 LINE/L2 1279    +
 NC_045808.1     8922477 8923791 DNA/TcMar-Tc1   11957   +
-NC_045808.1     9848807 9849591 LTR/Copia       734     -
 
 
 # GFF3 format
 NC_045808.1     RepeatMasker    LINE/Penelope   4964942 4965925 5073    +       .       ID="RND-1_FAMILY-48";Tend="2677";Tstart="1700";shortTE="F";uid="cb016329-11ac-492a-b11c-db2dc50e9d89"
 NC_045808.1     RepeatMasker    LINE/L2 7291354 7291525 1279    +       .       ID="RND-5_FAMILY-151";Tend="1398";Tstart="1226";shortTE="F";uid="b1ffaec9-e362-4ffe-89c2-5830cea00ab7"
 NC_045808.1     RepeatMasker    DNA/TcMar-Tc1   8922478 8923791 11957   +       .       ID="RND-1_FAMILY-124";Tend="3292";Tstart="1979";shortTE="F";uid="1e507e68-39f3-45f0-b62b-65bd9b7919c8"
-NC_045808.1     RepeatMasker    LTR/Copia       9848808 9849591 734     -       .       ID="COPIA-3_BTA-I";Tend="2057";Tstart="1246";shortTE="F";uid="2a786d4d-4d0d-4013-824e-92f97c60ecfe"
 ```
 
 # References and Acknowledgements
@@ -106,11 +98,9 @@ This pipeline has been designed to be used and shared openly by the community.
 
 Baril, T., Imrie, R.M. and Hayward, A., 2022. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.21203/rs.3.rs-1812599/v1](https://doi.org/10.21203/rs.3.rs-1812599/v1)
 
-Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo [doi:10.5281/zenodo.5654616](https://doi.org/10.5281/zenodo.5654616)
+Baril, Tobias., Galbraith, James., Imrie, Ryan., and Hayward, Alexander. (2021) Earl Grey. Zenodo [doi:10.5281/zenodo.5654616](https://doi.org/10.5281/zenodo.5654616)
 
 ### This pipeline makes use of scripts from:
-
-[Bioinfo Tools (David Ray)](https://github.com/davidaray/bioinfo_tools) - which provides the extraction script for the automated version of the "BLAST, Extract, Extend" desrcibed in: Platt RN, Blanco-Berdugo L, Ray DA. Accurate transposable element annotation is vital when analyzing new genome assemblies. Genome Biol Evol 2016;8:403–10. https://doi.org/10.1093/gbe/evw009.
 
 [RepeatCraft](https://github.com/niccw/repeatcraftp) - Wong WY, Simakov O. RepeatCraft: a meta-pipeline for repetitive element de-fragmentation and annotation. Bioinformatics 2018;35:1051–2. https://doi.org/10.1093/bioinformatics/bty745.
 
@@ -118,7 +108,7 @@ Baril, Tobias, Imrie, Ryan, and Hayward, Alexander. (2021) Earl Grey. Zenodo [do
 
 Smit AFA, Hubley RR, Green PR. RepeatMasker Open-4.0. Http://RepeatmaskerOrg 2013.
 
-Smit A, Hubley R. RepeatModeler Open-1.0. Http://RepeatmaskerOrg 2015.
+Flynn, J.M., Hubley, R., Goubert, C., Rosen, J., Clark, A.G., Feschotte, C. and Smit, A.F. RepeatModeler2 for automated genomic discovery of transposable element families. Proceedings of the National Academy of Sciences 2020;17;9451-9457. https://doi.org/10.1073/pnas.1921046117
 
 Bao Z, Eddy SR. Automated De Novo Identification of Repeat Sequence Families in Sequenced Genomes. Genome Res 2002;12:1269–76. https://doi.org/10.1101/gr.88502.
 

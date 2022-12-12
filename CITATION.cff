@@ -3,20 +3,21 @@
 
 cff-version: 1.2.0
 title: Earl Grey
-message: Please cite this software using these metadata.
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
 type: software
 authors:
   - given-names: Tobias
     family-names: Baril
-    email: tb529@exeter.ac.uk
+    email: toby.baril@icloud.com
     affiliation: University of Exeter
     orcid: 'https://orcid.org/0000-0002-5936-7531'
-  - given-names: Ryan
-    family-names: Imrie
+  - given-names: James
+    family-names: Galbraith
     affiliation: University of Exeter
-    orcid: 'https://orcid.org/0000-0002-5055-2888'
+    orcid: 'https://orcid.org/0000-0002-1871-2108'
   - given-names: Alex
     family-names: Hayward
-    name-suffix: Dr
     affiliation: University of Exeter
     orcid: 'https://orcid.org/0000-0001-7413-718X'

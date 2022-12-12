@@ -19,6 +19,8 @@ fi
 # create new conda environment
 
 conda env create -f ./earlGrey.yml
+eval "$(conda shell.bash hook)"
+conda activate earlGrey
 
 # make Earl Grey Script executable
 
@@ -32,6 +34,8 @@ sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./earlGrey
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/headSwap.sh
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/autoPie.sh
+sed -i "s|INSERT_FILENAME_HERE|${SCRIPT_DIR}/TEstrainer/scripts/|g" ./scripts/TEstrainer/TEstrainer_for_earlGrey.sh
+chmod +x ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
 chmod +x ${SCRIPT_DIR}/* > /dev/null 2>&1
 chmod +x ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/ltr_finder
 chmod a+w ${SCRIPT_DIR}/repeatCraft/example/
@@ -39,6 +43,19 @@ chmod +x ./modules/trf409.linux64
 sleep 3
 echo "Path variables set"
 sleep 3
+
+# install sa-ssr
+if [ ! -f "${SCRIPT_DIR}/sa-ssr" ]; then
+  echo "Installing sa-ssr"
+  cd ${SCRIPT_DIR} && chmod a+w ${SCRIPT_DIR}
+  git clone https://github.com/ridgelab/SA-SSR && cd ./SA-SSR/
+  sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
+  sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+fi
+
+# Install R packages
+echo "Installing R packages"
+Rscript ${SCRIPT_DIR}/install_r_packages.R
 
 # Extract tRNAdb
 echo "Extracting zip archives"
