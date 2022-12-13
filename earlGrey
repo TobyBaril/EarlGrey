@@ -32,10 +32,6 @@ usage()
 	#############################"
 }
 
-# TODO:
-#### add james' BEET scripts and double check file and variable names
-
-
 # Subprocess Make Directories #
 makeDirectory()
 {
