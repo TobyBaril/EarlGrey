@@ -1,3 +1,6 @@
+# Based on Dockerfile from Dfam TETools https://github.com/Dfam-consortium/TETools, with added database configuration, conda configuration, and Earl Grey installation
+# and configuration
+
 FROM debian:9 AS builder
 
 RUN apt-get -y update && apt-get -y install \
