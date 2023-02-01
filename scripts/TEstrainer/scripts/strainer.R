@@ -4,7 +4,8 @@ library(optparse)
 
 option_list <- list(
   make_option(c("-i", "--in_seq"), default=NA, type = "character", help="Path to input sequence (required)"),
-  make_option(c("-d", "--directory"), default=NA, type = "character", help="Path to directory (required)")
+  make_option(c("-p", "--plot_chimeras"), type = "logical", help="Set to TRUE to make plots of chimeras", default = TRUE),
+  make_option(c("-d", "--directory"), default=NA, type = "character", help="Path to directory (required)",)
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -24,6 +25,7 @@ opt$rps_table <- paste0(opt$directory, "/chimeras/", opt$out_seq, ".rps.out")
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(plyranges))
 suppressPackageStartupMessages(library(BSgenome))
+suppressPackageStartupMessages(library(grid))
 
 # read in fasta
 rm_seq_in <- readDNAStringSet(paste0(opt$in_seq))
@@ -35,12 +37,14 @@ truly_chimeric_ranges <- GRanges()
 questionable <- tibble()
 no_domains_seq <- DNAStringSet()
 
-# read in acceptable domains, rbind additionally discovered
+# read in acceptable domains and exceptional domains and manually added additional domains
+exceptional_domains <- read_tsv("data/exceptional_domains.tsv", show_col_types = FALSE) %>%
+  dplyr::select(ref, class) %>% dplyr::rename(excep_class = class)
 additional_domains <- read_tsv("data/additional_domains.tsv", show_col_types = FALSE) %>%
-  dplyr::select(ref, abbrev)
-acceptable_domains <- read_tsv("data/acceptable_domains.tsv", show_col_types = FALSE) %>%
-  rbind(additional_domains)
-unacceptable_domains <- read_tsv("data/unacceptable_domains.tsv", show_col_types = FALSE)
+  dplyr::select(ref, class) %>% dplyr::rename(excep_class = class)
+exceptional_domains <- rbind(exceptional_domains, additional_domains)
+
+acceptable_domains <- read_tsv("data/acceptable_domains.tsv", show_col_types = FALSE)
 
 if(file.size(opt$rps_table)==0){
   writeXStringSet(rm_seq_in, paste0(opt$directory, "/chimeras/clean_", opt$out_seq))
@@ -52,9 +56,10 @@ rps_blast_out <- read_tsv(file = opt$rps_table,
                                            col_names = c("seqnames", "qstart", "qend", "qlen", "sseqid", "sstart", "send", "slen",
                                                          "pident", "length", "mismatch", "gapopen", "evalue", "bitscore", "qcovs", "stitle"),
                                            show_col_types = FALSE) %>%
-                   tidyr::separate(stitle, into = c("ref", "abbrev", "full"), sep = ", ", extra = "drop")
+                   tidyr::separate(stitle, into = c("ref", "abbrev", "full"), sep = ", ", extra = "drop") %>%
+  dplyr::filter(length >= 0.5*slen)
 
-rps_blast_out <- rps_blast_out %>% dplyr::filter(length >= 0.5*slen)
+rps_blast_out$n <- 1:nrow(rps_blast_out)
 
 # select acceptable and non acceptable
 contains_acceptable <- rps_blast_out[rps_blast_out$ref %in% acceptable_domains$ref,]
@@ -79,6 +84,31 @@ chimeric <- rps_blast_out %>%
   arrange(seqnames, qstart) %>%
   mutate(unacceptable = ifelse(ref %in% acceptable_domains$ref, "false", "true"))
 
+# check if domains fit exceptional circumstances (grepl used to allow for the various ERVs)
+excep_check <- chimeric %>%
+  inner_join(exceptional_domains)
+
+for( i in 1:nrow(excep_check)){
+  if(grepl(pattern = excep_check$excep_class[i], x = excep_check$seqnames[i])){
+    excep_check$unacceptable[i] <- "false"
+  } else {
+    excep_check$unacceptable[i] <- "true"
+  }
+}
+
+# select single for each excep check, ensuring acceptable retained if exists
+excep_check <- excep_check %>%
+  group_by(n) %>%
+  dplyr::arrange(unacceptable) %>%
+  dplyr::slice(1) %>%
+  dplyr::select(-excep_class)
+
+# add excep_checked back into fold
+chimeric <- chimeric %>%
+  dplyr::filter(!n %in% excep_check$n) %>%
+  base::rbind(excep_check) %>%
+  arrange(n)
+
 # Determine regions with acceptable domains overlapping "unacceptable"
 chimeric_ranges <- chimeric %>%
   dplyr::mutate(start = ifelse(qstart < qend, qstart, qend),
@@ -97,18 +127,6 @@ truly_chimeric <- chimeric[chimeric$seqnames %in% seqnames(truly_chimeric_ranges
 false_positive_chimeric <- chimeric[!chimeric$seqnames %in% seqnames(truly_chimeric_ranges),] %>%
   dplyr::select(-unacceptable)
 
-# remove repeats unacceptable domains
-unacceptable_chimeric <- truly_chimeric %>%
-  filter(ref %in% unacceptable_domains$ref)
-unacceptable_chimeric <- truly_chimeric %>%
-  filter(seqnames %in% unacceptable_chimeric$seqnames) %>%
-  dplyr::select(-unacceptable)
-questionable <- rbind(questionable, unacceptable_chimeric)
-
-truly_chimeric <- truly_chimeric %>%
-  filter(!seqnames %in% unacceptable_chimeric$seqnames)
-
-# flip if domain with highest bitscore is in reverse strand
 compiled_acceptable <- rbind(completely_acceptable, false_positive_chimeric) %>%
   dplyr::mutate(strand = ifelse(qstart < qend, "+", "-"), start = 1, end = qlen) %>%
   dplyr::group_by(seqnames) %>%
@@ -156,5 +174,34 @@ if(nrow(questionable) > 0){
   questionable_seq <- getSeq(rm_seq_in, questionable_ranges)
   names(questionable_seq) <- seqnames(questionable_ranges)
   writeXStringSet(questionable_seq, paste0(opt$directory, "/chimeras/questionable_", opt$out_seq))
+  
+}
+# plotting section for manual consideration of truly_chimeric elements
+if(opt$plot == TRUE & nrow(truly_chimeric) > 0){
+  
+  if(!file.exists(paste0(opt$directory, "/chimeras/plots/"))){
+    dir.create(paste0(opt$directory, "/chimeras/plots/"))
+  }
+  
+  for(i in 1:length(base::unique(truly_chimeric$seqnames))){
+    
+    to_plot <- truly_chimeric[truly_chimeric$seqnames == base::unique(truly_chimeric$seqnames)[i],] %>% arrange(qstart) %>%
+      mutate(missing = ifelse(ref %in% acceptable_domains$ref, FALSE, TRUE))
+    to_plot$y = 1:nrow(to_plot)
+    to_plot$text_x = (to_plot$qstart + to_plot$qend)/2
+    ggplot(to_plot) +
+      geom_rect(aes(xmin = qstart, xmax = qend, ymin = y-1, ymax = y, fill = missing)) +
+      geom_segment(aes(x = qstart, xend = qend, y = y, yend = y),
+                   arrow = arrow(length = unit(10,"points"))) +
+      geom_text(aes(x = text_x, y = y-0.5, label = abbrev)) +
+      scale_x_continuous(limits = c(0,to_plot$qlen[1]), name = "Coordinates (bp)", expand = c(0,0)) +
+      scale_y_continuous(name = NULL, breaks = NULL) +
+      scale_fill_discrete(name="Atypical of TEs?") +
+      ggtitle(to_plot$seqnames[1]) +
+      theme_bw()
+    
+    ggsave(filename = paste0(opt$directory, "/chimeras/plots/", gsub("/", "_", base::unique(truly_chimeric$seqnames)[i]), ".svg"), device = "svg")
+    
+  }
   
 }
