@@ -137,6 +137,8 @@ if [[ $RUNS -gt 0 ]]; then
   if [ -s ${DATA_DIR}/run_${RUNS}/further_${RM_LIBRARY} ]; then
     cat ${DATA_DIR}/run_${RUNS}/further_${RM_LIBRARY} >> ${DATA_DIR}/${RM_LIBRARY}
   fi
+  # add any families which went missing along the way due to alignment issues
+  cat $(find ${DATA_DIR}/run_*/mafft/ -empty | sed 's/mafft/raw/') >> ${DATA_DIR}/${RM_LIBRARY}
   sed -i 's/ .*//' ${DATA_DIR}/${RM_LIBRARY}
 
 else
@@ -180,9 +182,11 @@ Rscript scripts/strainer.R --in_seq ${DATA_DIR}/chimeras/${RM_LIBRARY} --directo
 cat ${DATA_DIR}/chimeras/clean_${RM_LIBRARY} ${DATA_DIR}/chimeras/chimeric_${RM_LIBRARY} > ${DATA_DIR}/chimeras/rinsed_${RM_LIBRARY}.nonsatellite
 
 # Delete temp files
-echo "Removing temporary files"
-rm -r ${DATA_DIR}/*/split/
-find ${DATA_DIR}/ -mindepth 1 -name "run_*" -exec rm -r {} +
+if [ "$DEBUG" == FALSE ]; then
+  echo "Removing temporary files"
+  rm -r ${DATA_DIR}/*/split/
+  find ${DATA_DIR}/ -mindepth 1 -name "run_*" -exec rm -r {} +
+fi
 if [[ $RUNS -gt 0 ]]; then
   rm ${GENOME}.n*
 fi
