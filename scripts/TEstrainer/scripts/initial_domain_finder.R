@@ -5,47 +5,72 @@ library(tidyverse)
 library(plyranges)
 library(BSgenome)
 
-# read in repbase sequences
+# read in sequences
 repbase_dna <- Biostrings::readDNAStringSet("~/Databases/Repbase/RepBase5May2021.fasta")
+dfam_dna <- Biostrings::readDNAStringSet("seq/Dfam/Dfam_3.6_curatedonly.fasta")
 
-# get info about repbase sequences
+# get info about sequences
 repbase_seq_info <- tibble(seqnames = names(repbase_dna), width = width(repbase_dna))
 repbase_seq_info <- repbase_seq_info %>%
   tidyr::separate(col = seqnames, into = c("seqnames", "class", "species"), sep = "\t") %>%
-  dplyr::mutate(name = 1:nrow(repbase_seq_info))
+  dplyr::select(-species) %>%
+  filter(!class %in% c("Unknown", "Satellite","Simple Repeat"))
 
-# get orf info to ensure only TEs with ORFs over 300aa included (removes noise from non-autonomous)
-# positive strands
-pos <- findORFs(repbase_dna, startCodon = "ATG", minimumLength = 300)
-# negative strands
-neg <- findORFs(reverseComplement(repbase_dna),
-                startCodon = "ATG", minimumLength = 300)
-pos <- GRanges(pos, strand = "+")
-neg <- GRanges(neg, strand = "-")
-res <- c(pos, neg) %>%
-  as_tibble() %>%
-  mutate(name = as.integer(as.character(seqnames))) %>%
-  dplyr::select(-seqnames, -width)
+# convert dfam classifications to Repbase
+dfam_seq_info <- tibble(seqnames = names(dfam_dna), width = width(dfam_dna)) %>%
+  tidyr::separate(col = seqnames, into = c("seqnames", "class"), sep = "#") %>%
+  mutate(class = ifelse(grepl("ERV", class), "ERV", class)) %>%
+  dplyr::mutate(class = case_when(
+    grepl("SINE", class) ~ "SINE",
+    grepl("/", class) ~ sub(".*/", "", class),
+    TRUE ~ class)
+  ) %>%
+  mutate(
+    class = ifelse(class %in% c("TcMar", "TcMar-ISRm11", "TcMar-m44", "TcMar-Pogo", "TcMar-Fot1", "TcMar-Tc2", "TcMar-Mariner", "TcMar-Tc1", "TcMar-Tc4", "TcMar-Tigger"), "Mariner/Tc1", class),
+    class = ifelse(class %in% c("hAT-hAT5", "hAT-hAT19", "hAT-hATx", "hAT-hATm", "hAT-Tag1", "hAT-Ac", "hAT-Blackjack", "hAT-Tip100", "hAT-Charlie"), "hAT", class),
+    class = ifelse(class %in% c("Pao"), "BEL", class),
+    class = ifelse(class %in% c("CMC-Transib"), "Transib", class),
+    class = ifelse(class %in% c("PiggyBac"), "piggyBac", class),
+    class = ifelse(class %in% c("Naiad", "Chlamys"), "Penelope", class),
+    class = ifelse(class %in% c("CMC-Chapaev", "CMC-Chapaev-3", "CMC-EnSpm"), "EnSpm/CACTA", class),
+    class = ifelse(class %in% c("Academ-1"), "Academ", class),
+    class = ifelse(class %in% c("Ngaro"), "DIRS", class),
+    class = ifelse(class %in% c("PIF-ISL2EU"), "ISL2EU", class),
+    class = ifelse(class %in% c("R2-Hero"), "Hero", class),
+    class = ifelse(class %in% c("CR1-Zenon"), "CR1", class),
+    class = ifelse(class %in% c("endogenous retrovirus", "Endogenous Retrovirus", "ERV-1_PM-I", "ERV-2_PM-I"), "ERV", class),
+    class = ifelse(class %in% c("LTR retrotransposon", "LTR Retrotransposon"), "LTR", class),
+    class = ifelse(class %in% c("RTE-RTE", "RTE-BovB"), "RTE", class)
+  ) %>%
+  filter(!seqnames %in% repbase_seq_info$seqnames)
 
-repbase_seq_info <- inner_join(repbase_seq_info, res) %>%
-  dplyr::select(seqnames, class, species, width) %>%
-  base::unique()
-
-repbase_seq_count <- as_tibble(as.data.frame(table(repbase_seq_info$class))) %>%
-  dplyr::filter(Freq >= 10) %>%
+dfam_dna <- dfam_dna[sub("#.*", "", names(dfam_dna)) %in% dfam_seq_info$seqnames,]
+repbase_dna <- c(repbase_dna, dfam_dna)
+repbase_seq_info_class_n <- as_tibble(as.data.frame(table(repbase_seq_info$class))) %>%
+  dplyr::filter(Freq > 5) %>%
   dplyr::mutate(Var1 = as.character(Var1)) %>%
-  dplyr::rename(class = Var1, class_n = Freq)
+  dplyr::rename(class = Var1)
+repbase_seq_info <- rbind(repbase_seq_info, dfam_seq_info) %>%
+  filter(!class %in% c("Unknown", "Satellite", "subtelomeric", "Y-chromosome", "centromeric", "tRNA", "snRNA", "rRNA", "tRNA", "Multicopy gene"),
+         class %in% repbase_seq_info_class_n$class)
+repbase_seq_info$name = 1:nrow(repbase_seq_info)
 
-repbase_seq_info <- repbase_seq_info %>%
-  dplyr::inner_join(repbase_seq_count)
+repbase_dna <- repbase_dna[sub("#.*", "", sub("\t.*", "", names(repbase_dna))) %in% repbase_seq_info$seqnames,]
+names(repbase_dna) <- sub("#.*", "", sub("\t.*", "", names(repbase_dna)))
+writeXStringSet(repbase_dna, "predata/repbase_dfam_compiled.fasta")
+
+#### RUN RPSTBLASTN AGAINST CDD ####
+
 
 # read in repbase rpstblastn
-repbase_rps_out <- readr::read_tsv(file = "predata/RepBase5May2021.fasta.rps.out",
+repbase_rps_out <- readr::read_tsv(file = "predata/repbase_dfam_compiled.rps.out",
                                    col_names = c("seqnames", "qstart", "qend", "qlen", "sseqid", "sstart", "send", "slen",
                                                  "pident", "length", "mismatch", "gapopen", "evalue", "bitscore", "qcovs", "stitle"),
                                    show_col_types = F) %>%
-  dplyr::filter(length >= 0.5*slen)
+  dplyr::filter(length >= 0.5*slen, evalue <= 0.01)
+
 missing <- repbase_rps_out %>% filter(!seqnames %in% repbase_seq_info$seqnames)
+
 repbase_rps_out <- tidyr::separate(data = repbase_rps_out, col = stitle, into = c("ref", "abbrev", "full"), sep = ", ")
 repbase_rps_out <- dplyr::inner_join(repbase_rps_out, repbase_seq_info) %>%
   filter(class != "Multicopy gene")
@@ -68,23 +93,36 @@ for(i in 1:nrow(repbase_class_info_max)){
     dplyr::slice(1) %>% # ensure one representative for each domain for each repeat
     ungroup()
   if(nrow(holder >= 1)){
+    if(repbase_class_info_max$Freq[i] > 299){
     holder_tbl <- as_tibble(as.data.frame(table(holder$ref))) %>%
       mutate(Var1 = as.character(Var1),
              perc = Freq/repbase_class_info_max$Freq[i]) %>%
       dplyr::rename(ref = Var1) %>%
-      filter(perc >= 0.03, Freq >= 3) %>%
+      filter(perc >= 0.01, Freq >= 3) %>%
       inner_join(domain_info) %>%
       mutate(class = repbase_class_info_max$class[i]) %>%
       dplyr::arrange(-Freq)
-    common_domains <- rbind(common_domains, holder_tbl)
+    } else {
+      holder_tbl <- as_tibble(as.data.frame(table(holder$ref))) %>%
+        mutate(Var1 = as.character(Var1),
+               perc = Freq/repbase_class_info_max$Freq[i]) %>%
+        dplyr::rename(ref = Var1) %>%
+        filter(Freq >= 3) %>%
+        inner_join(domain_info) %>%
+        mutate(class = repbase_class_info_max$class[i]) %>%
+        dplyr::arrange(-Freq)
     }
+    common_domains <- rbind(common_domains, holder_tbl)
+  }
 }
 
 # write to file
 base::unique(common_domains %>% select(ref, abbrev)) %>%
-  # dplyr::filter(!startsWith(tolower(abbrev), "ig"),
-  #               !startsWith(tolower(abbrev), "znmc"),
-  #               !startsWith(tolower(abbrev), "7tm")) %>%
-  write_tsv("acceptable_domains.tsv")
+  dplyr::filter(!startsWith(tolower(abbrev), "ig"),
+                !startsWith(tolower(abbrev), "znmc"),
+                abbrev != "V-set") %>%
+  write_tsv("data/acceptable_domains.tsv")
 
-View(base::unique(common_domains))
+base::unique(common_domains %>% select(class, ref, abbrev)) %>%
+  dplyr::filter(startsWith(tolower(abbrev), "ig") | startsWith(tolower(abbrev), "znmc") | abbrev == "V-set") %>%
+  write_tsv("data/exceptional_domains.tsv")
