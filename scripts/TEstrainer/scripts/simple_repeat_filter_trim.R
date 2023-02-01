@@ -4,7 +4,8 @@ library(optparse)
 
 option_list <- list(
   make_option(c("-i", "--in_seq"), default=NA, type = "character", help="Input sequence (required)"),
-  make_option(c("-d", "--directory"), type="character", default=NULL, help="Path to data directory (required)", metavar="character")
+  make_option(c("-d", "--directory"), type="character", default=NULL, help="Path to data directory (required)", metavar="character"),
+  make_option(c("-p", "--sat_perc"), type="integer", default=60, help="Minimum percentage of total sequence classed as SSR for repeat to be considered a satellite")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -51,7 +52,7 @@ if(file.size(paste0(opt$directory, "/trf/", opt$out_seq, ".sassr")) == 0){
     arrange(seqnames) %>%
     filter(count > 2)
   
-  sassr_calc <- as_tibble(reduce(as_granges(sassr))) %>%
+  sassr_calc <- as_tibble(GenomicRanges::reduce(as_granges(sassr))) %>%
     dplyr::select(-strand) %>%
     dplyr::mutate(seqnames = as.character(seqnames)) %>%
     group_by(seqnames) %>%
@@ -88,7 +89,7 @@ if(file.size(paste0(opt$directory, "/trf/", opt$out_seq, ".trf")) == 0){
     filter(count > 2) %>%
     dplyr::select(seqnames, start, end)
   
-  trf_calc <- as_tibble(reduce(as_granges(trf_select))) %>%
+  trf_calc <- as_tibble(GenomicRanges::reduce(as_granges(trf_select))) %>%
     dplyr::select(-strand) %>%
     dplyr::mutate(seqnames = as.character(seqnames)) %>%
     group_by(seqnames) %>%
@@ -122,7 +123,7 @@ if(file.size(paste0(opt$directory, "/trf/", opt$out_seq, ".mreps")) == 0){
     filter(count > 2) %>%
     dplyr::select(seqnames, start, end)
   
-  mreps_calc <- as_tibble(reduce(as_granges(mreps_select))) %>%
+  mreps_calc <- as_tibble(GenomicRanges::reduce(as_granges(mreps_select))) %>%
     dplyr::select(-strand) %>%
     dplyr::mutate(seqnames = as.character(seqnames)) %>%
     group_by(seqnames) %>%
@@ -149,7 +150,7 @@ if(nrow(compiled_tr) == 0){
 
 # Identifying satellite/simple repeats
 over50tr <- stats_tr %>%
-  filter(sassr_perc_tr >= 50 | mreps_perc_tr >= 50 | trf_perc_tr >= 50) %>%
+  filter(sassr_perc_tr >= opt$sat_perc | mreps_perc_tr >= opt$sat_perc | trf_perc_tr >= opt$sat_perc) %>%
   mutate(sassr_perc_tr = ifelse(is.na(sassr_perc_tr), 0, sassr_perc_tr),
          mreps_perc_tr = ifelse(is.na(mreps_perc_tr), 0, mreps_perc_tr),
          trf_perc_tr = ifelse(is.na(trf_perc_tr), 0, trf_perc_tr))
@@ -169,7 +170,8 @@ macrosatellites <- satellites %>%
   filter(max_perc_tr > 90, count >= 2) %>%
   filter(period > 200) %>%
   mutate(start = start + period,
-         end = start + period) %>%
+         end = start + period,
+         end = ifelse(end > og_width, og_width, end)) %>%
   as_granges()
 macrosatellites_seq <- getSeq(in_seq, macrosatellites)
 names(macrosatellites_seq) <- sub("#.*", "#Satellite", seqnames(macrosatellites))
