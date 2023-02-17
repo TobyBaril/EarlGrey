@@ -183,7 +183,7 @@ Once this is complete, remember to activate the earlGrey conda environment befor
 ```
 conda activate earlGrey
 
-earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -t threads
+earlGrey -g genome.fasta -s speciesName -o outputDirectory -t threads
 ```
 
 For suggestions or questions, please use the discussion and issues functions in github.
@@ -446,7 +446,7 @@ Once this is complete, remember to activate the earlGrey conda environment befor
 ```
 conda activate earlGrey
 
-earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -t threads
+earlGrey -g genome.fasta -s speciesName -o outputDirectory -t threads
 ```
 
 #==============================================================================================================================================================================#
@@ -682,7 +682,7 @@ Once this is complete, remember to activate the earlGrey conda environment befor
 ```
 conda activate earlGrey
 
-earlGrey -g genome.fasta -s speciesName -o outputDirectory -r repeatMaskerTerm -t threads
+earlGrey -g genome.fasta -s speciesName -o outputDirectory -t threads
 ```
 
 #==============================================================================================================================================================================#
