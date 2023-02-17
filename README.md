@@ -246,13 +246,13 @@ Download RepeatMasker (this will download it to the current directory)
 Copy the RepeatMasker package to /usr/local/, or somewhere that all users will be able to access the installation. 
 Copying to /usr/local/ might require sudo privileges
 
-```sudo cp RepeatMasker-4.1.2-p1.tar.gz /usr/local/```
+```sudo cp RepeatMasker-4.1.4.tar.gz /usr/local/```
 
 Change directory to /usr/local, and extract the RepeatMasker package. This might require sudo privileges.
 
 ```cd /usr/local/```
 
-```sudo tar -zxvf RepeatMasker-4.1.2-p1.tar.gz```
+```sudo tar -zxvf RepeatMasker-4.1.4.tar.gz```
 
 Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.3 and RepBase. 
 Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase, although inclusion of RepBase can improve classification of repeats by RepeatModeler. If you have access to this database, please include it in your configuration of RepeatMasker. 
@@ -505,7 +505,7 @@ Download RepeatMasker (this will download it to the current directory)
 Extract the RepeatMasker package.
 
 ```
-tar -zxvf RepeatMasker-4.1.2-p1.tar.gz
+tar -zxvf RepeatMasker-4.1.4.tar.gz
 ```
 
 Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.3 and RepBase. 
