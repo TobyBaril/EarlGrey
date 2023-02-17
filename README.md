@@ -129,7 +129,7 @@ Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid
 
 # Installation
 
-Before using Earl Grey, please ensure RepeatMasker (version 4.1.2) and RepeatModeler (version 2.0.2) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
+Before using Earl Grey, please ensure RepeatMasker (version 4.1.4) and RepeatModeler (version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
 NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo privileges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
 
 
@@ -367,24 +367,24 @@ For Earl Grey, the LTR structural pipeline of RepeatModeler is not required, as 
 
 Download RepeatModeler
 
-```wget http://www.repeatmasker.org/RepeatModeler/RepeatModeler-2.0.2a.tar.gz```
+```wget http://www.repeatmasker.org/RepeatModeler/RepeatModeler-2.0.4.tar.gz```
 
 Copy the RepeatModeler package to /usr/local/, or somewhere that all users will be able to access the installation. 
 Copying to /usr/local/ might require sudo privileges
 
-```sudo cp RepeatModeler-2.0.2a.tar.gz /usr/local/```
+```sudo cp RepeatModeler-2.0.4.tar.gz /usr/local/```
 
 Change directory to /usr/local, and extract the RepeatModeler package. This might require sudo privileges.
 
 ```cd /usr/local/```
 
-```sudo tar -zxvf RepeatModeler-2.0.2a.tar.gz```
+```sudo tar -zxvf RepeatModeler-2.0.4.tar.gz```
 
 DO NOT configure RepeatModeler just yet...
 
 Add RepeatModeler directory to your path environment
 
-```echo 'export PATH=$PATH:/usr/local/RepeatModeler-2.0.2a/' >> ~/.bashrc```
+```echo 'export PATH=$PATH:/usr/local/RepeatModeler-2.0.4/' >> ~/.bashrc```
 
 ### To Install Earl Grey and Configure all Programs
 
@@ -434,7 +434,7 @@ Time to configure RepeatModeler! You need to enter the paths to lots of the dire
 
 
 ```
-cd /usr/local/RepeatModeler-2.0.2a/
+cd /usr/local/RepeatModeler-2.0.4/
 # check which perl interpreter you should use - COPY THIS
 which perl
 # replace perl in the below command with the path printed from the command above and use this as your perl interpreter
@@ -622,18 +622,18 @@ For Earl Grey, the LTR structural pipeline of RepeatModeler is not required, as 
 
 Download RepeatModeler
 
-```wget http://www.repeatmasker.org/RepeatModeler/RepeatModeler-2.0.2a.tar.gz```
+```wget http://www.repeatmasker.org/RepeatModeler/RepeatModeler-2.0.4.tar.gz```
 
 Unpack RepeatModeler
 
-```sudo tar -zxvf RepeatModeler-2.0.2a.tar.gz```
+```sudo tar -zxvf RepeatModeler-2.0.4.tar.gz```
 
 DO NOT configure RepeatModeler just yet...
 
 Add RepeatModeler directory to your path environment (Replace /path/to/ with the full path to your installation directory)
 
 
-```echo 'export PATH=$PATH:/path/to/RepeatModeler-2.0.2a/' >> ~/.bashrc```
+```echo 'export PATH=$PATH:/path/to/RepeatModeler-2.0.4/' >> ~/.bashrc```
 
 ### To Install Earl Grey and Configure all Programs
 
@@ -673,7 +673,7 @@ Time to configure RepeatModeler! You need to enter the paths to lots of the dire
 
 
 ```
-cd /path/to/RepeatModeler-2.0.2a/
+cd /path/to/RepeatModeler-2.0.4/
 perl ./configure
 ```
 
