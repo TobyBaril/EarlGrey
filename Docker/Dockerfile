@@ -100,7 +100,7 @@ RUN cd /opt \
 
 # Configure RepeatMasker
 RUN cd /opt \
-    && tar -x -f src/RepeatMasker-4.1.2-p1.tar.gz \
+    && tar -x -f src/RepeatMasker-4.1.4.tar.gz \
     && chmod a+w RepeatMasker/Libraries \
     && cd RepeatMasker/Libraries \
     && cp /opt/src/Dfam.h5.gz . \
@@ -115,12 +115,12 @@ RUN cd /opt \
         -libdir=/opt/RepeatMasker/Libraries \
         -trf_prgm=/opt/trf \
         -default_search_engine=rmblast \
-    && cd .. && rm src/RepeatMasker-4.1.2-p1.tar.gz
+    && cd .. && rm src/RepeatMasker-4.1.4.tar.gz
 
 # Configure RepeatModeler
 RUN cd /opt \
-    && tar -x -f src/RepeatModeler-2.0.2a.tar.gz \
-    && mv RepeatModeler-2.0.2a RepeatModeler \
+    && tar -x -f src/RepeatModeler-2.0.4.tar.gz \
+    && mv RepeatModeler-2.0.4 RepeatModeler \
     && cd RepeatModeler \
     && perl configure \
          -cdhit_dir=/opt/cd-hit -genometools_dir=/opt/genometools/bin \
