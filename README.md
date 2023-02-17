@@ -241,7 +241,7 @@ If you are not certain of the full path, please run the following command
 
 Download RepeatMasker (this will download it to the current directory)
 
-```wget http://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.2-p1.tar.gz```
+```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz```
 
 Copy the RepeatMasker package to /usr/local/, or somewhere that all users will be able to access the installation. 
 Copying to /usr/local/ might require sudo privileges
@@ -500,7 +500,7 @@ If you are not certain of the full path, please run the following command
 
 Download RepeatMasker (this will download it to the current directory)
 
-```wget http://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.2-p1.tar.gz```
+```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz```
 
 Extract the RepeatMasker package.
 
