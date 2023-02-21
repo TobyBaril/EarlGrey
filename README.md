@@ -228,16 +228,16 @@ You will need to download and install a couple of programs for RepeatMasker to w
 
 Download rmblast
 
-```wget http://www.repeatmasker.org/rmblast-2.11.0+-x64-linux.tar.gz```
+```wget https://www.repeatmasker.org/rmblast/rmblast-2.13.0+-x64-linux.tar.gz```
 
 Extract the rmblast package
 
-```tar -zxvf rmblast-2.11.0+-x64-linux.tar.gz```
+```tar -zxvf rmblast-2.13.0+-x64-linux.tar.gz```
 
-Make a note of the full path to rmblast-2.11.0/bin/ as you will need this in the RepeatMasker configuration
+Make a note of the full path to rmblast-2.13.0/bin/ as you will need this in the RepeatMasker configuration
 If you are not certain of the full path, please run the following command
 
-```realpath ./rmblast-2.11.0/bin/```
+```realpath ./rmblast-2.13.0/bin/```
 
 Download RepeatMasker (this will download it to the current directory)
 
@@ -487,16 +487,16 @@ You will need to download and install a couple of programs for RepeatMasker to w
 
 Download rmblast
 
-```wget http://www.repeatmasker.org/rmblast-2.11.0+-x64-linux.tar.gz```
+```wget https://www.repeatmasker.org/rmblast/rmblast-2.13.0+-x64-linux.tar.gz```
 
 Extract the rmblast package
 
-```tar -zxvf rmblast-2.11.0+-x64-linux.tar.gz```
+```tar -zxvf rmblast-2.13.0+-x64-linux.tar.gz```
 
-Make a note of the full path to rmblast-2.11.0/bin/ as you will need this in the RepeatMasker configuration
+Make a note of the full path to rmblast-2.13.0/bin/ as you will need this in the RepeatMasker configuration
 If you are not certain of the full path, please run the following command
 
-```realpath ./rmblast-2.11.0/bin/```
+```realpath ./rmblast-2.13.0/bin/```
 
 Download RepeatMasker (this will download it to the current directory)
 
