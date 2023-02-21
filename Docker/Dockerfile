@@ -17,8 +17,8 @@ WORKDIR /opt/src
 # Extract RMBlast
 RUN cd /opt \
     && mkdir rmblast \
-    && tar --strip-components=1 -x -f src/rmblast-2.11.0+-x64-linux.tar.gz -C rmblast \
-    && rm src/rmblast-2.11.0+-x64-linux.tar.gz
+    && tar --strip-components=1 -x -f src/rmblast-2.13.0+-x64-linux.tar.gz -C rmblast \
+    && rm src/rmblast-2.13.0+-x64-linux.tar.gz
 
 # Compile HMMER
 RUN tar -x -f hmmer-3.3.2.tar.gz \
