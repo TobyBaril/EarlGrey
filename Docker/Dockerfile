@@ -109,7 +109,7 @@ RUN cd /opt \
     && cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
     && tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
     && cd /opt/RepeatMasker \
-    #&& mv famdb.py famdb.py.bak \
+    #&& mv famdb.py famdb.py.bak \ # these are hashed out until I can work out how to get 3.7 to work without hanging
     #&& wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py \
     #&& chmod 755 famdb.py \ 
     && perl configure \
