@@ -16,10 +16,10 @@ we strongly recommend upgrading the RepeatMasker contained within Docker with th
 note there are only ~6000 seqs in the basic RepeatMasker library in this container, real Dfam is much larger!
 
 If you need to download these,
-Dfam.h5.gz can be downloaded by running:
+Dfam.h5.gz (NOTE ONLY TESTED UP TO DFAM 3.6) can be downloaded by running:
 
 ```
-wget https://www.dfam.org/releases/current/families/Dfam.h5.gz 
+wget https://www.dfam.org/releases/Dfam_3.6/families/Dfam.h5.gz 
 # THIS IS A BIG FILE!
 ```
 
