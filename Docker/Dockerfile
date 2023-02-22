@@ -109,9 +109,9 @@ RUN cd /opt \
     && cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
     && tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
     && cd /opt/RepeatMasker \
-    && mv famdb.py famdb.py.bak \
-    && wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py \
-    && chmod 755 famdb.py \ 
+    #&& mv famdb.py famdb.py.bak \
+    #&& wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py \
+    #&& chmod 755 famdb.py \ 
     && perl configure \
         -hmmer_dir=/opt/hmmer/bin \
         -rmblast_dir=/opt/rmblast/bin \
