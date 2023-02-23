@@ -24,11 +24,11 @@ wget https://www.dfam.org/releases/Dfam_3.6/families/Dfam.h5.gz
 # THIS IS A BIG FILE!
 ```
 
-Repbase is now behind a paywall, if you do not have access, please comment out the following lines in the Dockerfile (lines 105-107)
+Repbase is now behind a paywall, The following lines are hashed out due to incompatabilities with the latest Dfam (lines 105-107). You are free to reconfigure the container if you are confident in configuring these programs.
 ```
-&& cd /opt/RepeatMasker \
-&& cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
-&& tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
+# && cd /opt/RepeatMasker \
+# && cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
+# && tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
 ```
 
 ## Build a docker container (run from inside the directory where the Dockerfile for EarlGrey is stored)
