@@ -1,4 +1,5 @@
 # Get Earl Grey to run in Docker
+## Note, the docker container has been tested with Dfam 3.7 without RepBase. If you would like to use with earlier versions of Dfam, please hash out lines 130-132 in the Dockerfile
 
 Run the following from inside the EarlGrey/Docker/ directory
 
