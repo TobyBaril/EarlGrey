@@ -16,6 +16,9 @@ else
         exit 1
 fi
 
+# make earlGrey executable
+chmod +x ./earlGrey
+
 # set paths in Earl Grey Script
 
 echo "Setting path variables in script"
