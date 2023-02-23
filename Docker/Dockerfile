@@ -149,7 +149,7 @@ RUN cd /opt \
          -ninja_dir=/opt/NINJA/NINJA -recon_dir=/opt/RECON/bin \
          -repeatmasker_dir=/opt/RepeatMasker \
          -rmblast_dir=/opt/rmblast/bin -rscout_dir=/opt/RepeatScout \
-         -trf_dir=/opt/trf \
+         -trf_dir=/opt/ \
          -ucsctools_dir=/opt/ucsc_tools
 
 FROM debian:9
@@ -184,16 +184,14 @@ RUN echo "PS1='(earlgrey \$(pwd))\\\$ '" >> /etc/bash.bashrc
 ENV LANG=C
 ENV PYTHONIOENCODING=utf8
 
+RUN apt install build-essential -y --no-install-recommends
+
 RUN cd /opt/ \
         && git clone https://github.com/TobyBaril/EarlGrey \
         && cd EarlGrey \
         && chmod +x ./configureForDocker \
         && eval "$(/anaconda3/bin/conda shell.bash  hook)" \
-        #&& sed -i "s#conda activate earlGrey#sed -i \'s/^function //g\' /anaconda3/envs/earlGrey/etc/conda/activate.d/* && conda activate earlGrey#g" ./configure \
-        && apt-get -y update && apt-get -y install \
-           curl gcc g++ make zlib1g-dev libgomp1 #\
-        && ./configureForDocker \
-        && chmod +x /opt/EarlGrey/earlGrey
+        && ./configureForDocker 
 
 ENV PATH=$PATH:/opt/EarlGrey/
 
