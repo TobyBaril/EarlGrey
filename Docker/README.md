@@ -38,7 +38,7 @@ docker build . -t earlgrey
 ## start the docker container
 
 ```
-docker run -it --rm --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" earlgrey "$@"
+docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" earlgrey "$@"
 ```
 
 ## configure the earlGrey conda environment in the docker container (ie after starting the container)
