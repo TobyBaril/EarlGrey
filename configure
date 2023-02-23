@@ -24,7 +24,7 @@ else
         conda env create -f ./earlGrey.yml
 fi
 eval "$(conda shell.bash hook)"
-source /anaconda3/etc/profile.d/conda.sh
+conda update -n base -c defaults conda
 conda activate earlGrey
 
 # make Earl Grey Script executable
