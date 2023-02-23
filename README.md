@@ -239,7 +239,7 @@ If you are not certain of the full path, please run the following command
 
 ```realpath ./rmblast-2.13.0/bin/```
 
-Download RepeatMasker (this will download it to the current directory)
+Download RepeatMasker (this will download it to the current directory). NOTE some extra steps are required if you wish to use Dfam 3.7, please refer to repeatmasker.org/RepeatMasker for these extra steps if required.
 
 ```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz```
 
@@ -498,7 +498,7 @@ If you are not certain of the full path, please run the following command
 
 ```realpath ./rmblast-2.13.0/bin/```
 
-Download RepeatMasker (this will download it to the current directory)
+Download RepeatMasker (this will download it to the current directory). NOTE some extra steps are required if you wish to use Dfam 3.7, please refer to repeatmasker.org/RepeatMasker for these extra steps if required.
 
 ```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz```
 
