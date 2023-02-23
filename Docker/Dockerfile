@@ -11,6 +11,23 @@ RUN apt-get -y update && apt-get -y install \
     libtext-soundex-perl \
     libjson-perl liburi-perl libwww-perl
 
+# Install dependencies and some basic utilities
+RUN apt-get -y update \
+    && apt-get -y install \
+        aptitude \
+        libgomp1 \
+        perl \
+        python3-h5py \
+        libfile-which-perl \
+        libtext-soundex-perl \
+        libjson-perl liburi-perl libwww-perl \
+        libdevel-size-perl \
+    && aptitude install -y ~pstandard ~prequired \
+        curl wget \
+        vim nano \
+        procps strace \
+        libpam-systemd-
+
 COPY src/* /opt/src/
 WORKDIR /opt/src
 
@@ -106,19 +123,20 @@ RUN cd /opt \
     && cp /opt/src/Dfam.h5.gz . \
     && gunzip -f Dfam.h5.gz \
     && cd /opt/RepeatMasker \
-    && cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
-    && tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
-    && cd /opt/RepeatMasker \
-    #&& mv famdb.py famdb.py.bak \ # these are hashed out until I can work out how to get 3.7 to work without hanging
-    #&& wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py \
-    #&& chmod 755 famdb.py \ 
+    #&& cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
+    #&& tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz \
+    #&& wget https://github.com/rmhubley/RepeatMasker/blob/development/Libraries/RMRBMeta.embl \
+    #&& cd /opt/RepeatMasker \
+    && mv famdb.py famdb.py.bak \
+    && cp /opt/src/famdb.py . \
+    && chmod 755 famdb.py \ 
     && perl configure \
         -hmmer_dir=/opt/hmmer/bin \
         -rmblast_dir=/opt/rmblast/bin \
         -libdir=/opt/RepeatMasker/Libraries \
         -trf_prgm=/opt/trf \
         -default_search_engine=rmblast \
-    && cd .. && rm src/RepeatMasker-4.1.4.tar.gz
+    && echo "RepeatMasker configured..." && cd .. && rm src/RepeatMasker-4.1.4.tar.gz
 
 # Configure RepeatModeler
 RUN cd /opt \
@@ -131,12 +149,13 @@ RUN cd /opt \
          -ninja_dir=/opt/NINJA/NINJA -recon_dir=/opt/RECON/bin \
          -repeatmasker_dir=/opt/RepeatMasker \
          -rmblast_dir=/opt/rmblast/bin -rscout_dir=/opt/RepeatScout \
-         -trf_prgm=/opt/trf \
+         -trf_dir=/opt/trf \
          -ucsctools_dir=/opt/ucsc_tools
 
 FROM debian:9
 
 # Install dependencies and some basic utilities
+RUN apt update && apt-get -y install git
 RUN apt-get -y update \
     && apt-get -y install \
         aptitude \
@@ -152,10 +171,8 @@ RUN apt-get -y update \
         vim nano \
         procps strace \
         libpam-systemd-
-
-RUN apt-get -y install git
 RUN cd /opt/ \
-        && curl https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh --output anaconda.sh \
+        && curl https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh --output anaconda.sh \
         && bash ./anaconda.sh -b -p /anaconda3 \
         && eval "$(/anaconda3/bin/conda shell.bash  hook)"
 
@@ -170,9 +187,13 @@ ENV PYTHONIOENCODING=utf8
 RUN cd /opt/ \
         && git clone https://github.com/TobyBaril/EarlGrey \
         && cd EarlGrey \
-        && chmod +x ./configure \
+        && chmod +x ./configureForDocker \
         && eval "$(/anaconda3/bin/conda shell.bash  hook)" \
-        && ./configure
+        #&& sed -i "s#conda activate earlGrey#sed -i \'s/^function //g\' /anaconda3/envs/earlGrey/etc/conda/activate.d/* && conda activate earlGrey#g" ./configure \
+        && apt-get -y update && apt-get -y install \
+           curl gcc g++ make zlib1g-dev libgomp1 #\
+        && ./configureForDocker \
+        && chmod +x /opt/EarlGrey/earlGrey
 
 ENV PATH=$PATH:/opt/EarlGrey/
 
