@@ -1,0 +1,55 @@
+# Short script to configure Earl Grey to run on any system in a portable manner
+
+# check presence of RepeatMasker and RepeatModeler
+echo "Checking RepeatMasker and RepeatModeler configuration"
+if [ -x "$(command -v RepeatMasker)" ]; then
+        echo "Success! RepeatMasker is installed and in PATH"
+else
+        echo "Error: RepeatMasker is not installed and in PATH"
+        exit 1
+fi
+
+if [ -x "$(command -v RepeatModeler)" ]; then
+        echo "Success! RepeatModeler is installed and in PATH"
+else
+        echo "Error: RepeatModeler is not installed and in PATH"
+        exit 1
+fi
+
+# set paths in Earl Grey Script
+
+echo "Setting path variables in script"
+SCRIPT_DIR=$(realpath ./scripts/)
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./earlGrey
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/headSwap.sh
+sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/autoPie.sh
+sed -i "s|INSERT_FILENAME_HERE|${SCRIPT_DIR}/TEstrainer/scripts/|g" ./scripts/TEstrainer/TEstrainer_for_earlGrey.sh
+chmod +x ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+chmod +x ${SCRIPT_DIR}/* > /dev/null 2>&1
+chmod +x ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/ltr_finder
+chmod a+w ${SCRIPT_DIR}/repeatCraft/example/
+chmod +x ./modules/trf409.linux64
+sleep 3
+echo "Path variables set"
+sleep 3
+
+# install sa-ssr
+if [ ! -f "${SCRIPT_DIR}/sa-ssr" ]; then
+  echo "Installing sa-ssr"
+  cd ${SCRIPT_DIR} && chmod a+w ${SCRIPT_DIR}
+  git clone https://github.com/ridgelab/SA-SSR && cd ./SA-SSR/
+  sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
+  sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+fi
+
+# Extract tRNAdb
+echo "Extracting zip archives"
+tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/
+echo "Extracted required archives"
+sleep 3
+
+# Message Complete
+echo "Remember to configure the earl grey conda environment before running..."
+sleep 3
+export PATH=$PATH:$(realpath .)
