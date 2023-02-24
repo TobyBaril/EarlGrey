@@ -1,4 +1,14 @@
 # Get Earl Grey to run in Docker
+
+# Get the preconfigured docker container from docker hub
+## This image has been configured with Dfam v3.7 curated elements only
+
+```
+docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey "$@"
+```
+
+# OR Build the container...
+
 ## Note, the docker container has been tested with Dfam 3.7 without RepBase. If you would like to use with earlier versions of Dfam, please hash out lines 130-132 in the Dockerfile
 
 Run the following from inside the EarlGrey/Docker/ directory
@@ -56,10 +66,4 @@ eval "$(/anaconda3/bin/conda shell.bash  hook)"
 conda activate earlGrey
 ```
 
-# Get the preconfigured docker container from docker hub
-## This image has been configured with Dfam v3.7 curated elements only
-
-```
-docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey "$@"
-```
 
