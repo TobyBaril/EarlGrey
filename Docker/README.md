@@ -7,6 +7,20 @@
 docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey "$@"
 ```
 
+## configure the earlGrey conda environment in the docker container (ie after starting the container)
+```
+eval "$(/anaconda3/bin/conda shell.bash  hook)"
+conda env create -f /home/user/EarlGrey/earlGrey.yml
+conda activate earlGrey
+Rscript /home/user/EarlGrey/scripts/install_r_packages.R
+```
+## Run these commands to activate the conda environment for EarlGrey when starting the container
+
+```
+eval "$(/anaconda3/bin/conda shell.bash  hook)"
+conda activate earlGrey
+```
+
 # OR Build the container...
 
 ## Note, the docker container has been tested with Dfam 3.7 without RepBase. If you would like to use with earlier versions of Dfam, please hash out lines 130-132 in the Dockerfile
