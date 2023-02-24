@@ -45,9 +45,9 @@ docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(i
 ## configure the earlGrey conda environment in the docker container (ie after starting the container)
 ```
 eval "$(/anaconda3/bin/conda shell.bash  hook)"
-conda env create -f /opt/EarlGrey/earlGrey.yml
+conda env create -f /home/user/EarlGrey/earlGrey.yml
 conda activate earlGrey
-Rscript /opt/EarlGrey/scripts/install_r_packages.R
+Rscript /home/user/EarlGrey/scripts/install_r_packages.R
 ```
 ## Run these commands to activate the conda environment for EarlGrey when starting the container
 
