@@ -689,60 +689,6 @@ earlGrey -g genome.fasta -s speciesName -o outputDirectory -t threads
 
 ## Earl Grey Installation and Configuration Inside a Docker Container (If you cannot install conda environments or need to use docker venvs on your system)
 
-To install the docker container, make sure Docker is installed and configured on your system. All files relating to the docker installation are found within the Docker directory in this repository.
+To install the docker container, make sure Docker is installed and configured on your system. All files relating to the docker installation are found within the Docker directory in this repository. Please consult the README in the Docker directory for installation instructions.
 
-First, download all dependencies using the getsrc.sh script:
 
-```
-chmod +x getFiles.sh
-./getFiles.sh
-```
-
-Next, download the latest version of Dfam.h5.gz from dfam, and save in the ./src directory that was created by the previous command:
-
-NOTE: This is a large file, check free storage before downloading the database.
-
-```
-cd ./src
-wget https://www.dfam.org/releases/current/families/Dfam.h5.gz
-cd ..
-```
-
-The last requirement for the container is the RepBaseRepeatMaskerEdition-20181026.tar.gz file. If you already have this, great! However, if not, this is now behind a paywall. If you do not have access to this, do not worry, just comment out lines 105-107 in the Dockerfile:
-
-```
-# Either (If you already have the file, copy it to the src directory):
-cp RepBaseRepeatMaskerEdition-20181026.tar.gz ./src
-# OR (comment out the following lines in the Dockerfile):
-nano Dockerfile
-
-# Find these lines and put a hashtag in front of them, so they do not run:
-[INSERT HASHTAG HERE] && cd /opt/RepeatMasker \
-[INSERT HASHTAG HERE] && cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \
-[INSERT HASHTAG HERE] && tar -zxf RepBaseRepeatMaskerEdition-20181026.tar.gz
-
-# Save the file by pressing ctrl+x and saving under the same name
-```
-
-Following this, build the docker container (this will take a while!)
-
-```
-docker build . -t earlgrey
-```
-
-To run the docker container interactively so you can analyse your genome assembly:
-
-```
-# change directory to whichever contains the genome you need
-cd /path/to/directory
-
-# start the container and mount current directory as /work in the docker container
-docker run -it --rm --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" earlgrey "$@"
-
-# To get earl grey to work, run the following lines when you start the container
-eval "$(/anaconda3/bin/conda shell.bash  hook)"
-conda activate earlGrey
-
-# then run earl grey as normal
-earlGrey -g [genome.fasta] -s [speciesName] -r [repeatmasker-search-term] -o [outputDirectory] -t [numberThreads]
-```
