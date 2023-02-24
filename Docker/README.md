@@ -12,15 +12,15 @@ chmod +x getFiles.sh
 ./getFiles.sh
 ```
 
-NOTE: please make sure that Dfam.h5.gz and RepBase libraries tar.gz are inside the ./src directory after running ./getFiles.sh . 
-we strongly recommend upgrading the RepeatMasker contained within Docker with the Dfam libraries and RepBase, information on this is found: https://github.com/Dfam-consortium/TETools
+NOTE: please make sure that Dfam.h5.gz is inside the ./src directory after running ./getFiles.sh . 
+we strongly recommend upgrading the RepeatMasker contained within Docker with the Dfam library v3.7 ONLY, information on this is found: https://github.com/Dfam-consortium/TETools
 note there are only ~6000 seqs in the basic RepeatMasker library in this container, real Dfam is much larger!
 
 If you need to download these,
-Dfam.h5.gz (NOTE ONLY TESTED UP TO DFAM 3.6) can be downloaded by running:
+Dfam.h5.gz (NOTE ONLY TESTED ON DFAM 3.7) can be downloaded by running:
 
 ```
-wget https://www.dfam.org/releases/Dfam_3.6/families/Dfam.h5.gz 
+wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz 
 # THIS IS A BIG FILE!
 ```
 
@@ -33,7 +33,7 @@ Repbase is now behind a paywall, The following lines are hashed out due to incom
 
 ## Build a docker container (run from inside the directory where the Dockerfile for EarlGrey is stored)
 ```
-docker build . -t earlgrey
+docker build -t earlgrey --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .
 ```
 
 ## start the docker container
