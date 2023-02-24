@@ -185,15 +185,29 @@ ENV LANG=C
 ENV PYTHONIOENCODING=utf8
 
 RUN apt install build-essential -y --no-install-recommends
+RUN apt install libcurl4-openssl-dev -y && apt-get install libbz2-dev liblzma-dev libtiff-dev libfreetype6-dev pkgconf libfontconfig1-dev libharfbuzz-dev libfribidi-dev bc -y
 
-RUN cd /opt/ \
+ARG USER_ID
+ARG GROUP_ID
+
+RUN addgroup --gid $GROUP_ID user
+RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
+RUN chmod a+rwx /opt/*
+USER user
+
+RUN cd ~ \
         && git clone https://github.com/TobyBaril/EarlGrey \
         && cd EarlGrey \
         && chmod +x ./configureForDocker \
         && eval "$(/anaconda3/bin/conda shell.bash  hook)" \
         && ./configureForDocker 
 
-ENV PATH=$PATH:/opt/EarlGrey/
+RUN cd ~ \
+        && git clone https://github.com/ridgelab/SA-SSR \
+        && cd SA-SSR/ \
+        && sed -i "s|PREFIX=/usr/local/bin|PREFIX=/home/user/SA-SSR/|g" Makefile && make && make install  
+
+ENV PATH=$PATH:/home/user/EarlGrey/:/home/user/SA-SSR/bin/
 
 #RUN echo "#!/bin/bash" > /work/start.sh \
 #        && echo 'eval "$(/anaconda3/bin/conda shell.bash  hook)"' >> /work/start.sh \
