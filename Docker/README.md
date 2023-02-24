@@ -55,3 +55,11 @@ Rscript /home/user/EarlGrey/scripts/install_r_packages.R
 eval "$(/anaconda3/bin/conda shell.bash  hook)"
 conda activate earlGrey
 ```
+
+# Get the preconfigured docker container from docker hub
+## This image has been configured with Dfam v3.7 curated elements only
+
+```
+docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey "$@"
+```
+
