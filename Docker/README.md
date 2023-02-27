@@ -1,6 +1,6 @@
 # Get Earl Grey to run in Docker
 
-## An image for Earl Grey configured with Dfam 3.7 curated elements can be found (here)[https://hub.docker.com/repository/docker/tobybaril/earlgrey/general]
+## An image for Earl Grey configured with Dfam 3.7 curated elements can be found [here](https://hub.docker.com/repository/docker/tobybaril/earlgrey/general)
 
 # Get the preconfigured docker container from docker hub
 ## This image has been configured with Dfam v3.7 curated elements only
