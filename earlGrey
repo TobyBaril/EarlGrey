@@ -364,6 +364,9 @@ fi
 # Step 4 - run TEstrainer, which runs a BLAST, extract, extent, trim, on the the de novo repeat library to refine consensus sequences
 if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 	stage="Straining TEs and Refining de novo Consensus Sequences" && runningTea
+	if [ -f ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
+		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
+	fi
 	strainer
 	sleep 1
 else
