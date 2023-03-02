@@ -368,6 +368,9 @@ if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
 	fi
 	strainer
+	if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
+		echo "ERROR: TEstrainer failed to produce a strain file, please check the log file for more information"; exit 1
+	fi
 	sleep 1
 else
 	stage="TEs already strained, skipping..." && runningTea
