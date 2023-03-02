@@ -56,9 +56,11 @@ if [ ! -f "${SCRIPT_DIR}/sa-ssr" ]; then
   git clone https://github.com/ridgelab/SA-SSR && cd ./SA-SSR/
   sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
   sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  sed -i "s|txt trf|txt $(which trf)|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
   else
   sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
   sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  sed -i "s|txt trf|txt $(which trf)|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
 fi
 
 # Install R packages
