@@ -72,7 +72,7 @@ Rscript ${SCRIPT_DIR}/install_r_packages.R
 
 # Extract tRNAdb
 echo "Extracting zip archives"
-tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory cd ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/
+tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/
 echo "Extracted required archives"
 sleep 3
 
