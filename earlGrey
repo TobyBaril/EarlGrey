@@ -58,7 +58,7 @@ prepGenome()
 	fi
 	if [ ! -f ${genome}.prep ] || [ ! -f ${genome}.dict ]; then
 		cp ${genome} ${genome}.bak && gzip -f ${genome}.bak 
-		sed -i '/>/ s/ .*//g' ${genome}
+		sed -i '/>/ s/ .*//g; /^$/d' ${genome}
 		${SCRIPT_DIR}/headSwap.sh -i ${genome} -o ${genome}.prep
 		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
 		dict=${genome}.dict
