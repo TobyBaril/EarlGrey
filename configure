@@ -57,11 +57,13 @@ if [ ! -f "${SCRIPT_DIR}/sa-ssr" ]; then
   sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
   sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
   sed -i "s|txt trf|txt $(which trf)|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  cd ${SCRIPT_DIR}
   else
   cd ${SCRIPT_DIR}/SA-SSR/
   sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
   sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
   sed -i "s|txt trf|txt $(which trf)|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  cd ${SCRIPT_DIR}
 fi
 
 # Install R packages
@@ -70,7 +72,7 @@ Rscript ${SCRIPT_DIR}/install_r_packages.R
 
 # Extract tRNAdb
 echo "Extracting zip archives"
-tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory ./scripts/bin/LTR_FINDER.x86_64-1.0.7/
+tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory cd ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/
 echo "Extracted required archives"
 sleep 3
 
