@@ -43,7 +43,7 @@ rownames(dist) <- 1:nrow(dist)
 dist$classif <- dist$type
 dist$classif <- gsub("^DNA.*", "DNA", dist$classif)
 dist$classif <- gsub("^LTR.*", "LTR", dist$classif)
-dist$classif <- gsub(".*Penelope.*", "Penelope", dist$classif)
+dist$classif <- gsub(".*Penelope|^PLE.*", "Penelope", dist$classif)
 dist$classif <- gsub("^LINE.*", "LINE", dist$classif)
 dist$classif <- gsub("^SINE.*", "SINE", dist$classif)
 dist$classif <- gsub("^RC.*", "Rolling Circle", dist$classif)

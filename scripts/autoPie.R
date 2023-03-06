@@ -37,7 +37,7 @@ colnames(input2) <- c("scaf", "method", "classif", "start", "end", "score", "str
 input$tclassif <- input$classif
 input$tclassif <- gsub("^DNA.*", "DNA", input$tclassif)
 input$tclassif <- gsub("^RC.*", "Rolling Circle", input$tclassif)
-input$tclassif <- gsub(".*Penelope", "Penelope", input$tclassif)
+input$tclassif <- gsub(".*Penelope|^PLE.*", "Penelope", input$tclassif)
 input$tclassif <- gsub("^LINE.*", "LINE", input$tclassif)
 input$tclassif <- gsub("^SINE.*", "SINE", input$tclassif)
 input$tclassif <- gsub("^LTR.*", "LTR", input$tclassif)
@@ -47,7 +47,7 @@ input$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|
 input2$tclassif <- input2$classif
 input2$tclassif <- gsub("^DNA.*", "DNA", input2$tclassif)
 input2$tclassif <- gsub("^RC.*", "Rolling Circle", input2$tclassif)
-input2$tclassif <- gsub(".*Penelope", "Penelope", input2$tclassif)
+input2$tclassif <- gsub(".*Penelope|^PLE.*", "Penelope", input2$tclassif)
 input2$tclassif <- gsub("^LINE.*", "LINE", input2$tclassif)
 input2$tclassif <- gsub("^SINE.*", "SINE", input2$tclassif)
 input2$tclassif <- gsub("^LTR.*", "LTR", input2$tclassif)
