@@ -10,7 +10,7 @@ usage()
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
 		-r == RepeatMasker search term (e.g arthropoda/eukarya)
-		-i == Number of Iterations to BLAST, Extract, Extend - Only enter a number between 5 and 10 (Iteration outputs are 0-based!) (Default: 10)
+		-i == Number of Iterations to BLAST, Extract, Extend (Default: 10)
 		-f == Number flanking basepairs to extract (Default: 1000)
 		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
 		-h == Show help
@@ -131,7 +131,7 @@ deNovo1()
 strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank #-r $num
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num
 	latestFile=${OUTDIR}/${species}_strainer/TS*/${species}-families.fa.strained
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
