@@ -392,6 +392,9 @@ fi
 if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
 	stage="Identifying Repeats Using Species-Specific Library" && runningTea
 	novoMask
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
+		echo "ERROR: RepeatMasker failed, please check logs" && exit 2
+	fi
 	calcDivRL
 	sleep 1
 else
