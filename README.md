@@ -335,19 +335,6 @@ realpath ./RECON-1.08/bin/
 realpath ./RepeatScout-1.0.6/
 ```
 
-Install CD-Hit
-
-```
-sudo apt install cd-hit
-```
-
-Make a note of the full path to CD-Hit as you will need these in the RepeatModeler configuration
-If you are not certain of the full path, please run the following command
-
-```
-which cd-hit
-```
-
 Install UCSC TwoBit Tools. Make a note of the full path to the directory where these have been installed as you will need these in the RepeatModeler configuration
 
 ```
@@ -588,19 +575,6 @@ If you are not certain of the full paths, please run the following commands
 ```
 realpath ./RECON-1.08/bin/
 realpath ./RepeatScout-1.0.6/
-```
-
-Install CD-Hit - This step will require SUDO privilages, if you are working on a cluster, this might already be installed. Please check with your sysadmin.
-
-```
-sudo apt install cd-hit
-```
-
-Make a note of the full path to CD-Hit as you will need these in the RepeatModeler configuration
-If you are not certain of the full path, please run the following command
-
-```
-which cd-hit
 ```
 
 Install UCSC TwoBit Tools. Make a note of the full path to the directory where these have been installed as you will need these in the RepeatModeler configuration
