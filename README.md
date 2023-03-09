@@ -286,6 +286,15 @@ NOTE, a warning might come up that this will overwrite the existing file, allow 
 
 ```mv Dfam.h5 /usr/local/RepeatMasker/Libraries/```
 
+If you are using Dfam 3.7, you also need to update ```famdb.py```
+
+```
+cd /usr/local/RepeatMasker/
+mv famdb.py famdb.py.bak
+wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py
+chmod 755 famdb.py
+```
+
 DO NOT configure RepeatMasker just yet...
 
 Add RepeatMasker and util directory to your path environment
@@ -406,6 +415,8 @@ sudo pip install h5py
 The linux64 version of TRF is included in the modules directory of Earl Grey. Make a note of the full path to this file as this will be needed in the RepeatMasker configuration.
 
 ```realpath ./modules/trf409*```
+
+NOTE: For the latest version of RepeatModeler, this must be called trf. We can make a symlinked version: ```ln -s ./modules/trf409* ./modules/trf```
 
 Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo privileges.
 
@@ -528,6 +539,15 @@ NOTE, a warning might come up that this will overwrite the existing file, allow 
 
 NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
 
+If you are using Dfam 3.7, you also need to update ```famdb.py```
+
+```
+cd /PATH/TO/RepeatMasker/
+mv famdb.py famdb.py.bak
+wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py
+chmod 755 famdb.py
+```
+
 DO NOT configure RepeatMasker just yet...
 
 Add RepeatMasker and util directory to your path environment (Replace /path/to/ with the full path to your installation directory)
@@ -635,6 +655,8 @@ conda activate earlGrey
 The linux64 version of TRF is included in the modules directory of Earl Grey. Make a note of the full path to this file as this will be needed in the RepeatMasker configuration.
 
 ```realpath ./modules/trf409*```
+
+NOTE: For the latest version of RepeatModeler, this must be called trf. We can make a symlinked version: ```ln -s ./modules/trf409* ./modules/trf```
 
 Now to finally configure RepeatMasker! - Run these lines and then follow the on-screen prompts from RepeatMasker. Again, this might require sudo privileges.
 
