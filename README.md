@@ -60,6 +60,8 @@ Directories created by earl grey:
   * [speciesName]_summaryFiles/
     + Results and plots from Earl Grey:
     + TE annotations in GFF3 and BED format
+    + High-level TE quantification table (tab delimited)
+    + Family-level TE quantification table (tab delimited)
     + Repeat Landscape showing TE activity (PDF)
     + Pie chart of genome repeat content (PDF)
     + _de novo_ repeat library in FASTA format
