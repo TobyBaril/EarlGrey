@@ -129,7 +129,7 @@ if [ -s ${DATA_DIR}/run_${RUNS}/further_${RM_LIBRARY} ]; then
 fi
 
 # add any families which went missing along the way due to alignment issues
-  find ${DATA_DIR}/run_*/mafft/ -empty | sed 's/mafft/raw/' > ${DATA_DIR}/missing_consensi.txt
+find ${DATA_DIR}/run_*/mafft/ -empty -type f | sed 's/mafft/raw/' > ${DATA_DIR}/missing_consensi.txt
 if [[ -s ${DATA_DIR}/missing_consensi.txt ]]; then
   while read file_name; do
     cat $file_name >> ${DATA_DIR}/${RM_LIBRARY}
@@ -157,9 +157,6 @@ parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/
 find ./${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
 # Interpret mreps, TRF and SA-SSR
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"
-if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
-  touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
-fi
 Rscript ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR}
 
 # Delete temp files
@@ -173,9 +170,13 @@ echo "Reclassifying repeats"
 mkdir -p ${DATA_DIR}/classify/
 cp ${DATA_DIR}/trf/${RM_LIBRARY}.nonsatellite ${DATA_DIR}/classify/
 cd ${DATA_DIR}/classify/
-RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite &>/dev/null
-if [ ! -f ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ]; then RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite; fi
+RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
 cd -
-cp ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ${DATA_DIR}/${RM_LIBRARY}.strained
+# Compile classified files
+if [ - f ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified]; then
+    cp ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ${DATA_DIR}/${RM_LIBRARY}.strained
+else
+    touch ${DATA_DIR}/${RM_LIBRARY}.strained
+fi
 echo "Compiling library"
 cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
