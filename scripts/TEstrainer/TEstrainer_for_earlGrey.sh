@@ -157,6 +157,9 @@ parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/
 find ./${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
 # Interpret mreps, TRF and SA-SSR
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"
+if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
+   touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
+fi
 Rscript ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR}
 
 # Delete temp files
