@@ -116,8 +116,7 @@ colours <- as.data.frame(matrix(c("DNA", "#E32017",
                                   "SINE", "#9B0056",
                                   "LTR", "#00782A",
                                   "Other (Simple Repeat, Microsatellite, RNA)", "#F3A9BB",
-                                  "Unclassified", "#A0A5A9",
-                                  "Non-Repeat", "#000000"), ncol = 2, byrow = TRUE))
+                                  "Unclassified", "#A0A5A9"), ncol = 2, byrow = TRUE))
 
 colnames(colours) <- c("tclassif", "colour")
 col <- colours$colour
