@@ -92,6 +92,14 @@ filteredRepeatsOut <- mergedRepeatsOut
 filteredRepeatsOut$length <- abs(filteredRepeatsOut$End - filteredRepeatsOut$Start)
 filteredRepeatsOut <- filteredRepeatsOut[filteredRepeatsOut$length > 100,]
 filteredRepeatsOut2 <- filteredRepeatsOut[,1:6]
+for (i in 1:length(filteredRepeatsOut2$Start)) {
+  if (filteredRepeatsOut2$End[i] < filteredRepeatsOut2$Start[i]) {
+    start <- filteredRepeatsOut2$End[i]
+    end <- filteredRepeatsOut2$Start[i]
+    filteredRepeatsOut2$Start[i] <- start
+    filteredRepeatsOut2$End[i] <- end
+  }
+}
 write.table(filteredRepeatsOut2, file = filtBed, quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
 
 
