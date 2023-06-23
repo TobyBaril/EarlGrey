@@ -25,4 +25,13 @@ fil <- tab2[tab2$id %in% tab1$id,]
 fil <- fil[,c(1:9)]
 fil$V8 <- "." #set phase to be Geneious-Friendly
 
+for (i in 1:length(fil$V1)) {
+  if (fil$V5[i] < fil$V4[i]) {
+    start <- fil$V5[i]
+    end <- fil$V4[i]
+    fil$V4[i] <- start
+    fil$V5[i] <- end
+  }
+}
+
 write.table(fil, gffOut, quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
