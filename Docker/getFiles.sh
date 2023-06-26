@@ -29,7 +29,7 @@ download https://github.com/Benson-Genomics-Lab/TRF/archive/v4.09.1.tar.gz trf-4
 download https://www.repeatmasker.org/RepeatScout-1.0.6.tar.gz
 download https://www.repeatmasker.org/RepeatModeler/RECON-1.08.tar.gz
 download https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz
-download https://github.com/genometools/genometools/archive/v1.6.0.tar.gz gt-1.6.0.tar.gz
+download https://github.com/genometools/genometools/archive/v1.6.2.tar.gz gt-1.6.2.tar.gz
 download https://github.com/oushujun/LTR_retriever/archive/v2.9.0.tar.gz LTR_retriever-2.9.0.tar.gz
 download https://mafft.cbrc.jp/alignment/software/mafft-7.471-without-extensions-src.tgz
 download https://github.com/TravisWheelerLab/NINJA/archive/0.97-cluster_only.tar.gz NINJA-cluster.tar.gz
