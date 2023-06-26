@@ -173,7 +173,7 @@ echo "Reclassifying repeats"
 mkdir -p ${DATA_DIR}/classify/
 cp ${DATA_DIR}/trf/${RM_LIBRARY}.nonsatellite ${DATA_DIR}/classify/
 cd ${DATA_DIR}/classify/
-RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
+RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite || RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
 cd -
 # Compile classified files
 if [ - f ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified]; then
