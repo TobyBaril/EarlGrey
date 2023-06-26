@@ -1,7 +1,7 @@
 # Based on Dockerfile from Dfam TETools https://github.com/Dfam-consortium/TETools, with added database configuration, conda configuration, and Earl Grey installation
 # and configuration
 
-FROM debian:9 AS builder
+FROM debian:latest AS builder
 
 RUN apt-get -y update && apt-get -y install \
     curl gcc g++ make zlib1g-dev libgomp1 \
