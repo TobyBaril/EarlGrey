@@ -70,9 +70,9 @@ RUN tar -x -f cd-hit-v4.8.1-2019-0228.tar.gz \
     && make && mkdir /opt/cd-hit && PREFIX=/opt/cd-hit make install
 
 # Compile genometools (for ltrharvest)
-RUN tar -x -f gt-1.6.0.tar.gz \
-    && cd genometools-1.6.0 \
-    && make -j4 cairo=no && make cairo=no prefix=/opt/genometools install \
+RUN tar -x -f gt-1.6.2.tar.gz \
+    && cd genometools-1.6.2 \
+    && make -i -j4 cairo=no && make -i cairo=no prefix=/opt/genometools install \
     && make cleanup
 
 # Configure LTR_retriever
@@ -113,7 +113,7 @@ RUN cd /opt \
     && cd coseg \
     && sed -i 's@#!.*perl@#!/usr/bin/perl@' preprocessAlignments.pl runcoseg.pl refineConsSeqs.pl \
     && sed -i 's#use lib "/usr/local/RepeatMasker";#use lib "/opt/RepeatMasker";#' preprocessAlignments.pl \
-    && make
+    && make -i
 
 # Configure RepeatMasker
 RUN cd /opt \
@@ -152,7 +152,7 @@ RUN cd /opt \
          -trf_dir=/opt/ \
          -ucsctools_dir=/opt/ucsc_tools
 
-FROM debian:9
+FROM debian:latest
 
 # Install dependencies and some basic utilities
 RUN apt update && apt-get -y install git
