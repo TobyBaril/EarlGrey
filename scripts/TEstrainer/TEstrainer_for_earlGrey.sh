@@ -176,7 +176,7 @@ cd ${DATA_DIR}/classify/
 RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite || RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
 cd -
 # Compile classified files
-if [ - f ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified]; then
+if [ -f ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ]; then
     cp ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ${DATA_DIR}/${RM_LIBRARY}.strained
 else
     touch ${DATA_DIR}/${RM_LIBRARY}.strained
