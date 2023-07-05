@@ -152,12 +152,12 @@ novoMask()
 {
 	if [ -z "$RepSpec" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		RepeatMasker -lib $latestFile -cutoff 400 -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -cutoff 400 -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
 
