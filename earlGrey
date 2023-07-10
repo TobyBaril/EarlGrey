@@ -1,3 +1,5 @@
+#!/bin/bash
+
 usage()
 {
 	echo "	#############################
@@ -26,7 +28,7 @@ usage()
 		- RepeatModeler2
 
 	Queries can be sent to:
-	tb529@exeter.ac.uk
+	tobias.baril[at]unine.ch
 
 	Please make use of the GitHub Issues and Discussion Tabs at: https://github.com/TobyBaril/EarlGrey
 	#############################"
