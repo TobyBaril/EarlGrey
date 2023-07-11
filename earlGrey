@@ -40,7 +40,7 @@ makeDirectory()
 {
 	directory=$(realpath ${directory})
 	mkdir -p ${directory}/${species}_EarlGrey/ && OUTDIR=${directory}/${species}_EarlGrey
-	if [ ! -z "$RepSpec" ]; then
+	if [ ! -z "$RepSpec" ] || [ ! -z "$startCust" ] ; then
 		mkdir -p $OUTDIR/${species}_RepeatMasker/
 	fi
 	mkdir -p $OUTDIR/${species}_Database/
