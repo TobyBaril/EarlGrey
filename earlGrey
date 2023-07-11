@@ -12,6 +12,7 @@ usage()
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
 		-r == RepeatMasker search term (e.g arthropoda/eukarya)
+		-l == Starting consensus library for an inital mask (in fasta format)
 		-i == Number of Iterations to BLAST, Extract, Extend (Default: 10)
 		-f == Number flanking basepairs to extract (Default: 1000)
 		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
@@ -94,6 +95,18 @@ firstMask()
 	fi
 }
 
+# Subprocess firstMaskCustomLib
+# Run the initial RepeatMasker run with the specific fasta consensus library
+firstMaskCustomLib()
+{
+	cd ${OUTDIR}/${species}_RepeatMasker
+	RepeatMasker -lib ${startCust} -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
+	RepSub=${startCust}
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid custom consensus file, check the fasta file looks as expected"; exit 2
+	fi
+}
+
 
 # Subprocess buildDB 
 # if masked genome exists, build database from this. If not, build database from original input genome
@@ -152,7 +165,7 @@ clust()
 # Run RepeatMasker with the final processed library
 novoMask()
 {
-	if [ -z "$RepSpec" ]; then
+	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
@@ -264,10 +277,10 @@ Checks()
 		echo "$ProcNum Cores Will Be Used"
 	fi
 
-	if [ -z "$RepSpec" ]; then
+	if [ -z "$RepSpec" ] && [ -z "$startCust" ] ; then
 		echo "RepeatMasker species not specified, running Earl Grey without an initial mask with known repeats"
 	else
-		echo "RepeatMasker species selected is $RepSpec, running Earl Grey with an intial mask with known repeats"
+		echo "Running Earl Grey with an intial mask with known repeats"
 	fi
 
 	if [ -z "$num" ] ; then
@@ -307,7 +320,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:h option
+while getopts g:s:o:t:f:i:r:c:l:h option
 do
 	case "${option}" 
 		in
@@ -318,6 +331,7 @@ do
 		f) Flank=${OPTARG};;
 		i) num=${OPTARG};;
 		r) RepSpec=${OPTARG};;
+		l) startCust=${OPTARG};;
 		c) cluster=${OPTARG};;
 		h) usage; exit 1;; 
 	esac
@@ -351,6 +365,17 @@ else
 	else
 		stage="Genome has already been masked, skipping..." && runningTea
 		getRepeatMaskerFasta
+	fi
+fi
+
+if [ -z "$startCust" ]; then
+	sleep 1
+else
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+		stage="Running Initial Mask with Known Repeats in Custom Library" && runningTea
+		firstMaskCustomLib
+	else
+		stage="Genome has already been masked, skipping..." && runningTea
 	fi
 fi
 
