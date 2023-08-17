@@ -39,17 +39,14 @@ chmod +x getFiles.sh
 ```
 
 NOTE: This script will download the latest curated TEs from Dfam. If you would rather download the whole dataset, including uncurated TEs, please see below. 
-We strongly recommend upgrading the RepeatMasker contained within Docker with the Dfam library v3.7 curated elements ONLY, information on this is found: https://github.com/Dfam-consortium/TETools
-note there are only ~6000 seqs in the basic RepeatMasker library in this container, real Dfam is much larger!
+We strongly recommend upgrading the RepeatMasker contained within Docker with the Dfam library v3.7 curated elements ONLY (which is sourced by `getFiles.sh`).
 
 If you need to download these,
 Dfam.h5.gz (NOTE ONLY TESTED ON DFAM 3.7) can be downloaded by running:
 
 ```
-# only curated elements
-wget https://www.dfam.org/releases/current/families/Dfam_curatedonly.h5.gz && mv Dfam_curatedonly.h5.gz Dfam.h5.gz
-
 # all elements including uncurated
+cd ./src/
 wget https://www.dfam.org/releases/current/families/Dfam.h5.gz 
 # THIS IS A BIG FILE!
 ```
