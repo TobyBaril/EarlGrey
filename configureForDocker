@@ -23,6 +23,7 @@ chmod +x ./earlGrey
 
 echo "Setting path variables in script"
 SCRIPT_DIR=$(realpath ./scripts/)
+MOD_DIR=$(realpath ./modules/)
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./earlGrey
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
 sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/headSwap.sh
@@ -36,6 +37,23 @@ chmod +x ./modules/trf409.linux64
 sleep 3
 echo "Path variables set"
 sleep 3
+
+# install sa-ssr
+if [ ! -f "${SCRIPT_DIR}/sa-ssr" ]; then
+  echo "Installing sa-ssr"
+  cd ${SCRIPT_DIR} && chmod a+w ${SCRIPT_DIR}
+  git clone https://github.com/ridgelab/SA-SSR && cd ./SA-SSR/
+  sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
+  sed -i "153s|.* -e|${SCRIPT_DIR}/sa-ssr -e|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  sed -i "s|txt trf|txt ${MOD_DIR}/trf409.linux64|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  cd ${SCRIPT_DIR}
+  else
+  cd ${SCRIPT_DIR}/SA-SSR/
+  sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
+  sed -i "153s|.* -e|${SCRIPT_DIR}/sa-ssr -e|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  sed -i "s|txt trf|txt ${MOD_DIR}/trf409.linux64|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+  cd ${SCRIPT_DIR}
+fi
 
 # Extract tRNAdb
 echo "Extracting zip archives"
