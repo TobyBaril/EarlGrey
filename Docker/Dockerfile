@@ -184,28 +184,32 @@ RUN echo "PS1='(earlgrey \$(pwd))\\\$ '" >> /etc/bash.bashrc
 ENV LANG=C
 ENV PYTHONIOENCODING=utf8
 
-RUN apt install build-essential -y --no-install-recommends
-RUN apt install libcurl4-openssl-dev -y && apt-get install libbz2-dev liblzma-dev libtiff-dev libfreetype6-dev pkgconf libfontconfig1-dev libharfbuzz-dev libfribidi-dev bc -y
+RUN apt update && apt install build-essential -y --no-install-recommends
+RUN apt update && apt install libcurl4-openssl-dev -y && apt-get install libbz2-dev liblzma-dev libtiff-dev libfreetype6-dev pkgconf libfontconfig1-dev libharfbuzz-dev libfribidi-dev bc -y
 
 ARG USER_ID
 ARG GROUP_ID
 
 RUN addgroup --gid $GROUP_ID user
-RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
+RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID --home /home/user user
 RUN chmod a+rwx /opt/*
-USER user
+RUN chmod a+rwx /home/user
+RUN chown -R user /home/user
+RUN cd /home/user \
+        && git clone https://github.com/ridgelab/SA-SSR \
+        && cd SA-SSR/ \
+        && sed -i "s|PREFIX=/usr/local/bin|PREFIX=/home/user/SA-SSR/|g" Makefile && make && make install
+RUN chmod a+rwx /home/user/SA-SSR/bin/* /home/user/SA-SSR/*
+RUN chown -R user /home/user/SA-SSR/
 
-RUN cd ~ \
-        && git clone https://github.com/TobyBaril/EarlGrey \
+USER user
+WORKDIR /home/user
+
+RUN git clone https://github.com/TobyBaril/EarlGrey \
         && cd EarlGrey \
         && chmod +x ./configureForDocker \
         && eval "$(/anaconda3/bin/conda shell.bash  hook)" \
         && ./configureForDocker 
-
-RUN cd ~ \
-        && git clone https://github.com/ridgelab/SA-SSR \
-        && cd SA-SSR/ \
-        && sed -i "s|PREFIX=/usr/local/bin|PREFIX=/home/user/SA-SSR/|g" Makefile && make && make install  
 
 ENV PATH=$PATH:/home/user/EarlGrey/:/home/user/SA-SSR/bin/
 
