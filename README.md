@@ -139,7 +139,7 @@ NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and
 
 ## Earl Grey is available in a [Docker container][./Docker] preconfigured with Dfam curated version 3.7
 
-To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory][./Docker] in this repository. Please consult the README in the Docker directory for installation instructions.
+To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory](./Docker) in this repository. Please consult the README in the Docker directory for installation instructions.
 
 #==============================================================================================================================================================================#
 
