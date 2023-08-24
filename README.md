@@ -131,9 +131,15 @@ Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid
 
 # Installation
 
-Before using Earl Grey, please ensure RepeatMasker (version 4.1.4) and RepeatModeler (version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
+Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
 NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo privileges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
 
+
+#==============================================================================================================================================================================#
+
+## Earl Grey is available in a [Docker container][./Docker] preconfigured with Dfam curated version 3.7
+
+To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory][./Docker] in this repository. Please consult the README in the Docker directory for installation instructions.
 
 #==============================================================================================================================================================================#
 
@@ -682,11 +688,5 @@ conda activate earlGrey
 
 earlGrey -g genome.fasta -s speciesName -o outputDirectory -t threads
 ```
-
-#==============================================================================================================================================================================#
-
-## Earl Grey Installation and Configuration Inside a Docker Container (If you cannot install conda environments or need to use docker venvs on your system)
-
-To install the docker container, make sure Docker is installed and configured on your system. All files relating to the docker installation are found within the Docker directory in this repository. Please consult the README in the Docker directory for installation instructions.
 
 
