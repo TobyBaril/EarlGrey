@@ -333,7 +333,7 @@ do
 		r) RepSpec=${OPTARG};;
 		l) startCust=${OPTARG};;
 		c) cluster=${OPTARG};;
-		h) usage; exit 1;; 
+		h) usage; exit 0;; 
 	esac
 done
 
