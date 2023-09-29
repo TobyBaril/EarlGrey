@@ -1,0 +1,113 @@
+image: gitpod/workspace-base
+
+tasks:
+- name: install mamba and earlgrey dependencies
+  init: |
+    curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+    bash Mambaforge-$(uname)-$(uname -m).sh -b -p /workspace/conda && rm Mambaforge-$(uname)-$(uname -m).sh
+    /workspace/conda/bin/mamba init bash
+
+    source ${HOME}/.bashrc
+
+    mamba create -n earlGrey -c conda-forge -c bioconda \
+      python=3.8 hmmer trf cd-hit genometools-genometools \
+      pandas ncls=0.0.64 pyfaidx pyranges parallel -y
+
+    mamba clean --all -y
+
+    mamba install -n earlGrey -c conda-forge -c bioconda \
+      repeatmasker ltr_retriever mafft ninja-nj repeatscout recon repeatmodeler -y
+
+    mamba clean --all -y
+
+    mamba install -n earlGrey -c bioconda bioconductor-genomeinfodb bioconductor-genomeinfodbdata -y
+    mamba install -n earlGrey -c bioconda bioconductor-bsgenome bioconductor-plyranges -y
+    mamba install -n earlGrey -c conda-forge r-ape r-optparse r-tidyverse r-plyr -y
+
+    mamba clean --all -y
+
+    mamba activate earlGrey
+
+    cd /workspace
+    git clone https://github.com/TobyBaril/EarlGrey
+    cd EarlGrey
+
+    # remove -pa
+    sed -i.bak 's/RepeatClassifier -pa ${THREADS} /RepeatClassifier /' scripts/TEstrainer/TEstrainer_for_earlGrey.sh
+    sed -i.bak 's/RepeatClassifier -pa ${THREADS} /RepeatClassifier /' scripts/TEstrainer/TEstrainer
+
+    chmod +x ./earlGrey
+
+    # set paths in Earl Grey Script
+
+    echo "Setting path variables in script"
+    SCRIPT_DIR=$(realpath ./scripts/)
+    sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./earlGrey
+    sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/rcMergeRepeat*
+    sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/headSwap.sh
+    sed -i "s|SCRIPT_DIR=.*|SCRIPT_DIR=${SCRIPT_DIR}|g" ./scripts/autoPie.sh
+    sed -i "s|INSERT_FILENAME_HERE|${SCRIPT_DIR}/TEstrainer/scripts/|g" ./scripts/TEstrainer/TEstrainer_for_earlGrey.sh
+    chmod +x ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+    chmod +x ${SCRIPT_DIR}/* > /dev/null 2>&1
+    chmod +x ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/ltr_finder
+    chmod a+w ${SCRIPT_DIR}/repeatCraft/example/
+    chmod +x ./modules/trf409.linux64
+    echo "Path variables set"
+
+    echo "Installing sa-ssr"
+    cd ${SCRIPT_DIR} && chmod a+w ${SCRIPT_DIR}
+    git clone https://github.com/ridgelab/SA-SSR && cd ./SA-SSR/
+    sed -i "s|PREFIX=/usr/local/bin|PREFIX=${SCRIPT_DIR}|g" Makefile && make && make install
+    sed -i "s|sa-ssr|${SCRIPT_DIR}/sa-ssr|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+    sed -i "s|txt trf|txt $(which trf)|g" ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh
+    cd ${SCRIPT_DIR}
+
+    # Extract tRNAdb
+    echo "Extracting zip archives"
+    tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/
+    echo "Extracted required archives"
+
+    # Message Complete
+    echo "Remember to activate the earl grey conda environment before running earlGrey"
+    export PATH=$PATH:$(realpath .)
+    echo "earlGrey is ready to use. To execute from any directory, add earlGrey to path by pasting the code (minus the square brackets) below..."
+    echo '[export PATH=$PATH:$(realpath .)]'
+    cd /workspace/EarlGrey
+    export PATH=$PATH:$(realpath .)
+    export PERL5LIB=/workspace/conda/envs/earlGrey/share/RepeatMasker/:$PERL5LIB
+
+    cd /workspace
+    wget https://sk13.cog.sanger.ac.uk/NC_045808_EarlWorkshop.fasta
+
+  command: |
+    /workspace/conda/bin/mamba init bash
+    source ~/.bashrc
+    mamba activate earlGrey
+    cd /workspace/EarlGrey
+    export PATH=$PATH:$(realpath .)
+    export PERL5LIB=/workspace/conda/envs/earlGrey/share/RepeatMasker/:$PERL5LIB
+    cd /workspace
+    clear
+
+github:
+  prebuilds:
+    # enable for the master/default branch (defaults to true)
+    master: true
+    # enable for all branches in this repo (defaults to false)
+    branches: true
+    # enable for pull requests coming from this repo (defaults to true)
+    pullRequests: true
+    # enable for pull requests coming from forks (defaults to false)
+    pullRequestsFromForks: true
+    # add a "Review in Gitpod" button as a comment to pull requests (defaults to true)
+    addComment: true
+    # add a "Review in Gitpod" button to pull requests (defaults to false)
+    addBadge: false
+    # add a label once the prebuild is ready to pull requests (defaults to false)
+    addLabel: prebuilt-in-gitpod
+
+vscode:
+  extensions:
+    - anwar.papyrus-pdf
+
+workspaceLocation: "/workspace"
