@@ -131,6 +131,8 @@ Ou S, Jiang N. LTR_FINDER_parallel: parallelization of LTR_FINDER enabling rapid
 # Usage without installation
 If you would like to try Earl Grey, or prefer to use it in a browser, you can do this through [gitpod](https://gitpod.io). You can get 50 hours free per month and use Earl Grey within a preconfigured environment. Simply select this repository by pasting the repository URL, and the system will be automatically configured for you. You can then upload your genome of interest, and run Earl Grey as you would on the command line. 
 
+<img width="1919" alt="Screenshot 2023-09-29 at 13 38 43" src="https://github.com/TobyBaril/EarlGrey/assets/46785187/7dd2f2de-3c13-4553-b13a-007fdd8d94d6">
+
 # Installation
 
 Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
