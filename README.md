@@ -147,6 +147,12 @@ To use this container, please make sure Docker is installed and configured on yo
 
 #==============================================================================================================================================================================#
 
+## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam curated version 3.7
+
+To use this container, please make sure Singularity is installed and configured on your system. All instructions relating to the singularity installation are found within the [Singularity directory](./Singularity) in this repository. Please consult the README in the Singularity directory for installation instructions.
+
+#==============================================================================================================================================================================#
+
 ## Earl Grey Installation and Configuration (If you already have RepeatMasker and RepeatModeler)
 
 If you do not currently have RepeatMasker and RepeatModeler installed, the instructions are provided further down this page. If you do have them installed, **ensure the executables are in your PATH environment, including the RepeatMasker/util/ directory!**
