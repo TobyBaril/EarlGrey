@@ -18,4 +18,4 @@ conda activate earlGrey
 Rscript /home/user/EarlGrey/scripts/install_r_packages.R
 ```
 
-You are now ready to analyse in singularity!
+You are now ready to run Earl Grey!
