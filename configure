@@ -67,9 +67,9 @@ if [ ! -f "${SCRIPT_DIR}/sa-ssr" ]; then
   cd ${SCRIPT_DIR}
 fi
 
-# Install R packages
-echo "Installing R packages"
-Rscript ${SCRIPT_DIR}/install_r_packages.R
+# Install R packages - DEPRECATED
+# echo "Installing R packages"
+# Rscript ${SCRIPT_DIR}/install_r_packages.R
 
 # Extract tRNAdb
 echo "Extracting zip archives"
