@@ -6,7 +6,7 @@
 ## This image has been configured with Dfam v3.7 curated elements only
 
 ```
-docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey "$@"
+docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey:latest "$@"
 ```
 
 ## configure the earlGrey conda environment in the docker container (ie after starting the container)
