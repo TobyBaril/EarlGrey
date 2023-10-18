@@ -31,7 +31,7 @@ download https://www.repeatmasker.org/RepeatModeler/RECON-1.08.tar.gz
 download https://github.com/weizhongli/cdhit/releases/download/V4.8.1/cd-hit-v4.8.1-2019-0228.tar.gz
 download https://github.com/genometools/genometools/archive/v1.6.2.tar.gz gt-1.6.2.tar.gz
 download https://github.com/oushujun/LTR_retriever/archive/v2.9.0.tar.gz LTR_retriever-2.9.0.tar.gz
-download https://mafft.cbrc.jp/alignment/software/mafft-7.471-without-extensions-src.tgz
+download https://mafft.cbrc.jp/alignment/software/mafft-7.505-without-extensions-src.tgz
 download https://github.com/TravisWheelerLab/NINJA/archive/0.97-cluster_only.tar.gz NINJA-cluster.tar.gz
 download https://www.repeatmasker.org/coseg-0.2.2.tar.gz
 download https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz
