@@ -88,8 +88,8 @@ RUN cd /opt \
         paths
 
 # Compile MAFFT
-RUN tar -x -f mafft-7.471-without-extensions-src.tgz \
-    && cd mafft-7.471-without-extensions/core \
+RUN tar -x -f mafft-7.505-without-extensions-src.tgz \
+    && cd mafft-7.505-without-extensions/core \
     && sed -i 's#^PREFIX =.*#PREFIX = /opt/mafft#' Makefile \
     && make clean && make && make install \
     && make clean
