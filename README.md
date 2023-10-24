@@ -139,7 +139,7 @@ Earl Grey version 3.1 with all required and configured dependencies is found in 
 
 ```
 # With conda
-conda crate -n earlgrey -c bioconda earlgrey
+conda create -n earlgrey -c bioconda earlgrey
 
 # With mamba
 mamba create -n earlgrey -c bioconda earlgrey
