@@ -98,9 +98,9 @@ This pipeline has been designed to be used and shared openly by the community.
 
 ### When using Earl Grey, please cite:
 
-Baril, T., Imrie, R.M. and Hayward, A., 2022. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.21203/rs.3.rs-1812599/v1](https://doi.org/10.21203/rs.3.rs-1812599/v1)
+Baril, Tobias., Galbraith, James., and Hayward, Alexander. (2023) Earl Grey. Zenodo [doi:10.5281/zenodo.5654615](https://doi.org/10.5281/zenodo.5654615)
 
-Baril, Tobias., Galbraith, James., Imrie, Ryan., and Hayward, Alexander. (2021) Earl Grey. Zenodo [doi:10.5281/zenodo.5654616](https://doi.org/10.5281/zenodo.5654616)
+Baril, T., Imrie, R.M. and Hayward, A., 2022. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.21203/rs.3.rs-1812599/v1](https://doi.org/10.21203/rs.3.rs-1812599/v1)
 
 ### This pipeline makes use of scripts from:
 
@@ -133,7 +133,19 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 <img width="1919" alt="Screenshot 2023-09-29 at 13 38 43" src="https://github.com/TobyBaril/EarlGrey/assets/46785187/7dd2f2de-3c13-4553-b13a-007fdd8d94d6">
 
-# Installation
+# Recommended Installation with Conda / Mamba
+
+Earl Grey version 3.1 with all required and configured dependencies is found in the bioconda channel. To install, simply run the following depending on your installation:
+
+```
+# With conda
+conda crate -n earlgrey -c bioconda earlgrey
+
+# With mamba
+mamba create -n earlgrey -c bioconda earlgrey
+```
+
+# Alternative installation methods
 
 Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
 NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo privileges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
