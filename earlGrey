@@ -156,7 +156,7 @@ strainer()
 clust()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o $latestFile.clstrd.fa
+	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o $(realpath ${latestFile}).clstrd.fa
 	latestFile=$latestFile.clstrd.fa
 }
 
