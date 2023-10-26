@@ -291,6 +291,11 @@ mamba install -c bioconda earlgrey
 
 After a while, you are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
 
+NOTE: There is currently a bug in GNU Parallel on ARM Macs which prevents the use of the `--memfree` flag. To prevent this causing issues with Earl Grey, you need to modify `TEstrainer_for_earlGrey.sh`. The code below should find your conda installation of Earl Grey, find the script for TEstrainer, and remove the `--memfree` flag. If this doesn't work for you, please contact me and we can try and work it out!
+```
+cat $(which earlGrey | sed 's|earlgrey.*|earlgrey/share/earlgrey-3.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g') | sed 's|--memfree.*-a|-a|g' > $(which earlGrey | sed 's|earlgrey.*|earlgrey/share/earlgrey-3.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g').1 && mv $(which earlGrey | sed 's|earlgrey.*|earlgrey/share/earlgrey-3.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g'){.1,}
+```
+
 # Alternative installation methods
 
 Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
