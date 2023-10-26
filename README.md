@@ -146,6 +146,151 @@ conda create -n earlgrey -c bioconda earlgrey
 mamba create -n earlgrey -c bioconda earlgrey
 ```
 
+# Recommended Installation with Conda or Mamba on ARM-based Mac Systems (M chips)
+
+It is possible to install x86-based conda environments on M-chip Mac systems using Rosetta. The below form a guide that should work, but please reach out if you have any trouble!
+
+First, we will run separate installations of conda for ARM and x86 architectures.
+
+We want a simple way to activate the x86 architecture. We can do this by adding the following to ~/.zshrc:
+```
+alias arm="env /usr/bin/arch -arm64 /bin/zsh --login"
+alias intel="env /usr/bin/arch -x86_64 /bin/zsh --login"
+```
+
+Then close the terminal and open a new one.
+
+To activate the intel environment, run the following in a new terminal:
+```
+intel
+```
+
+Next, we need to install the separate conda environments. This guide is based on (this article:)[https://taylorreiter.github.io/2022-04-05-Managing-multiple-architecture-specific-installations-of-conda-on-apple-M1/]
+
+First, check you are using the arm64 processor:
+```
+uname -m
+```
+
+If this returns `arm64`, all good. If not, run:
+```
+arm
+```
+
+Then, install miniforge for arm64:
+```
+curl -L https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-MacOSX-arm64.sh > miniforge_arm64.sh
+sh miniforge_arm64.sh
+```
+
+Follow the prompts to accept the license, install, and initialise conda. The initialisation script, `conda init` will add something like the following block to your `~/.zshrc` file:
+```
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/toby/mambaforge/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/toby/mambaforge/etc/profile.d/conda.sh" ]; then
+        . "/Users/toby/mambaforge/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/toby/mambaforge/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+
+if [ -f "/Users/toby/mambaforge/etc/profile.d/mamba.sh" ]; then
+    . "/Users/toby/mambaforge/etc/profile.d/mamba.sh"
+fi
+# <<< conda initialize <<<
+```
+
+We want to _cut_ this from the `~/.zshrc` file and place it in a new file:
+```
+# open a new file called ~/.start_miniforge3.sh and paste the text you cut from ~/.zshrc
+nano ~/.start_miniforge3.sh
+```
+
+Next, we will install miniconda in the Rosetta, or _intel_, terminal.
+
+First, check you are using the x86_64 processor:
+```
+uname -m
+```
+
+If this doesn't return `x86_64`, run:
+```
+intel
+```
+
+Then, install miniconda for x86_64:
+```
+curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > miniconda_x86_64.sh
+sh miniconda_x86_64.sh
+```
+
+Again, you should follow the prompts to accept the license, install, and initialise conda. The initialisation script, `conda init` will add something like the following block to your `~/.zshrc` file:
+```
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/toby/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/toby/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/toby/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/toby/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+```
+
+Again, we want to cut this from the `~/.zshrc` file and place it in a new file:
+```
+# open a new file called ~/.start_miniconda3.sh and paste the text you cut from ~/.zshrc
+nano ~/.start_miniconda3.sh
+```
+
+Now we want to edit `~/.zshrc` to automatically initialise the correct conda for each architecture. To do this, add the following to your `~/.zshrc file`:
+```
+arch_name="$(uname -m)"
+
+if [ "$arch_name" = "arm64" ]; then
+    echo "Running on ARM64 using miniforge3"
+    source ~/.start_miniforge3.sh
+elif [ "$arch_name" = "x86_64" ]; then
+    echo "Running on Rosetta using miniconda3"
+    source ~/.start_miniconda3.sh
+else
+    echo "Unknown architecture: $arch_name"
+fi
+```
+
+Exit all terminals. When you reopen them, it should all be ready.
+
+Now, open a new terminal and get Earl Grey running.
+
+First, activate the intel environment:
+```
+intel
+```
+
+Then, create an environment for Earl Grey
+```
+# I like mamba. This is optional but good
+conda install -c conda-forge mamba
+
+# create the environment
+conda create -n earlgrey
+
+# install the packages
+mamba install -c bioconda earlgrey
+```
+
+After a while, you are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
+
 # Alternative installation methods
 
 Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
