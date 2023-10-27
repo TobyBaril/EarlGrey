@@ -285,6 +285,7 @@ conda install -c conda-forge mamba
 
 # create the environment
 conda create -n earlgrey
+conda activate earlgrey
 
 # install the packages
 mamba install -c bioconda earlgrey
