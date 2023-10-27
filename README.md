@@ -285,7 +285,10 @@ conda install -c conda-forge mamba
 
 # create the environment
 conda create -n earlgrey
-conda activate earlgrey
+
+# activate conda environment with correct subdirectory
+CONDA_SUBDIR=osx-64 conda activate earlgrey
+
 
 # install the packages
 mamba install -c bioconda earlgrey
