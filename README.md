@@ -283,14 +283,13 @@ Then, create an environment for Earl Grey
 # I like mamba. This is optional but good
 conda install -c conda-forge mamba
 
-# create the environment
-conda create -n earlgrey
+# create the environment with correct subdirectory
+CONDA_SUBDIR=osx-64 conda create -n earlgrey
 
-# activate conda environment with correct subdirectory
-CONDA_SUBDIR=osx-64 conda activate earlgrey
+# activate conda environment
+conda activate earlgrey
 
-
-# install the packages
+# install the packages - CHECK THIS IS USING THE MINICONDA3 MAMBA EXECUTABLE
 mamba install -c bioconda earlgrey
 ```
 
