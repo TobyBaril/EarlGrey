@@ -147,7 +147,7 @@ mamba create -n earlgrey -c bioconda earlgrey
 ```
 
 # Recommended Installation with Conda or Mamba on ARM-based Mac Systems (M chips)
-## NOTE: This is currently experimental and in the test phase. I will update this when I am satisfied with how this works. Currently there are some pipeline-breaking bugs in the TEstrainer section.
+## NOTE: This is currently experimental and requires altering several scripts and parameters. Not recommended unless you are confident with the terminal environment.
 
 It is possible to install x86-based conda environments on M-chip Mac systems using Rosetta. The below form a guide that should work, but please reach out if you have any trouble!
 
