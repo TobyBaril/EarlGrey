@@ -486,7 +486,7 @@ echo "Trimming and sorting based on mreps, TRF, SA-SSR"
 if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
    touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
 else if [ $(wc -l ${DATA_DIR}/trf/${RM_LIBRARY}.sassr | awk '{print $1}') = 1 ]; then
-   rm ${DATA_DteIR}/trf/${RM_LIBRARY}.sassr && touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
+   rm ${DATA_DIR}/trf/${RM_LIBRARY}.sassr && touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
 fi
 fi
 
