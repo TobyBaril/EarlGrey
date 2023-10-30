@@ -166,7 +166,7 @@ To activate the intel environment, run the following in a new terminal:
 intel
 ```
 
-Next, we need to install the separate conda environments. This guide is based on (this article:)[https://taylorreiter.github.io/2022-04-05-Managing-multiple-architecture-specific-installations-of-conda-on-apple-M1/]
+Next, we need to install the separate conda environments. This guide is based on [this article:](https://taylorreiter.github.io/2022-04-05-Managing-multiple-architecture-specific-installations-of-conda-on-apple-M1/)
 
 First, check you are using the arm64 processor:
 ```
