@@ -299,8 +299,7 @@ Make sure you are in your intel environment!
 
 Install a couple of utilities using homebrew.
 ```
-# activate the intel environment
-intel
+# Make sure you are in the intel environemt and that the earlgrey conda environment is active
 
 # install homebrew for the intel environment (if you don't already have it, it must be separate to the ARM installation!
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
