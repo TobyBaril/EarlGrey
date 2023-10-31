@@ -147,14 +147,14 @@ cp ${DATA_DIR}/${RM_LIBRARY} ${DATA_DIR}/trf/
 echo "Running TRF"
 parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/trf/split/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/trf/split/{}.trf
 parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/trf_parser.py --trf ${DATA_DIR}/trf/split/{}.trf --out ${DATA_DIR}/trf/split/{}.trf.tsv
-find ./${DATA_DIR}/trf/split/ -type f -name "*trf.tsv" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.trf
+find ${DATA_DIR}/trf/split/ -type f -name "*trf.tsv" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.trf
 # Run SA-SSR
 echo "Running SA-SSR"
 sa-ssr -e -l 20 -L 50000 -m 1 -M 5000 -t ${THREADS} ${DATA_DIR}/${RM_LIBRARY} ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
 # Run and compile mreps
 echo "Running mreps"
 parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt bash ${STRAIN_SCRIPTS}/mreps_parser.sh -i ${DATA_DIR}/trf/split/{} "2>"/dev/null
-find ./${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
+find ${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
 # Interpret mreps, TRF and SA-SSR
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"
 if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
