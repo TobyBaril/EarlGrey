@@ -147,7 +147,7 @@ strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
 	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num
-	latestFile=${OUTDIR}/${species}_strainer/TS*/${species}-families.fa.strained
+	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
 
@@ -156,7 +156,7 @@ strainer()
 clust()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o $(realpath ${latestFile}).clstrd.fa
+	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clstrd.fa
 	latestFile=$latestFile.clstrd.fa
 }
 
