@@ -560,6 +560,11 @@ Edit main earlGrey script:
 gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-3.1-0/earlGrey|g')
 ```
 
+Add an important directory to PERL5LIB (for RepeatMasker)
+```
+export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')
+```
+
 You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
 
 # Alternative installation methods
