@@ -480,7 +480,7 @@ sa-ssr -e -l 20 -L 50000 -m 1 -M 5000 -t ${THREADS} ${DATA_DIR}/${RM_LIBRARY} ${
 # Run and compile mreps
 echo "Running mreps"
 parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt bash ${STRAIN_SCRIPTS}/mreps_parser.sh -i ${DATA_DIR}/trf/split/{} "2>"/dev/null
-find ./${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
+find ${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
 # Interpret mreps, TRF and SA-SSR
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"
 if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
@@ -562,7 +562,7 @@ gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-3.1
 
 Add an important directory to PERL5LIB (for RepeatMasker)
 ```
-export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')
+echo "export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')" >> ~/.start_miniconda3.sh
 ```
 
 You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
