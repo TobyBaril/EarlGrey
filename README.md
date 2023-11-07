@@ -140,10 +140,10 @@ Earl Grey version 3.1 with all required and configured dependencies is found in 
 
 ```
 # With conda
-conda create -n earlgrey -c bioconda earlgrey
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey
 
 # With mamba
-mamba create -n earlgrey -c bioconda earlgrey
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey
 ```
 
 # Recommended Installation with Conda or Mamba on ARM-based Mac Systems (M chips)
