@@ -153,7 +153,7 @@ It is possible to install x86-based conda environments on M-chip Mac systems usi
 
 First, we will run separate installations of conda for ARM and x86 architectures.
 
-We want a simple way to activate the x86 architecture. We can do this by adding the following to ~/.zshrc:
+We want a simple way to activate the x86 architecture. We can do this by adding the following to `~/.zshrc`:
 ```
 alias arm="env /usr/bin/arch -arm64 /bin/zsh --login"
 alias intel="env /usr/bin/arch -x86_64 /bin/zsh --login"
