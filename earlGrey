@@ -324,6 +324,26 @@ Checks()
 	else
 		echo "Conda environment is inactive, please activate conda environment before using Earl Grey"; exit 1
 	fi
+
+	# biocontainer checks
+	if [ -d "/usr/local/share/RepeatMasker/Libraries/" ]; then
+		if grep -q Placeholder /usr/local/share/RepeatMasker/Libraries/Dfam.h5 ; then
+			while true; do
+				read -p "Are you using the biocontainer? Please confirm so we can source Dfam and configure for you. [YyNn]" yn
+				case $yn in
+					[Yy]* ) cd /usr/local/share/RepeatMasker/Libraries/
+						curl -O https://dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz
+						gunzip Dfam_curatedonly.h5.gz && mv Dfam.h5 Dfam.h5.bak
+						mv Dfam_curatedonly.h5 Dfam.h5
+						cd /usr/local/share/RepeatMasker/
+						perl configure -rmblast_dir=/usr/local/bin -libdir=/usr/local/share/RepeatMasker/Libraries -trf_prgm=/usr/local/bin/trf -default_search_engine=rmblast
+						break;;
+					[Nn]* ) exit;;
+					* ) echo "Please answer yes or no.";;
+				esac
+			done
+		fi
+	fi
 }
 
 # Main #
