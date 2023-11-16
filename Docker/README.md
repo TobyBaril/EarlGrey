@@ -1,28 +1,24 @@
 # Get Earl Grey to run in Docker
 
-## An image for Earl Grey configured with Dfam 3.7 curated elements can be found [here](https://hub.docker.com/repository/docker/tobybaril/earlgrey/general)
+## A [biocontainer](https://biocontainers.pro/tools/earlgrey) has been generated from the Earl Grey Bioconda package.
 
-# Get the preconfigured docker container from docker hub
-## This image has been configured with Dfam v3.7 curated elements only
-
-```
-docker run -it --init --mount type=bind,source="$(pwd)",target=/work --user "$(id -u):$(id -g)" --workdir "/work" --env "HOME=/work" tobybaril/earlgrey:latest "$@"
-```
-
-## configure the earlGrey conda environment in the docker container (ie after starting the container)
-```
-eval "$(/anaconda3/bin/conda shell.bash  hook)"
-conda env create -f /home/user/EarlGrey/earlGrey.yml
-conda activate earlGrey
-```
-## Run these commands to activate the conda environment for EarlGrey when starting the container
+## Get the preconfigured docker container from biocontainers
+## This image will be configured with Dfam curated elements only
+In this case, we need to bind a system directory to the docker container. In the line below, we are binding a directory call `host_data` that is found on our current path to `/data/` in the docker container. Please replace the file path before `:` to the directory you wish to bind to `/data/` in the container. This container must be run in interactive mode the first time you use it.
 
 ```
-eval "$(/anaconda3/bin/conda shell.bash  hook)"
-conda activate earlGrey
+docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:3.2.2--h4ac6f70_0
 ```
 
-# OR Build the container...
+## If you are running the container for the first time, you need to enable Earl Grey to configure the Dfam libraries correctly in interactive mode.
+This is done by running Earl Grey for the first time. You will be prompted if Dfam libraries have not been configured properly. Answer `y` to configure Dfam.
+Ensure the genome you wish to annotate is found in the directory you want to bind to the container. It will then be found in `/data` in the container. Alternatively, if you source a genome assembly from a database, download it to `/data/`. Always output results to the bound directory. In our case `/data/`. The results will then be found in your system directory after exiting the container.
+
+```
+earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
+```
+
+# OR Build the container (not recommended)...
 
 ## Note, the docker container has been tested with Dfam 3.7 without RepBase. If you would like to use with earlier versions of Dfam, please hash out lines 130-132 in the Dockerfile
 
