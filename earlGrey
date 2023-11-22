@@ -305,6 +305,14 @@ Checks()
 		clustering=no; echo "Clustering not specified using (yes/no). Using default parameter (no)."
 	fi
 
+	if [ "$margin" == "yes" ] ; then
+		margin=yes; echo "Short TE sequences <100bp will be removed from annotation"
+	elif [ -z "$margin" ] || [ "$margin" == "no" ]; then
+		margin=no; echo "Short TE sequences <100bp will not be removed from annotation"
+	else
+		margin=no; echo "Margin not specified using (yes/no). Using default parameter (no)."
+	fi
+
 	if [ -z "$Flank" ]; then
 		Flank=1000; echo "Blast, Extract, Extend, Trim Process Will Add 1000bp to Each End in Each Iteration"
 	else
@@ -328,7 +336,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:h option
+while getopts g:s:o:t:f:i:r:c:l:m:h option
 do
 	case "${option}" 
 		in
@@ -341,6 +349,7 @@ do
 		r) RepSpec=${OPTARG};;
 		l) startCust=${OPTARG};;
 		c) cluster=${OPTARG};;
+		m) margin=${OPTARG};;
 		h) usage; exit 0;; 
 	esac
 done

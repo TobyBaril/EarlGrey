@@ -57,7 +57,7 @@ mergeRepeats()
     sort -s -k1,1 ${dir}/${spe}.rmerge.gff > ${dir}/${spe}.rmerge.gff.sorted
     #filter-gff overlap -v --progress -s 1 -d -t -c length -a length ${dir}/${spe}.rmerge.gff.sorted ${dir}/${spe}.rmerge.gff.filtered
     Rscript ${SCRIPT_DIR}/filteringOverlappingRepeats.R ${dir}/${spe}.rmerge.gff.sorted ${dir}/${spe}.rmerge.gff.filtered
-    Rscript ${SCRIPT_DIR}/mergeRepeats.R  ${dir}/${spe}.rmerge.gff.filtered ${dir}/${spe}.mergedRepeats.bed $genSize ${dir}/${spe}.mergedRepeats.revisedTable ${dir}/${spe}.filteredRepeats.bed ${dir}/${spe}.filteredRepeats.summary
+    Rscript ${SCRIPT_DIR}/mergeRepeats.R  ${dir}/${spe}.rmerge.gff.filtered ${dir}/${spe}.mergedRepeats.bed $genSize ${dir}/${spe}.mergedRepeats.revisedTable ${dir}/${spe}.filteredRepeats.bed ${dir}/${spe}.filteredRepeats.summary $margin
 }             
 
 

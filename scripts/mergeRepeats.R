@@ -15,6 +15,7 @@ genomeSize <- args[8]
 output2 <- args[9]
 filtBed <- args[10]
 filtSum <- args[11]
+lowend <- args[12]
             
 # Step 1 - Read in rmerge table
 
@@ -90,7 +91,9 @@ write.table(summary, output2, col.names = TRUE, row.names = FALSE, quote = FALSE
 
 filteredRepeatsOut <- mergedRepeatsOut
 filteredRepeatsOut$length <- abs(filteredRepeatsOut$End - filteredRepeatsOut$Start)
-filteredRepeatsOut <- filteredRepeatsOut[filteredRepeatsOut$length > 100,]
+if (lowend == "yes") {
+  filteredRepeatsOut <- filteredRepeatsOut[filteredRepeatsOut$length > 100,]
+}
 filteredRepeatsOut2 <- filteredRepeatsOut[,1:6]
 for (i in 1:length(filteredRepeatsOut2$Start)) {
   if (filteredRepeatsOut2$End[i] < filteredRepeatsOut2$Start[i]) {
