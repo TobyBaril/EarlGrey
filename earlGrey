@@ -16,6 +16,7 @@ usage()
 		-i == Number of Iterations to BLAST, Extract, Extend (Default: 10)
 		-f == Number flanking basepairs to extract (Default: 1000)
 		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
+		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-h == Show help
 
 	Example Usage:
