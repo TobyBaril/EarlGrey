@@ -17,6 +17,7 @@ usage()
 		-f == Number flanking basepairs to extract (Default: 1000)
 		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
+		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-h == Show help
 
 	Example Usage:
@@ -306,6 +307,14 @@ Checks()
 		clustering=no; echo "Clustering not specified using (yes/no). Using default parameter (no)."
 	fi
 
+	if [ -z "$softMask" ] || [ "$softMask" == "no" ] ; then
+		softMask=no; echo "Softmasked genome will not be generated"
+	elif [ "$softMask" == "yes" ]; then
+		softMask=yes; echo "Softmasked genome will be generated"
+	else
+		softMask=no; echo "Softmask not specified using (yes/no). Using default parameter (no)."
+	fi
+
 	if [ "$margin" == "yes" ] ; then
 		margin=yes; echo "Short TE sequences <100bp will be removed from annotation"
 	elif [ -z "$margin" ] || [ "$margin" == "no" ]; then
@@ -373,6 +382,7 @@ do
 		l) startCust=${OPTARG};;
 		c) cluster=${OPTARG};;
 		m) margin=${OPTARG};;
+		d) softMask=${OPTARG};;
 		h) usage; exit 0;; 
 	esac
 done
@@ -496,6 +506,13 @@ sleep 1
 stage="Tidying Directories and Organising Important Files" && runningTea
 sweepUp
 sleep 1
+
+# Stage 8.5 Optional Softmask
+if [ "$softMask" == "yes" ]; then
+	stage="Generating Softmasked Genome" && runningTea
+	gunzip ${genome%.prep}.bak.gz && bedtools maskfasta -fi ${genome%.prep}.bak -bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -fo ${OUTDIR}/${species}_summaryFiles/${species}.softmasked.fasta && gzip ${genome%.prep}.bak
+	sleep 1
+fi
 
 # Stage 9
 time=$(convertsecs $SECONDS)
