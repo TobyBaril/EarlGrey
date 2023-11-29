@@ -110,7 +110,8 @@ firstMask()
 firstMaskCustomLib()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
-	RepeatMasker -lib ${startCust} -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
+	rmthreads=$(expr $ProcNum / 4)
+	RepeatMasker -lib ${startCust} -norna -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	RepSub=${startCust}
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid custom consensus file, check the fasta file looks as expected"; exit 2
@@ -177,12 +178,14 @@ novoMask()
 {
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		rmthreads=$(expr $ProcNum / 4)
+		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -norna -lcambig -s -a -pa $ProcNum -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		rmthreads=$(expr $ProcNum / 4)
+		RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
 
@@ -368,7 +371,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:h option
 do
 	case "${option}" 
 		in
