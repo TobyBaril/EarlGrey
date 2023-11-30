@@ -2,11 +2,11 @@
 
 usage()
 {
-    echo "Usage: rcMergeRepeats -f genome.fasta -s species -d output_directory -u RepeatMasker.out -q RepeatMasker.tbl -c repeatcraft.cfg -t ThreadNum -b dictionary  | -h"
+    echo "Usage: rcMergeRepeats -f genome.fasta -s species -d output_directory -u RepeatMasker.out -q RepeatMasker.tbl -c repeatcraft.cfg -t ThreadNum -b dictionary -m yes|no | -h"
 }
 
 
-while getopts f:s:d:u:q:t:b:h option
+while getopts f:s:d:u:q:t:b:m:h option
     do
         case "${option}"
         in
@@ -17,6 +17,7 @@ while getopts f:s:d:u:q:t:b:h option
         q) table=${OPTARG};;
         t) threads=${OPTARG};;
         b) dict=${OPTARG};;
+        m) cutoff=${OPTARG};;
         h) usage; exit;; 
         esac
             done
@@ -56,7 +57,7 @@ mergeRepeats()
 {
     sort -s -k1,1 ${dir}/${spe}.rmerge.gff > ${dir}/${spe}.rmerge.gff.sorted
     Rscript ${SCRIPT_DIR}/filteringOverlappingRepeats.R ${dir}/${spe}.rmerge.gff.sorted ${dir}/${spe}.rmerge.gff.filtered
-    Rscript ${SCRIPT_DIR}/mergeRepeats.R  ${dir}/${spe}.rmerge.gff.filtered ${dir}/${spe}.mergedRepeats.bed $genSize ${dir}/${spe}.mergedRepeats.revisedTable ${dir}/${spe}.filteredRepeats.bed ${dir}/${spe}.filteredRepeats.summary $margin
+    Rscript ${SCRIPT_DIR}/mergeRepeats.R  ${dir}/${spe}.rmerge.gff.filtered ${dir}/${spe}.mergedRepeats.bed $genSize ${dir}/${spe}.mergedRepeats.revisedTable ${dir}/${spe}.filteredRepeats.bed ${dir}/${spe}.filteredRepeats.summary $cutoff
 }            
 
 

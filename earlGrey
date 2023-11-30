@@ -205,14 +205,14 @@ calcDivRL()
 mergeRep()
 {
 	mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
-	${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
+	${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
 	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
 		awk '{OFS="\t"}{print $1, $2, $3, $4, $5, $6, $7, $8, toupper($9)}' ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.1 && mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff{.1,}
 	fi
 	if [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
 		echo "ERROR: loose merge defragmentation failed, trying strict merge..."
 		cd ${OUTDIR}/${species}_mergedRepeats/
-		${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict}
+		${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
 		if [ ! -f "${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed" ]; then
 			echo "ERROR: strict merge also failed, check ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out looks as expected"
 			exit 2
