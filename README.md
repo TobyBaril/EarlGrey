@@ -101,13 +101,13 @@ This pipeline has been designed to be used and shared openly by the community.
 
 Baril, Tobias., Galbraith, James., and Hayward, Alexander. (2023) Earl Grey. Zenodo [doi:10.5281/zenodo.5654615](https://doi.org/10.5281/zenodo.5654615)
 
-Baril, T., Imrie, R.M. and Hayward, A., 2022. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.21203/rs.3.rs-1812599/v1](https://doi.org/10.21203/rs.3.rs-1812599/v1)
+Baril, T., Galbraith, J.G., and Hayward, A., 2023. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.1101/2022.06.30.498289](https://doi.org/10.1101/2022.06.30.498289)
 
 ### This pipeline makes use of scripts from:
 
 [RepeatCraft](https://github.com/niccw/repeatcraftp) - Wong WY, Simakov O. RepeatCraft: a meta-pipeline for repetitive element de-fragmentation and annotation. Bioinformatics 2018;35:1051–2. https://doi.org/10.1093/bioinformatics/bty745.
 
-### Please also cite the following open source software utilised by this pipeline:
+### The following open source software are utilised by this pipeline:
 
 Smit AFA, Hubley RR, Green PR. RepeatMasker Open-4.0. Http://RepeatmaskerOrg 2013.
 
