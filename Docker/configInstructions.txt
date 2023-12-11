@@ -6,7 +6,7 @@
 # NOTE: please make sure that Dfam.h5.gz and RepBase libraries tar.gz are inside the ./src directory after running ./getsrc.sh . 
 # If you need to download these,
 # Dfam.h5.gz can be downloaded by running:
-wget https://www.dfam.org/releases/current/families/Dfam.h5.gz # THIS IS A BIG FILE!
+wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz # THIS IS A BIG FILE!
 # Repbase is now behind a paywall, if you do not have access, please comment out the following lines in the Dockerfile (lines 105-107)
 #   && cd /opt/RepeatMasker \
 #   && cp /opt/src/RepBaseRepeatMaskerEdition-20181026.tar.gz . \

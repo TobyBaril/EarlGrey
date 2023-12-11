@@ -42,7 +42,7 @@ Dfam.h5.gz (NOTE ONLY TESTED ON DFAM 3.7) can be downloaded by running:
 ```
 # all elements including uncurated
 cd ./src/
-wget https://www.dfam.org/releases/current/families/Dfam.h5.gz 
+wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz 
 # THIS IS A BIG FILE!
 ```
 

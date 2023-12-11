@@ -738,10 +738,10 @@ Download lastest Dfam release - This may take a while
 *** NOTE: There are two releases of Dfam, one conatining all repeats and one only curated. There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
 
 For whole Dfam library (including uncurated elements):
-```wget https://www.dfam.org/releases/current/families/Dfam.h5.gz```
+```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz```
 
 For curated Dfam library:
-```wget https://www.dfam.org/releases/current/families/Dfam_curatedonly.h5.gz```
+```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz```
 
 Unzip the Dfam release - This may take a while with no indication that anything is happening, please be patient!
 
@@ -989,10 +989,10 @@ Download lastest Dfam release - This may take a while
 *** NOTE: There are two releases of Dfam, one conatining all repeats and one only curated. There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
 
 For whole Dfam library (including uncurated elements):
-```wget https://www.dfam.org/releases/current/families/Dfam.h5.gz```
+```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz```
 
 For curated Dfam library:
-```wget https://www.dfam.org/releases/current/families/Dfam_curatedonly.h5.gz```
+```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz```
 
 Unzip the Dfam release - This may take a while with no indication that anything is happening, please be patient!
 
