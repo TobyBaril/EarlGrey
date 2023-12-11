@@ -99,7 +99,8 @@ getRepeatMaskerFasta()
 firstMask()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
-	RepeatMasker -species $RepSpec -norna -lcambig -s -a -pa $ProcNum -dir $OUTDIR/${species}_RepeatMasker $genome
+        rmthreads=$(expr $ProcNum / 4)
+	RepeatMasker -species $RepSpec -norna -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid species search term, if issue persists please use NCBI Taxids (E.G Drosophila is replaced with 7125)"; exit 2
 	fi
@@ -513,7 +514,7 @@ sleep 1
 # Stage 8.5 Optional Softmask
 if [ "$softMask" == "yes" ]; then
 	stage="Generating Softmasked Genome" && runningTea
-	gunzip ${genome%.prep}.bak.gz && bedtools maskfasta -fi ${genome%.prep}.bak -bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -fo ${OUTDIR}/${species}_summaryFiles/${species}.softmasked.fasta && gzip ${genome%.prep}.bak
+	gunzip ${genome%.prep}.bak.gz && bedtools maskfasta -fi ${genome%.prep}.bak -bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -fo ${OUTDIR}/${species}_summaryFiles/${species}.softmasked.fasta -soft && gzip ${genome%.prep}.bak
 	sleep 1
 fi
 
