@@ -23,9 +23,9 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 Given an input genome, Earl Grey will run through numerous steps to identify and annotate transposable elements (TEs). We recommend running earlGrey within a tmux or screen session, so that you can log off and leave Earl Grey running.
 
 ```
-# remember to activate the conda environment before running
+# remember to activate the conda environment before running (NOTE: depending on your install, the environment name might vary)
 
-conda activate earlGrey
+conda activate earlgrey
 
 # run earl grey with minimum command options
 
