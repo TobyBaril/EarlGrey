@@ -65,6 +65,7 @@ prepGenome()
 		cp ${genome} ${genome}.bak && gzip -f ${genome}.bak 
 		sed '/>/ s/ .*//g; /^$/d' ${genome} > ${genome}.tmp
 		${SCRIPT_DIR}/headSwap.sh -i ${genome}.tmp -o ${genome}.prep && rm ${genome}.tmp
+		mv ${genome}.tmp.dict ${genome}.dict
 		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
 		dict=${genome}.dict
 		genome=${genome}.prep
