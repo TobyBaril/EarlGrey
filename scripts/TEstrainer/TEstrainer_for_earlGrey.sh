@@ -159,6 +159,8 @@ find ${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"
 if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
    touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
+elif [ "$(wc -l < ${DATA_DIR}/trf/${RM_LIBRARY}.sassr)" -lt 2 ]; then
+   rm ${DATA_DIR}/trf/${RM_LIBRARY}.sassr && touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
 fi
 Rscript ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR}
 
@@ -173,7 +175,9 @@ echo "Reclassifying repeats"
 mkdir -p ${DATA_DIR}/classify/
 cp ${DATA_DIR}/trf/${RM_LIBRARY}.nonsatellite ${DATA_DIR}/classify/
 cd ${DATA_DIR}/classify/
-RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
+if [ -s ${RM_LIBRARY}.nonsatellite ]; then
+    RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
+fi
 # legacy command for older installations - DEPRECATED
 # RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
 cd -
@@ -184,4 +188,6 @@ else
     touch ${DATA_DIR}/${RM_LIBRARY}.strained
 fi
 echo "Compiling library"
-cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
+if [ -f ${DATA_DIR}/trf/${RM_LIBRARY}.satellites ]; then
+    cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
+fi
