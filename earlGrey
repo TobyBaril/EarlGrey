@@ -453,7 +453,7 @@ if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 	fi
 	strainer
 	if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
-		echo "ERROR: TEstrainer failed to produce a strain file, please check the log file for more information"; exit 1
+		echo "WARNING: TEstrainer failed to produce a strain file, please check the log file for more information. If you have run an intial mask with known repeats, this could be due RepeatModeler2 failing to identify any new repeats. Please check if this is expected."
 	fi
 	sleep 1
 else
