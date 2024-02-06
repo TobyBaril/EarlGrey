@@ -18,6 +18,7 @@ usage()
 		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
+		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-h == Show help
 
 	Example Usage:
@@ -159,7 +160,7 @@ deNovo1()
 strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq
 	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
@@ -303,6 +304,12 @@ Checks()
 	else
 		echo "De Novo Sequences Will Be Extended Through a Maximum of $num Iterations"
 	fi
+
+	if [ -z "$no_seq" ] ; then
+		no_seq=20; echo "$no_seq sequences will be used in BEAT consensus generation"
+	else
+		echo "$no_seq sequences will be used in BEAT consensus generation"
+	fi
 	
 	if [ -z "$cluster" ] || [ "$cluster" == "no" ] ; then
 		cluster=no; echo "TE library consensus sequences will not be clustered"
@@ -373,7 +380,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:h option
 do
 	case "${option}" 
 		in
@@ -388,6 +395,7 @@ do
 		c) cluster=${OPTARG};;
 		m) margin=${OPTARG};;
 		d) softMask=${OPTARG};;
+		n) no_seq=${OPTARG};;
 		h) usage; exit 0;; 
 	esac
 done
