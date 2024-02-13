@@ -1,10 +1,4 @@
 # load libraries
-
-#library.path <- .libPaths()
-#library(GenomicFeatures, lib.loc = library.path)
-#if (!require("BiocManager", quietly = TRUE))
-#  install.packages("BiocManager")
-#BiocManager::install("GenomicRanges")
 library(GenomicRanges)
 library(ape)
 library(tidyverse)
@@ -26,28 +20,18 @@ input <- read.gff(gff.in)
 #input <- read.gff("/home/toby/projects/earlGreyREwrite/TESTENV/autoTest_RM_EarlGrey/autoTest_RM_mergedRepeats/looseMerge/autoTest_RM.rmerge.gff.sorted")
 #input <- read.gff("/home/toby/projects/earlGreyREwrite/TESTENV/autoTest_newOverlapFilter_EarlGrey/autoTest_newOverlapFilter_mergedRepeats/looseMerge/autoTest_newOverlapFilter.rmerge.gff.sorted")
 
-# sort table by scaffold and start
-
-input <- input %>% 
-  arrange(seqid, start)
-
 # cut overlapping regions in half
-
-for (i in 2:length(input$seqid)) {
-  if (input$seqid[i] == input$seqid[i-1]) {
-    if (input$start[i] < input$end[i-1]) {
-      ovr <- (input$end[i-1] - input$start[i]) / 2
-      input$start[i] <- as.integer(input$start[i] + ovr)
-      input$end[i-1] <- as.integer(input$end[i-1] - ovr)
-      if (input$start[i] == input$end[i-1]) {
-        input$start[i] <- as.integer(input$start[i] + 1)
-      }
-    }
-  }
-}
+input %<>%
+  arrange(seqid, start) %>%
+  mutate(new.start = case_when(seqid == lag(seqid) & start < lag(end) ~ as.integer((start + ((lag(end) - start)/2)) + 1),
+                               .default = start),
+         new.end = case_when(seqid == lead(seqid) & end > lead(start) ~ as.integer((end - (end - lead(start))/2)),
+                             .default = end)) %>%
+  mutate(start = new.start,
+         end = new.end) %>%
+  select(-c(new.start, new.end))
 
 # Write Table
-
 write.table(input, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
 
 
