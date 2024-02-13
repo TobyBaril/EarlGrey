@@ -24,8 +24,10 @@ input <- read.gff(gff.in)
 input %<>%
   arrange(seqid, start) %>%
   mutate(new.start = case_when(seqid == lag(seqid) & start < lag(end) ~ as.integer((start + ((lag(end) - start)/2)) + 1),
+                               seqid == lag(seqid) & start == lag(end) ~ as.integer(start + 1),
                                .default = start),
          new.end = case_when(seqid == lead(seqid) & end > lead(start) ~ as.integer((end - (end - lead(start))/2)),
+                             seqid == lead(seqid) & end == lead(start) ~ as.integer(end),
                              .default = end)) %>%
   mutate(start = new.start,
          end = new.end) %>%
