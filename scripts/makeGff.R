@@ -34,6 +34,7 @@ for (i in 1:length(fil$V1)) {
   }
 }
 
+fil$V2 <- "Earl_Grey"
 fil$V9 <- toupper(fil$V9)
 
 write.table(fil, gffOut, quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
