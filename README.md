@@ -15,6 +15,8 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 [Installation](#recommended-installation-with-conda-or-mamba)
 
+[Workaround for Dfam 3.8](#dfam-workaround-for-latest-release)
+
 
 <!-- toc -->
 
@@ -612,6 +614,51 @@ Ensure the genome you wish to annotate is found in the directory you want to bin
 
 ```
 earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
+```
+
+# Dfam Workaround For Latest Release
+
+With the latest release of RepeatMasker (v4.1.6), Dfam 3.8 has been reorganised into partitions containing both curated and uncurated sequences for specific taxonomic groups (see https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt). Consequently, it is challenging to provide a stable conda release for RepeatMasker 4.1.6. 
+
+If you require Dfam 3.8 for your studies, I have devised a workaround that remains functional. HOWEVER, I do not recommend attempting this unless you are comfortable with altering files within conda environments, and have a good level of experience in configuring tools. Undertake the below at your own risk!
+
+
+First, locate your conda environment installation. It should be something like the below:
+```
+/home/user/anaconda3/envs/earlgrey/
+```
+
+Next, find the directory containing RepeatMasker and associated files. It will be inside the share directory
+```
+cd /home/user/anaconda3/envs/earlgrey/share/
+```
+
+Compress and back up RepeatMasker in case anything goes wrong, then delete the RepeatMasker Directory
+```
+tar -czvf RepeatMasker.bak.tar.gz RepeatMasker/ && rm -r ./RepeatMasker/
+```
+
+Download and unpack RepeatMasker 4.1.6
+```
+wget https://repeatmasker.org/RepeatMasker/RepeatMasker-4.1.6.tar.gz
+tar -zxvf RepeatMasker-4.1.6.tar.gz
+```
+
+Go to the famdb directory and fetch at least the root partition. check the [README](https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt) for which partition contains which species, and download all the ones you want.
+```
+cd ./RepeatMasker/Libraries/famdb/
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.0.h5.gz
+gunzip *.gz
+```
+
+Move back to the RepeatMasker directory and reconfigure RepeatMasker
+```
+cd ../../
+perl ./configure
+
+# when prompted, you will need the full path to trf. This is in the conda environment bin directory:
+## e.g in this example it would be:
+/home/user/anaconda3/envs/earlgrey/bin/trf
 ```
 
 # Alternative installation methods
