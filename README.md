@@ -68,24 +68,24 @@ The runtime of Earl Grey will depend on the repeat content of your input genome.
 Directories created by earl grey:
 ```
 [speciesName]EarlGrey/
-
-	[speciesName]_RepeatMasker/
-    		+ Results of the optional initial RepeatMasker run used to mask previously characterised TEs
-   	[speciesName]_Database/
-    		+ Database created from the masked genome output of the initial RepeatMasker run. Required for RepeatModeler.
-   	[speciesName]_RepeatModeler/
-   		 + Results of the RepeatModeler2 _de novo_ TE identification step
-   	[speciesName]_strainer/
-    		+ Results of the "BLAST, Extract, Align, Trim" process
-   	[speciesName]_Curated_Library/
-    		+ Contains the _de novo_ repeat library generated with the "BLAST, Extract, Align, Trim" process, the library of known repeats used by RepeatMasker (OPTIONAL), and a combined library containing both sets of repeats (OPTIONAL)
-   	[speciesName]_RepeatMasker_Against_Custom_Library/
-    		+ Results of the RepeatMasker run using the final curated library
-   	[speciesName]_RepeatLandscape/
-    		+ Intermediate files for the generation of RepeatLandscapes (RepeatMasker .divsum files)
-   	[speciesName]_mergedRepeats/
-    		+ Intermediate files and results of TE defragmentation step using RepeatCraft.
-   	[speciesName]_summaryFiles/
+    |
+    |---[speciesName]_RepeatMasker/
+    |		+ Results of the optional initial RepeatMasker run used to mask previously characterised TEs
+    |---[speciesName]_Database/
+    |		+ Database created from the masked genome output of the initial RepeatMasker run. Required for RepeatModeler.
+    |---[speciesName]_RepeatModeler/
+    |		 + Results of the RepeatModeler2 _de novo_ TE identification step
+    |---[speciesName]_strainer/
+    |		+ Results of the "BLAST, Extract, Align, Trim" process
+    |---[speciesName]_Curated_Library/
+    |		+ Contains the _de novo_ repeat library generated with the "BLAST, Extract, Align, Trim" process, the library of known repeats used by RepeatMasker (OPTIONAL), and a combined library containing both sets of repeats (OPTIONAL)
+    |---[speciesName]_RepeatMasker_Against_Custom_Library/
+    |		+ Results of the RepeatMasker run using the final curated library
+    |---[speciesName]_RepeatLandscape/
+    |		+ Intermediate files for the generation of RepeatLandscapes (RepeatMasker .divsum files)
+    |---[speciesName]_mergedRepeats/
+    |		+ Intermediate files and results of TE defragmentation step using RepeatCraft.
+    |---[speciesName]_summaryFiles/
     		+ Results and plots from Earl Grey:
     		+ TE annotations in GFF3 and BED format
     		+ High-level TE quantification table (tab delimited)
