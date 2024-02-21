@@ -660,6 +660,18 @@ perl ./configure
 # when prompted, you will need the full path to trf. This is in the conda environment bin directory:
 ## e.g in this example it would be:
 /home/user/anaconda3/envs/earlgrey/bin/trf
+
+# NOTE: In some cases I ran into an issue where the configuration file needed modifying. Check the following:
+nano ./RepeatMaskerConfig.pm
+
+# Check that the DEFAULT_SEARCH_ENGINE block looks like this:
+'DEFAULT_SEARCH_ENGINE' => {
+                                       'command_line_override' => 'default_search_engine',
+                                       'description' => 'The default search engine to use',
+                                       'param_type' => 'value',
+                                       'required' => 1,
+                                       'value' => 'rmblast'
+                                     },
 ```
 
 # Alternative installation methods
