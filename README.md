@@ -20,7 +20,27 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Example
 
-Given an input genome, Earl Grey will run through numerous steps to identify and annotate transposable elements (TEs). We recommend running earlGrey within a tmux or screen session, so that you can log off and leave Earl Grey running.
+Given an input genome, Earl Grey will run through numerous steps to identify, curate, and annotate transposable elements (TEs). We recommend running earlGrey within a tmux or screen session, so that you can log off and leave Earl Grey running.
+
+There are several required and optional parameters for your Earl Grey run:
+```
+Required Parameters:
+		-g == genome.fasta
+		-s == species name
+		-o == output directory
+
+	Optional Parameters:
+		-t == Number of Threads (DO NOT specify more than are available)
+		-r == RepeatMasker search term (e.g arthropoda/eukarya)
+		-l == Starting consensus library for an inital mask (in fasta format)
+		-i == Number of Iterations to BLAST, Extract, Extend (Default: 10)
+		-f == Number flanking basepairs to extract (Default: 1000)
+		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
+		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
+		-d == Create soft-masked genome at the end? (yes/no, Default: no)
+		-n == Max number of sequences used to generate consensus sequences (Default: 20)
+		-h == Show help
+```
 
 ```
 # remember to activate the conda environment before running (NOTE: depending on your install, the environment name might vary)
@@ -36,6 +56,12 @@ earlGrey -g [genome.fasta] -s [speciesName] -o [outputDirectory]
 earlGrey -g myzusPersicae.fasta -s myzusPersicae -o ./earlGreyOutputs
 
 ```
+
+Following this, Earl Grey will run through several processes depending on the options selected. The general pipeline is illustrated below:
+
+![Figure1_earlGreyFlow](https://github.com/TobyBaril/EarlGrey/assets/46785187/ba039063-9111-4264-84b6-e3580dc340ae)
+
+For a more in-depth description of Earl Grey's steps, please refer to the implementation section in the [manuscript](https://www.biorxiv.org/content/10.1101/2022.06.30.498289v3).
 
 The runtime of Earl Grey will depend on the repeat content of your input genome. Once finished, you will notice that a number of directories have been created by Earl Grey. The most important results are found within the "summaryFiles" folder, however intermediate results are kept in case you wish to use alignments for further manual curation or investigation, for example. 
 
