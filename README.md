@@ -786,24 +786,24 @@ If you are not certain of the full path, please run the following command
 
 ```realpath ./rmblast-2.13.0/bin/```
 
-Download RepeatMasker (this will download it to the current directory). NOTE some extra steps are required if you wish to use Dfam 3.7, please refer to repeatmasker.org/RepeatMasker for these extra steps if required.
+Download RepeatMasker (this will download it to the current directory). NOTE some extra steps are required for Dfam 3.8, please refer to repeatmasker.org/RepeatMasker.
 
-```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz```
+```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.6.tar.gz```
 
 Copy the RepeatMasker package to /usr/local/, or somewhere that all users will be able to access the installation. 
 Copying to /usr/local/ might require sudo privileges
 
-```sudo cp RepeatMasker-4.1.4.tar.gz /usr/local/```
+```sudo cp RepeatMasker-4.1.6.tar.gz /usr/local/```
 
 Change directory to /usr/local, and extract the RepeatMasker package. This might require sudo privileges.
 
 ```cd /usr/local/```
 
-```sudo tar -zxvf RepeatMasker-4.1.4.tar.gz```
+```sudo tar -zxvf RepeatMasker-4.1.6.tar.gz```
 
-Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.3 and RepBase. 
+Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.4 onwards and RepBase. 
 Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase, although inclusion of RepBase can improve classification of repeats by RepeatModeler. If you have access to this database, please include it in your configuration of RepeatMasker. 
-We recommend that you download Dfam 3.3 as a minimum before using Earl Grey. The Dfam library is large - this could take a while!
+We recommend that you download Dfam 3.8 before using Earl Grey, and this is required for RepeatMasker 4.1.6. The Dfam library is large - this could take a while!
 
 We recommend downloading Dfam into your home directory (~/) or a subdirectory of home
 
@@ -812,35 +812,30 @@ Change directory to home
 ```cd ~/```
 
 Download lastest Dfam release - This may take a while
-*** NOTE: There are two releases of Dfam, one conatining all repeats and one only curated. There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
+*** NOTE: There are many partitions for Dfam, each containing curated and uncurated TE consensi split by taxonomy. As a minimum, you need to configure RepeatMasker with the root partition, but you can also include others. Note: There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
 
-For whole Dfam library (including uncurated elements):
-```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz```
-
-For curated Dfam library:
-```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz```
+For whole Dfam library run all of the below, or run each part as required (minimum the root (0) partition):
+```
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.0.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.1.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.2.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.3.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.4.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.5.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.6.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.7.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.8.h5.gz
+```
 
 Unzip the Dfam release - This may take a while with no indication that anything is happening, please be patient!
 
 For whole Dfam library (including uncurated elements):
-```gunzip Dfam.h5.gz```
-
-For curated Dfam library:
-```gunzip Dfam_curatedonly.h5.gz && mv Dfam_curatedonly.h5 Dfam.h5```
+```gunzip *.h5.gz```
 
 Move the Dfam library to the RepeatMasker library folder
 NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
 
-```mv Dfam.h5 /usr/local/RepeatMasker/Libraries/```
-
-If you are using Dfam 3.7, you also need to update ```famdb.py```
-
-```
-cd /usr/local/RepeatMasker/
-mv famdb.py famdb.py.bak
-wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py
-chmod 755 famdb.py
-```
+```mv *.h5 /usr/local/RepeatMasker/Libraries/famdb/```
 
 DO NOT configure RepeatMasker just yet...
 
@@ -1045,55 +1040,42 @@ If you are not certain of the full path, please run the following command
 
 Download RepeatMasker (this will download it to the current directory). NOTE some extra steps are required if you wish to use Dfam 3.7, please refer to repeatmasker.org/RepeatMasker for these extra steps if required.
 
-```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.4.tar.gz```
+```wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.6.tar.gz```
 
 Extract the RepeatMasker package.
 
 ```
-tar -zxvf RepeatMasker-4.1.4.tar.gz
+tar -zxvf RepeatMasker-4.1.6.tar.gz
 ```
 
 Install the required RepeatMasker libraries - Earl Grey has been tested with Dfam 3.3 and RepBase. 
 Unfortunately, RepBase is now behind a paywall, but to ensure Earl Grey remains open it does not rely on RepBase, although inclusion of RepBase can improve classification of repeats by RepeatModeler. If you have access to this database, please include it in your configuration of RepeatMasker. 
-We recommend that you download Dfam 3.3 as a minimum before using Earl Grey. The Dfam library is large - this could take a while!
-
+We recommend that you download Dfam 3.8 before using Earl Grey, and this is required for RepeatMasker 4.1.6. The Dfam library is large - this could take a while!
 
 Change directory to RepeatMasker Libraries
 
-```cd ./RepeatMasker/Libraries/```
+```cd ./RepeatMasker/Libraries/famdb/```
 
 Download lastest Dfam release - This may take a while
-*** NOTE: There are two releases of Dfam, one conatining all repeats and one only curated. There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
+*** NOTE: There are many partitions for Dfam, each containing curated and uncurated TE consensi split by taxonomy. As a minimum, you need to configure RepeatMasker with the root partition, but you can also include others. Note: There may be erroneous annotations in the uncurated Dfam database, use at your own risk***
 
-For whole Dfam library (including uncurated elements):
-```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam.h5.gz```
-
-For curated Dfam library:
-```wget https://www.dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz```
+For whole Dfam library run all of the below, or run each part as required (minimum the root (0) partition):
+```
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.0.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.1.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.2.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.3.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.4.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.5.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.6.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.7.h5.gz
+wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.8.h5.gz
+```
 
 Unzip the Dfam release - This may take a while with no indication that anything is happening, please be patient!
 
 For whole Dfam library (including uncurated elements):
-```gunzip Dfam.h5.gz```
-
-For curated Dfam library:
-```gunzip Dfam_curatedonly.h5.gz && mv Dfam_curatedonly.h5 Dfam.h5```
-
-Move the Dfam library to the RepeatMasker library folder
-NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
-
-```mv Dfam.h5 /usr/local/RepeatMasker/Libraries/```
-
-NOTE, a warning might come up that this will overwrite the existing file, allow this by pressing "y" then Enter
-
-If you are using Dfam 3.7, you also need to update ```famdb.py```
-
-```
-cd /PATH/TO/RepeatMasker/
-mv famdb.py famdb.py.bak
-wget https://github.com/Dfam-consortium/FamDB/raw/master/famdb.py
-chmod 755 famdb.py
-```
+```gunzip *.h5.gz```
 
 DO NOT configure RepeatMasker just yet...
 
