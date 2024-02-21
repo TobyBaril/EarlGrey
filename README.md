@@ -116,9 +116,9 @@ NC_045808.1     8922477 8923791 DNA/TcMar-Tc1   11957   +
 
 
 # GFF3 format
-NC_045808.1     RepeatMasker    LINE/Penelope   4964942 4965925 5073    +       .       ID="RND-1_FAMILY-48";Tend="2677";Tstart="1700";shortTE="F";uid="cb016329-11ac-492a-b11c-db2dc50e9d89"
-NC_045808.1     RepeatMasker    LINE/L2 7291354 7291525 1279    +       .       ID="RND-5_FAMILY-151";Tend="1398";Tstart="1226";shortTE="F";uid="b1ffaec9-e362-4ffe-89c2-5830cea00ab7"
-NC_045808.1     RepeatMasker    DNA/TcMar-Tc1   8922478 8923791 11957   +       .       ID="RND-1_FAMILY-124";Tend="3292";Tstart="1979";shortTE="F";uid="1e507e68-39f3-45f0-b62b-65bd9b7919c8"
+NC_045808.1     Earl_Grey    LINE/Penelope   4964942 4965925 5073    +       .       ID="RND-1_FAMILY-48";Tend="2677";Tstart="1700";shortTE="F";uid="cb016329-11ac-492a-b11c-db2dc50e9d89"
+NC_045808.1     Earl_Grey    LINE/L2 7291354 7291525 1279    +       .       ID="RND-5_FAMILY-151";Tend="1398";Tstart="1226";shortTE="F";uid="b1ffaec9-e362-4ffe-89c2-5830cea00ab7"
+NC_045808.1     Earl_Grey    DNA/TcMar-Tc1   8922478 8923791 11957   +       .       ID="RND-1_FAMILY-124";Tend="3292";Tstart="1979";shortTE="F";uid="1e507e68-39f3-45f0-b62b-65bd9b7919c8"
 ```
 
 # References and Acknowledgements
