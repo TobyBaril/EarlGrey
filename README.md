@@ -623,6 +623,20 @@ earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
 
 With the latest release of RepeatMasker (v4.1.6), Dfam 3.8 has been reorganised into partitions containing both curated and uncurated sequences for specific taxonomic groups (see https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt). Consequently, it is challenging to provide a stable conda release for RepeatMasker 4.1.6. 
 
+I have built a container for Earl Grey with RepeatMasker 4.1.6 and the root partition of Dfam version 3.8 preconfigured. This is particularly useful for those who require working with docker containers on their HPC infrastructure.
+
+```
+# to run in interactive mode with bound directories
+docker run -it -v `pwd`/host_data/:/data/ tobybaril/earlgrey_dfam3.8:latest
+
+# to run the container passing the required input file
+docker run -w /data/ -v /path/to/system/directory/inputGenome.fasta:/data/inputGenome.fasta --name=earlGreyContainer tobybaril/earlgrey_dfam3.8:latest earlGrey -g /data/inputGenome.fasta -s input -o /data/ -t $threads
+
+# to get the output files from the stopped container
+docker cp earlGreyContainer:/data/input_EarlGrey/ /path/to/system/directory/
+```
+
+
 If you require Dfam 3.8 for your studies, I have devised a workaround that remains functional. HOWEVER, I do not recommend attempting this unless you are comfortable with altering files within conda environments, and have a good level of experience in configuring tools. Undertake the below at your own risk!
 
 
