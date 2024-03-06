@@ -633,7 +633,7 @@ docker run -it -v `pwd`/host_data/:/data/ tobybaril/earlgrey_dfam3.8:latest
 docker run -w /data/ -v /path/to/system/directory/inputGenome.fasta:/data/inputGenome.fasta --name=earlGreyContainer tobybaril/earlgrey_dfam3.8:latest earlGrey -g /data/inputGenome.fasta -s input -o /data/ -t $threads
 
 # to get the output files from the stopped container
-docker cp earlGreyContainer:/data/input_EarlGrey/ /path/to/system/directory/
+docker cp earlGreyContainer:/data/input_EarlGrey /path/to/system/directory
 ```
 
 
