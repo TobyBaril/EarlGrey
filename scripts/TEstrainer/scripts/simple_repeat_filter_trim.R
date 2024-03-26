@@ -1,5 +1,3 @@
-#!/usr/bin/Rscript
-
 library(optparse)
 
 option_list <- list(
@@ -144,7 +142,7 @@ stats_tr <- full_join(sassr_calc, full_join(mreps_calc, trf_calc, by = "seqnames
 
 # if no data write to og seq to file as nonsatellite and exit
 if(nrow(compiled_tr) == 0){
-  file.create(paste0(opt$directory, "/trf/", opt$out_seq, ".nonsatellite"))
+  writeXStringSet(c(trimmed_seq, untouched_seq), paste0(opt$directory, "/trf/", opt$out_seq, ".nonsatellite"))
   stop()
 }
 
