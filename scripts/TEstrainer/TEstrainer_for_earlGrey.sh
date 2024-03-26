@@ -164,7 +164,7 @@ if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
 elif [ "$(wc -l < ${DATA_DIR}/trf/${RM_LIBRARY}.sassr)" -lt 2 ]; then
    rm ${DATA_DIR}/trf/${RM_LIBRARY}.sassr && touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
 fi
-Rscript ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR}
+Rscript ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR} -p 50
 
 # Delete temp files
 echo "Removing temporary files"
