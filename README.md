@@ -130,9 +130,9 @@ This pipeline has been designed to be used and shared openly by the community.
 
 ### When using Earl Grey, please cite:
 
-Baril, Tobias., Galbraith, James., and Hayward, Alexander. (2023) Earl Grey. Zenodo [doi:10.5281/zenodo.5654615](https://doi.org/10.5281/zenodo.5654615)
+Baril, T., Galbraith, J.G., and Hayward, A., Earl Grey: A Fully Automated User-Friendly Transposable Element Annotation and Analysis Pipeline, Molecular Biology and Evolution, Volume 41, Issue 4, April 2024, msae068 [doi:10.1093/molbev/msae068](https://doi.org/10.1093/molbev/msae068)
 
-Baril, T., Galbraith, J.G., and Hayward, A., 2023. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. [doi:10.1101/2022.06.30.498289](https://doi.org/10.1101/2022.06.30.498289)
+Baril, Tobias., Galbraith, James., and Hayward, Alexander. (2023) Earl Grey. Zenodo [doi:10.5281/zenodo.5654615](https://doi.org/10.5281/zenodo.5654615)
 
 ### This pipeline makes use of scripts from:
 
