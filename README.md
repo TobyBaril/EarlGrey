@@ -168,7 +168,7 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 # Recommended Installation with Conda or Mamba
 
 NOTE: This pipeline is currently running with Dfam 3.7 curated elements only. We are working on updating to Dfam 3.8 for a future release. 
-Earl Grey version 4.1.0 with all required and configured dependencies is found in the bioconda channel. To install, simply run the following depending on your installation:
+Earl Grey version 4.1.1 with all required and configured dependencies is found in the bioconda channel. To install, simply run the following depending on your installation:
 
 ```
 # With conda
@@ -349,7 +349,7 @@ brewIntel install coreutils
 
 Change TEstrainer_for_earlGrey.sh for the macOS version:
 ```
-nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 
 # delete everything in this file.
 ```
@@ -555,12 +555,12 @@ Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
 
 Make sure the updated file is executable:
 ```
-chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit the script directory path in this file by running the following:
 ```
-gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-4.1.0-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-4.1.1-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit famdb.py for use with our environment:
@@ -570,12 +570,12 @@ gsed -i 's/python3/python/g' $(which earlGrey | gsed 's|bin.*|share/RepeatMasker
 
 Edit LTR_FINDER_PARALLEL to be compatible with zsh
 ```
-gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/LTR_FINDER_parallel|g')
+gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/LTR_FINDER_parallel|g')
 ```
 
 Install LTR_Finder from source
 ```
-cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/bin|g')
+cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/bin|g')
 git clone https://github.com/xzhub/LTR_Finder
 cd ./LTR_Finder/source
 make
@@ -584,14 +584,14 @@ cp * ../../LTR_FINDER.x86_64-1.0.7/
 
 Edit rcMergeRepeatsLoose:
 ```
-gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/rcMergeRepeatsLoose|g')
 var=$(which earlGrey | gsed "s/earlGrey/Rscript/g")
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/scripts/rcMergeRepeatsLoose|g')
 ```
 
 Edit main earlGrey script:
 ```
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.0-0/earlGrey|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-4.1.1-0/earlGrey|g')
 ```
 
 Add an important directory to PERL5LIB (for RepeatMasker)
@@ -608,7 +608,7 @@ You are ready to go! Just remember to activate the _intel_ terminal, then the co
 In this case, we need to bind a system directory to the docker container. In the line below, we are binding a directory call `host_data` that is found on our current path to `/data/` in the docker container. Please replace the file path before `:` to the directory you wish to bind to `/data/` in the container. This container must be run in interactive mode the first time you use it.
 
 ```
-docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:4.1.0--h4ac6f70_0
+docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:4.1.1--h4ac6f70_0
 ```
 
 ## If you are running the container for the first time, you need to enable Earl Grey to configure the Dfam libraries correctly in interactive mode.
