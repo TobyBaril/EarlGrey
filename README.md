@@ -64,7 +64,7 @@ Following this, Earl Grey will run through several processes depending on the op
 
 ![Figure1_earlGreyFlow](https://github.com/TobyBaril/EarlGrey/assets/46785187/ba039063-9111-4264-84b6-e3580dc340ae)
 
-For a more in-depth description of Earl Grey's steps, please refer to the implementation section in the [manuscript](https://www.biorxiv.org/content/10.1101/2022.06.30.498289v3).
+For a more in-depth description of Earl Grey's steps, please refer to the implementation section in the [manuscript](https://academic.oup.com/mbe/article/41/4/msae068/7635926).
 
 The runtime of Earl Grey will depend on the repeat content of your input genome. Once finished, you will notice that a number of directories have been created by Earl Grey. The most important results are found within the "summaryFiles" folder, however intermediate results are kept in case you wish to use alignments for further manual curation or investigation, for example. 
 
