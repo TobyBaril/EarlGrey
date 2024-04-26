@@ -71,15 +71,31 @@ fill_colours <- tibble(subclass = c("DNA", "LINE", "LTR", "PLE", "RC", "SINE", "
 kimura_plot <- ggplot(divergence_eg_tes_rounded_for_plot,
                       aes(x = KIMURA80, y = KIMURA_SUM, fill = named_subclass)) +
   geom_col(position = "stack", width = 0.01) +
-  scale_x_continuous(limits = c(-0.01, 0.51),
-                     expand = c(0,0), name = "Kimura 2-Parameter Distance") +
+  scale_x_reverse(limits = c(-0.01, 0.51),
+                  expand = c(0,0), name = "Kimura 2-Parameter Distance") +
   theme_bw() +
   labs(title = plot_title) + theme(plot.title = element_markdown(hjust = 0.5)) +
   scale_fill_manual(values = fill_colours$fill_colour, name = "TE Subclass")
 subclass_kimura_plot <- kimura_plot + scale_y_continuous(expand = c(0.01,0), name = "Base pairs")
-ggsave(plot = subclass_kimura_plot, filename = paste0(opt$out_directory, "/", opt$species_name, "_subclass_div_plot.pdf"), device = "pdf", width = 12.85, height = 8.5)
+ggsave(plot = subclass_kimura_plot, 
+       filename = paste0(opt$out_directory, "/", opt$species_name, "_subclass_div_plot.pdf"),
+       device = "pdf", 
+       scale = 1,
+       width = 297, 
+       height = 210,
+       units = "mm",
+       dpi = 300,
+       limitsize = FALSE)
 split_subclass_kimura_plot <- kimura_plot + scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) + facet_grid(subclass~., scales = "free")
-ggsave(plot = split_subclass_kimura_plot, filename = paste0(opt$out_directory, "/", opt$species_name, "_split_subclass_div_plot.pdf"), device = "pdf", width = 12.85, height = 8.5)
+ggsave(plot = split_subclass_kimura_plot, 
+       filename = paste0(opt$out_directory, "/", opt$species_name, "_split_subclass_div_plot.pdf"), 
+       device = "pdf", 
+       scale = 1,
+       width = 297, 
+       height = 210,
+       units = "mm",
+       dpi = 300,
+       limitsize = FALSE)
 
 # Perform maths for more divided plot
 divergence_eg_tes_rounded_for_superfamily_plot  <- divergence_eg_tes_gff %>%
@@ -101,8 +117,8 @@ divergence_eg_tes_rounded_for_superfamily_plot <- split(divergence_eg_tes_rounde
 kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$DNA,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_continuous(limits = c(-0.01, 0.51),
-                     expand = c(0,0), name = "") +
+  scale_x_reverse(limits = c(-0.01, 0.51),
+                  expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -111,8 +127,8 @@ kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
 kimura_superfamily_plot_2 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_continuous(limits = c(-0.01, 0.51),
-                     expand = c(0,0), name = "") +
+  scale_x_reverse(limits = c(-0.01, 0.51),
+                  expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -122,8 +138,8 @@ kimura_superfamily_plot_2 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
 kimura_superfamily_plot_3 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LTR,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_continuous(limits = c(-0.01, 0.51),
-                     expand = c(0,0), name = "") +
+  scale_x_reverse(limits = c(-0.01, 0.51),
+                  expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -133,8 +149,8 @@ kimura_superfamily_plot_3 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
 kimura_superfamily_plot_4 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$SINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_continuous(limits = c(-0.01, 0.51),
-                     expand = c(0,0), name = "Kimura 2-Parameter Distance") +
+  scale_x_reverse(limits = c(-0.01, 0.51),
+                  expand = c(0,0), name = "Kimura 2-Parameter Distance") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -148,4 +164,12 @@ superfamily_kimura_plot <- plot_grid(kimura_superfamily_plot_1, kimura_superfami
 superfamily_kimura_plot_titled <- plot_grid(title_plot, superfamily_kimura_plot, ncol = 1, rel_heights = c(1, 30))
 
 # Save divided plot
-ggsave(plot = superfamily_kimura_plot_titled, filename = paste0(opt$out_directory, "/", opt$species_name, "_superfamily_div_plot.pdf"), device = "pdf", width = 12.85, height = 8.5)
+ggsave(plot = superfamily_kimura_plot_titled, 
+       filename = paste0(opt$out_directory, "/", opt$species_name, "_superfamily_div_plot.pdf"), 
+       device = "pdf", 
+       scale = 1,
+       width = 297, 
+       height = 210,
+       units = "mm",
+       dpi = 300,
+       limitsize = FALSE)
