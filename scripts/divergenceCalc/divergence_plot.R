@@ -79,9 +79,10 @@ kimura_plot <- ggplot(divergence_eg_tes_rounded_for_plot,
                       aes(x = KIMURA80, y = KIMURA_SUM, fill = named_subclass)) +
   geom_col(position = "stack", width = 0.01) +
   scale_x_reverse(expand = c(0,0), name = "Kimura 2-Parameter Distance") +
-  theme_bw() +
-  labs(title = plot_title) + theme(plot.title = element_markdown(hjust = 0.5)) +
-  scale_fill_manual(values = col, name = "TE Subclass")
+  theme_classic() +
+  labs(title = plot_title) + 
+  theme(plot.title = element_markdown(hjust = 0.5)) +
+  scale_fill_manual(values = col, name = "TE Classification")
 
 subclass_kimura_plot <- kimura_plot + scale_y_continuous(expand = c(0.01,0), name = "Base pairs")
 
