@@ -47,6 +47,7 @@ divergence_eg_tes_gff <- divergence_eg_tes_gff %>%
                                            subclass == "LTR" ~ "LTR Retrotransposon",
                                            subclass == "PLE" ~ "Penelope",
                                            subclass == "RC" ~ "Rolling Circle",
+                                           subclass == "Unknown" ~ "Unclassified",
                                            .default = subclass))
 
 # Sum lengths to create data for plots (remove subclasses not in standard set)
@@ -60,23 +61,30 @@ divergence_eg_tes_rounded_for_plot  <- divergence_eg_tes_gff %>%
   base::unique() %>%
   arrange(named_subclass, KIMURA80)
 
+divergence_eg_tes_rounded_for_plot$named_subclass %<>% 
+  as.factor() %>%
+  ordered(levels = c("DNA Transposon", "Rolling Circle", "Penelope", "LINE", "SINE", "LTR Retrotransposon", "Other (Simple Repeat, Microsatellite, RNA)", "Unclassified"))
+
 # Set fill colours
-fill_colours <- tibble(subclass = c("DNA", "LINE", "LTR", "PLE", "RC", "SINE", "Other", "Unknown"),
-                       named_subclass = c("DNA Transposon", "LINE", "LTR Retrotransposon", "Penelope", "Rolling Circle", "SINE", "Other", "Unknown"),
-                       fill_colour = c("#E32017", "#0098D4", "#00782A", "#7156A5", "#EE7C0E", "#9B0056", "#F3A9BB", "#A0A5A9")) %>%
-  filter(subclass %in% divergence_eg_tes_rounded_for_plot$subclass) %>%
-  arrange(named_subclass)
+fill_colours <- data.frame(subclass = c("DNA", "RC", "PLE", "LINE", "SINE", "LTR", "Other", "Unknown"),
+                       named_subclass = c("DNA Transposon", "Rolling Circle", "Penelope", "LINE", "SINE", "LTR Retrotransposon", "Other (Simple Repeat, Microsatellite, RNA)", "Unclassified"),
+                       fill_colour = c("#E32017", "#EE7C0E", "#7156A5", "#0098D4", "#9B0056", "#00782A", "#F3A9BB", "#A0A5A9")) %>%
+  filter(subclass %in% divergence_eg_tes_rounded_for_plot$subclass) 
+
+col <- fill_colours$fill_colour
+names(col) <- fill_colours$named_subclass
 
 # Create and save main plots
 kimura_plot <- ggplot(divergence_eg_tes_rounded_for_plot,
                       aes(x = KIMURA80, y = KIMURA_SUM, fill = named_subclass)) +
   geom_col(position = "stack", width = 0.01) +
-  scale_x_reverse(limits = c(-0.01, 0.51),
-                  expand = c(0,0), name = "Kimura 2-Parameter Distance") +
+  scale_x_reverse(expand = c(0,0), name = "Kimura 2-Parameter Distance") +
   theme_bw() +
   labs(title = plot_title) + theme(plot.title = element_markdown(hjust = 0.5)) +
-  scale_fill_manual(values = fill_colours$fill_colour, name = "TE Subclass")
+  scale_fill_manual(values = col, name = "TE Subclass")
+
 subclass_kimura_plot <- kimura_plot + scale_y_continuous(expand = c(0.01,0), name = "Base pairs")
+
 ggsave(plot = subclass_kimura_plot, 
        filename = paste0(opt$out_directory, "/", opt$species_name, "_subclass_div_plot.pdf"),
        device = "pdf", 
@@ -86,7 +94,9 @@ ggsave(plot = subclass_kimura_plot,
        units = "mm",
        dpi = 300,
        limitsize = FALSE)
+
 split_subclass_kimura_plot <- kimura_plot + scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) + facet_grid(subclass~., scales = "free")
+
 ggsave(plot = split_subclass_kimura_plot, 
        filename = paste0(opt$out_directory, "/", opt$species_name, "_split_subclass_div_plot.pdf"), 
        device = "pdf", 
@@ -117,46 +127,53 @@ divergence_eg_tes_rounded_for_superfamily_plot <- split(divergence_eg_tes_rounde
 kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$DNA,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(-0.01, 0.51),
-                  expand = c(0,0), name = "") +
+  scale_x_reverse(expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3))
+if (inherits(try(ggplot_build(kimura_superfamily_plot_1)), "try-error")) 
+  kimura_superfamily_plot_1 <- ggplot()
+
 kimura_superfamily_plot_2 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(-0.01, 0.51),
-                  expand = c(0,0), name = "") +
+  scale_x_reverse(expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "Blues", direction = -1)
+if (inherits(try(ggplot_build(kimura_superfamily_plot_2)), "try-error")) 
+  kimura_superfamily_plot_2 <- ggplot()
+
 kimura_superfamily_plot_3 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LTR,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(-0.01, 0.51),
-                  expand = c(0,0), name = "") +
+  scale_x_reverse(expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "Greens", direction = -1)
+if (inherits(try(ggplot_build(kimura_superfamily_plot_3)), "try-error")) 
+  kimura_superfamily_plot_3 <- ggplot()
+
 kimura_superfamily_plot_4 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$SINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(-0.01, 0.51),
-                  expand = c(0,0), name = "Kimura 2-Parameter Distance") +
+  scale_x_reverse(expand = c(0,0), name = "Kimura 2-Parameter Distance") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "YlOrRd", direction = -1)
+if (inherits(try(ggplot_build(kimura_superfamily_plot_4)), "try-error")) 
+  kimura_superfamily_plot_4 <- ggplot()
 
 # Combine plots and title
 superfamily_kimura_plot <- plot_grid(kimura_superfamily_plot_1, kimura_superfamily_plot_2, kimura_superfamily_plot_3, kimura_superfamily_plot_4, 
