@@ -1,8 +1,8 @@
-library(tidyverse)
-library(plyr)
-library(dplyr)
-library(magrittr)
-library(data.table)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(plyr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(data.table))
 options(scipen = 100, stringsAsFactors = FALSE)
 
   #####
