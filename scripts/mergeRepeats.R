@@ -97,8 +97,11 @@ if (lowend == "yes") {
 
 # if end coordinate is before start, switch
 filteredRepeatsOut2 <- filteredRepeatsOut[,1:6] %>%
-  mutate(Start = ifelse(End < Start, End, Start),
-         End = ifelse(End < Start, Start, End))
+  mutate(nStart = ifelse(End < Start, End, Start),
+         nEnd = ifelse(End < Start, Start, End)) %>%
+  mutate(Start = nStart,
+         End = nEnd) %>%
+  select(! c(nStart, nEnd))
 
 write.table(filteredRepeatsOut2, file = filtBed, quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
 
