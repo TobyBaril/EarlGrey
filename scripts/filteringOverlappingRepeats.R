@@ -1,7 +1,7 @@
 # load libraries
-library(GenomicRanges)
-library(ape)
-library(tidyverse)
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(ape))
+suppressPackageStartupMessages(library(tidyverse))
 
 # set options
 
