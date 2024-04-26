@@ -87,7 +87,7 @@ kimura_plot <- ggplot(divergence_eg_tes_rounded_for_plot,
 subclass_kimura_plot <- kimura_plot + scale_y_continuous(expand = c(0.01,0), name = "Base pairs")
 
 ggsave(plot = subclass_kimura_plot, 
-       filename = paste0(opt$out_directory, "/", opt$species_name, "_subclass_div_plot.pdf"),
+       filename = paste0(opt$out_directory, "/", opt$species_name, "_classification_landscape.pdf"),
        device = "pdf", 
        scale = 1,
        width = 297, 
@@ -99,7 +99,7 @@ ggsave(plot = subclass_kimura_plot,
 split_subclass_kimura_plot <- kimura_plot + scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) + facet_grid(subclass~., scales = "free")
 
 ggsave(plot = split_subclass_kimura_plot, 
-       filename = paste0(opt$out_directory, "/", opt$species_name, "_split_subclass_div_plot.pdf"), 
+       filename = paste0(opt$out_directory, "/", opt$species_name, "_split_class_landscape.pdf"), 
        device = "pdf", 
        scale = 1,
        width = 297, 
