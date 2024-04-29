@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 4.1.1
+	earlGrey version 4.2.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -24,12 +24,6 @@ usage()
 	Example Usage:
 
 	earlGrey -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -t 16
-
-
-	Prerequisites - These must be configured prior to using Earl Grey:
-		- RepeatMasker (Version 4.1.2)
-		- Ensure RepeatMasker has been configured with the desired repeat libraries (RepBase and at least Dfam 3.4 are recommended)
-		- RepeatModeler2
 
 	Queries can be sent to:
 	tobias.baril[at]unine.ch
@@ -69,9 +63,11 @@ prepGenome()
 		mv ${genome}.tmp.dict ${genome}.dict
 		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
 		dict=${genome}.dict
+		genOrig=$genome
 		genome=${genome}.prep
 	else
 		dict=${genome}.dict
+		genOrig=$genome
 		genome=${genome}.prep
 	fi
 }
@@ -192,17 +188,6 @@ novoMask()
 	fi
 }
 
-# Subprocess calcDivRL
-# Calculate divergence estimates
-calcDivRL()
-{
-	cd ${OUTDIR}/${species}_RepeatLandscape
-	genome_size=$(sed -n '4p' ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
-	align_file=$(readlink -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.align)
-	calcDivergenceFromAlign.pl -s ${species}.divsum $align_file
-	div_file=$(readlink -f $OUTDIR/${species}_RepeatLandscape/${species}.divsum)
-}
-
 # Subprocess rcMergeRepeats
 # Defragment repeat sequences to adjust for insertion times
 mergeRep()
@@ -230,10 +215,28 @@ charts()
 	cd ${OUTDIR}/${species}_summaryFiles/
 	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
 		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
-		Rscript ${SCRIPT_DIR}/autoLand.R $div_file $genome_size $species ${OUTDIR}/${species}_summaryFiles/${species}.repeatLandscape.pdf
 	else
 		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
-		Rscript ${SCRIPT_DIR}/autoLand.R $div_file $genome_size $species ${OUTDIR}/${species}_summaryFiles/${species}.repeatLandscape.pdf
+	fi
+}
+
+# Subprocess calcDivRL
+# Calculate divergence estimates
+calcDivRL()
+{
+	cd ${OUTDIR}/${species}_RepeatLandscape
+	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
+		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
+		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
+	else
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
+		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
+		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 	fi
 }
 
@@ -485,7 +488,6 @@ if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
 		echo "ERROR: RepeatMasker failed, please check logs" && exit 2
 	fi
-	calcDivRL
 	sleep 1
 else
 	stage="Final masking already complete, skipping..." && runningTea
@@ -495,11 +497,6 @@ else
 fi
 
 # Stage 6
-
-##TODO
-#### find a way to rename variable in table that is less RAM intensive than the current method in python
-#### i think this is inside rcMergeRepeatsLoose
-
 if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ] ; then
 	stage="Defragmenting Repeats" && runningTea
 	mergeRep
@@ -513,6 +510,7 @@ fi
 # Stage 7
 stage="Generating Summary Plots" && runningTea
 charts
+calcDivRL
 sleep 1
 
 # Stage 8

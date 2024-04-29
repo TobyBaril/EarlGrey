@@ -1,8 +1,8 @@
-library(tidyverse)
-library(plyr)
-library(dplyr)
-library(magrittr)
-library(data.table)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(plyr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(data.table))
 options(scipen = 100, stringsAsFactors = FALSE)
 
   #####
@@ -94,15 +94,15 @@ filteredRepeatsOut$length <- abs(filteredRepeatsOut$End - filteredRepeatsOut$Sta
 if (lowend == "yes") {
   filteredRepeatsOut <- filteredRepeatsOut[filteredRepeatsOut$length > 100,]
 }
-filteredRepeatsOut2 <- filteredRepeatsOut[,1:6]
-for (i in 1:length(filteredRepeatsOut2$Start)) {
-  if (filteredRepeatsOut2$End[i] < filteredRepeatsOut2$Start[i]) {
-    start <- filteredRepeatsOut2$End[i]
-    end <- filteredRepeatsOut2$Start[i]
-    filteredRepeatsOut2$Start[i] <- start
-    filteredRepeatsOut2$End[i] <- end
-  }
-}
+
+# if end coordinate is before start, switch
+filteredRepeatsOut2 <- filteredRepeatsOut[,1:6] %>%
+  mutate(nStart = ifelse(End < Start, End, Start),
+         nEnd = ifelse(End < Start, Start, End)) %>%
+  mutate(Start = nStart,
+         End = nEnd) %>%
+  select(! c(nStart, nEnd))
+
 write.table(filteredRepeatsOut2, file = filtBed, quote = FALSE, row.names = FALSE, sep = "\t", col.names = FALSE)
 
 
