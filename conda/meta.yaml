@@ -1,18 +1,15 @@
-{% set name = "EarlGrey" %}
-{% set version = "4.2.0-dev" %}
-
 package:
-  name: {{ name|lower }}
-  version: {{ version }}
+  name: earlgrey
+  version: "4.2.0.dev"
 
 source:
-  url: https://github.com/TobyBaril/EarlGrey/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  path: .
 
 build:
-  number: 1
-  run_exports:
-    - {{ pin_subpackage('earlgrey', max_pin='x') }}
+  # Specify the channels in order of priority
+  channels:
+    - conda-forge
+    - bioconda
 
 requirements:
   build:
