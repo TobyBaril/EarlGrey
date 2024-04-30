@@ -1,7 +1,7 @@
 # load libraries
 
 suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages((library(data.table))
+suppressPackageStartupMessages(library(data.table))
 
 # set options
 
