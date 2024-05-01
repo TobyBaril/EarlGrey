@@ -78,7 +78,7 @@ names(col) <- fill_colours$named_subclass
 kimura_plot <- ggplot(divergence_eg_tes_rounded_for_plot,
                       aes(x = KIMURA80, y = KIMURA_SUM, fill = named_subclass)) +
   geom_col(position = "stack", width = 0.01) +
-  scale_x_reverse(limits = c(0,1), expand = c(0,0), name = "Kimura 2-Parameter Distance") +
+  scale_x_reverse(limits = c(1,0), expand = c(0,0), name = "Kimura 2-Parameter Distance") +
   theme_classic() +
   labs(title = plot_title) + 
   theme(plot.title = element_markdown(hjust = 0.5)) +
@@ -128,7 +128,7 @@ divergence_eg_tes_rounded_for_superfamily_plot <- split(divergence_eg_tes_rounde
 kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$DNA,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(0,1), expand = c(0,0), name = "") +
+  scale_x_reverse(limits = c(1,0), expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -140,7 +140,7 @@ if (inherits(try(ggplot_build(kimura_superfamily_plot_1)), "try-error"))
 kimura_superfamily_plot_2 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(0,1), expand = c(0,0), name = "") +
+  scale_x_reverse(limits = c(1,0), expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -153,7 +153,7 @@ if (inherits(try(ggplot_build(kimura_superfamily_plot_2)), "try-error"))
 kimura_superfamily_plot_3 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LTR,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(0,1), expand = c(0,0), name = "") +
+  scale_x_reverse(limits = c(1,0), expand = c(0,0), name = "") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
@@ -166,7 +166,7 @@ if (inherits(try(ggplot_build(kimura_superfamily_plot_3)), "try-error"))
 kimura_superfamily_plot_4 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$SINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
-  scale_x_reverse(limits = c(0,1), expand = c(0,0), name = "Kimura 2-Parameter Distance") +
+  scale_x_reverse(limits = c(1,0), expand = c(0,0), name = "Kimura 2-Parameter Distance") +
   theme_bw() +
   theme(legend.title=element_blank()) +
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
