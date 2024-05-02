@@ -169,23 +169,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 NOTE: This pipeline is currently running with Dfam 3.7 curated elements only. We are working on updating to Dfam 3.8 for a future release. If required, you can modify the conda installation of RepeatMasker within the conda environment (do at your own risk!)
 
-Earl Grey version 4.2.3 (latest stable release) with all required and configured dependencies is found in the `toby_baril_bio` conda channel. To install, simply run the following depending on your installation:
+Earl Grey version 4.2.3 (latest stable release) with all required and configured dependencies is found in the `toby_baril_bio` and `biooconda` conda channels. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda -c toby_baril_bio earlgrey=4.2.3
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=4.2.3
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda -c toby_baril_bio earlgrey=4.2.3
-```
-
-Earl Grey version 4.1.1 with all required and configured dependencies is found in the bioconda channel. To install, simply run the following depending on your installation:
-
-```
-# With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey
-
-# With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=4.2.3
 ```
 
 # Recommended Installation with Conda or Mamba on ARM-based Mac Systems (M chips)
