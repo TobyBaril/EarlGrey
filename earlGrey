@@ -66,11 +66,11 @@ prepGenome()
 		mv ${genome}.tmp.dict ${genome}.dict
 		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
 		dict=${genome}.dict
-		genOrig=$genome
+		genOrig=${genome}
 		genome=${genome}.prep
 	else
 		dict=${genome}.dict
-		genOrig=$genome
+		genOrig=${genome}
 		genome=${genome}.prep
 	fi
 }
