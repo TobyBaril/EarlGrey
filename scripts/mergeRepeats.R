@@ -39,6 +39,7 @@ line <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% distinct()
 ltr <- mergedRepeats %>% filter(str_detect(Repeat, "LTR")) %>% distinct()
 dna <- mergedRepeats %>% filter(str_detect(Repeat, "DNA")) %>% distinct()
 rc <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% distinct()
+ple <- mergedRepeats %>% filter(str_detect(Repeat, "PLE")) %>% distinct()
 unknown <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% distinct()
 other <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% distinct()
 other <- other[! other$Repeat == "SINE",]
@@ -49,9 +50,10 @@ lineCov <- sum(as.numeric(as.character(line$size)))
 ltrCov <- sum(as.numeric(as.character(ltr$size)))
 dnaCov <- sum(as.numeric(as.character(dna$size)))
 rcCov <- sum(as.numeric(as.character(rc$size)))
+pleCov <- sum(as.numeric(as.character(ple$size)))
 unknownCov <- sum(as.numeric(as.character(unknown$size)))
 otherCov <- sum(as.numeric(as.character(other$size)))
-totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + unknownCov) 
+totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + pleCov + unknownCov) 
 unmaskCov <- (as.numeric(genomeSize) - as.numeric(totalCov))
 
 # Number of elements
@@ -60,9 +62,10 @@ lineTal <- as.numeric(tally(line))
 ltrTal <- as.numeric(tally(ltr))
 dnaTal <- as.numeric(tally(dna))
 rcTal <- as.numeric(tally(rc))
+pleTal <- as.numeric(tally(ple))
 unknownTal <- as.numeric(tally(unknown))
 otherTal <- as.numeric(tally(other))
-totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + unknownTal)
+totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + pleTal + unknownTal)
 
 # Calculate seq percentage
 genomeSize <- as.numeric(genomeSize)
@@ -71,17 +74,18 @@ linePer <- (lineCov / genomeSize) * 100
 ltrPer <- (ltrCov / genomeSize) * 100
 dnaPer <- (dnaCov / genomeSize) * 100
 rcPer <- (rcCov / genomeSize) * 100
+plePer <- (pleCov / genomeSize) * 100
 unknownPer <- (unknownCov / genomeSize) * 100
 otherPer <- (otherCov / genomeSize) * 100
-totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + unknownPer)
+totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + plePer + unknownPer)
 unmaskPer <- (100 - totalPer)
 
 # Make Table  
-eleTyp <- c("SINE", "LINE", "LTR", "DNA", "RC", "Unknown", "Total Interspersed Repeat", "Other", "Unmasked")
-numEle <- c(sineTal, lineTal, ltrTal, dnaTal, rcTal, unknownTal, totalTal, otherTal, as.character("notApplicable"))
-lenOcc <- c(sineCov, lineCov, ltrCov, dnaCov, rcCov, unknownCov, totalCov, otherCov, unmaskCov)
-perSeq <- c(sinePer, linePer, ltrPer, dnaPer, rcPer, unknownPer, totalPer, otherPer, unmaskPer)
-size <- c(rep(genomeSize, 9))
+eleTyp <- c("SINE", "LINE", "LTR", "DNA", "RC", "PLE", "Unknown", "Total Interspersed Repeat", "Other", "Unmasked")
+numEle <- c(sineTal, lineTal, ltrTal, dnaTal, rcTal, pleTal, unknownTal, totalTal, otherTal, as.character("notApplicable"))
+lenOcc <- c(sineCov, lineCov, ltrCov, dnaCov, rcCov, pleCov, unknownCov, totalCov, otherCov, unmaskCov)
+perSeq <- c(sinePer, linePer, ltrPer, dnaPer, rcPer, plePer, unknownPer, totalPer, otherPer, unmaskPer)
+size <- c(rep(genomeSize, 10))
 
 summary <- data.frame(eleTyp, numEle, lenOcc, perSeq, size)
 colnames(summary) <- c("Family", "Number of Elements", "Length Occupied", "Percentage of Sequence", "GenomeSize")
@@ -113,6 +117,7 @@ line <- filteredRepeatsOut %>% filter(str_detect(Repeat, "LINE")) %>% distinct()
 ltr <- filteredRepeatsOut %>% filter(str_detect(Repeat, "LTR")) %>% distinct()
 dna <- filteredRepeatsOut %>% filter(str_detect(Repeat, "DNA")) %>% distinct()
 rc <- filteredRepeatsOut %>% filter(str_detect(Repeat, "RC")) %>% distinct()
+ple <- filteredRepeatsOut %>% filter(str_detect(Repeat, "PLE")) %>% distinct()
 unknown <- filteredRepeatsOut %>% filter(str_detect(Repeat, "Unknown")) %>% distinct()
 other <- filteredRepeatsOut %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% distinct()
 other <- other[! other$Repeat == "SINE",]
@@ -123,9 +128,10 @@ lineCov <- sum(as.numeric(as.character(line$length)))
 ltrCov <- sum(as.numeric(as.character(ltr$length)))
 dnaCov <- sum(as.numeric(as.character(dna$length)))
 rcCov <- sum(as.numeric(as.character(rc$length)))
+pleCov <- sum(as.numeric(as.character(ple$length)))
 unknownCov <- sum(as.numeric(as.character(unknown$length)))
 otherCov <- sum(as.numeric(as.character(other$length)))
-totalCov <- (sineCov + lineCov + ltrCov + dnaCov + unknownCov) 
+totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + pleCov + unknownCov) 
 unmaskCov <- (as.numeric(genomeSize) - as.numeric(totalCov))
 
 # Number of elements
@@ -134,9 +140,10 @@ lineTal <- as.numeric(tally(line))
 ltrTal <- as.numeric(tally(ltr))
 dnaTal <- as.numeric(tally(dna))
 rcTal <- as.numeric(tally(rc))
+pleTal <- as.numeric(tally(ple))
 unknownTal <- as.numeric(tally(unknown))
 otherTal <- as.numeric(tally(other))
-totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + unknownTal)
+totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + pleTal + unknownTal)
 
 # Calculate seq percentage
 genomeSize <- as.numeric(genomeSize)
@@ -145,17 +152,18 @@ linePer <- (lineCov / genomeSize) * 100
 ltrPer <- (ltrCov / genomeSize) * 100
 dnaPer <- (dnaCov / genomeSize) * 100
 rcPer <- (rcCov / genomeSize) * 100
+plePer <- (pleCov / genomeSize) * 100
 unknownPer <- (unknownCov / genomeSize) * 100
 otherPer <- (otherCov / genomeSize) * 100
-totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + unknownPer)
+totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + plePer + unknownPer)
 unmaskPer <- (100 - totalPer)
 
 # Make Table  
-eleTyp <- c("SINE", "LINE", "LTR", "DNA", "RC", "Unknown", "Total Interspersed Repeat", "Other", "Unmasked")
-numEle <- c(sineTal, lineTal, ltrTal, dnaTal, rcTal, unknownTal, totalTal, otherTal, as.character("notApplicable"))
-lenOcc <- c(sineCov, lineCov, ltrCov, dnaCov, rcCov, unknownCov, totalCov, otherCov, unmaskCov)
-perSeq <- c(sinePer, linePer, ltrPer, dnaPer, rcPer, unknownPer, totalPer, otherPer, unmaskPer)
-size <- c(rep(genomeSize, 9))
+eleTyp <- c("SINE", "LINE", "LTR", "DNA", "RC", "PLE", "Unknown", "Total Interspersed Repeat", "Other", "Unmasked")
+numEle <- c(sineTal, lineTal, ltrTal, dnaTal, rcTal, pleTal, unknownTal, totalTal, otherTal, as.character("notApplicable"))
+lenOcc <- c(sineCov, lineCov, ltrCov, dnaCov, rcCov, pleCov, unknownCov, totalCov, otherCov, unmaskCov)
+perSeq <- c(sinePer, linePer, ltrPer, dnaPer, rcPer, plePer, unknownPer, totalPer, otherPer, unmaskPer)
+size <- c(rep(genomeSize, 10))
 
 summary2 <- data.frame(eleTyp, numEle, lenOcc, perSeq, size)
 colnames(summary2) <- c("Family", "Number of Elements", "Length Occupied", "Percentage of Sequence", "GenomeSize")
