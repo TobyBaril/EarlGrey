@@ -135,11 +135,16 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
                     os.remove(query_path+".water")
             else:
                 # Read in alignments
-                aln = AlignIO.read(query_path+".water", 'fasta')
-                # Calculate distances based on model
-                Kdist = Kimura80(str(aln[0].seq).upper(), str(aln[1].seq).upper())
-                # Convert numbers to strings
-                Kdist = str(round(Kdist, 4))
+                aln = list(SeqIO.parse(query_path+".water", 'fasta'))
+                ref_seq, gen_seq = str(aln[0].seq).upper(), str(aln[1].seq).upper()
+                # Check ref and genome sequence are same length, set Kdist to NA if not
+                if len(ref_seq) == len(gen_seq):
+                    # Calculate distances based on model
+                    Kdist = Kimura80(ref_seq, gen_seq)
+                    # Convert numbers to strings
+                    Kdist = str(round(Kdist, 4))
+                else:
+                    Kdist = "NA"
                 # Delete temporary files
                 os.remove(query_path+".water")
                 os.remove(query_path)
