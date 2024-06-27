@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-
 import os
 import sys
 import string
 import statistics
 import argparse
 import re
+import Bio
 from Bio import SeqIO, AlignIO
 from Bio.Align import AlignInfo, MultipleSeqAlignment
 from Bio.Seq import Seq
@@ -27,6 +26,8 @@ parser.add_argument('-D', '--debug', type=str,
                     help='Print debug messages', default='FALSE')
 parser.add_argument('-w', '--window', type=int,
                     help='Window size for blocks', default=5)
+parser.add_argument('-m', '--minimum_seq', type=int,
+                    help='Minimum sequences required for MSA', default=3)
 
 args = parser.parse_args()
 
@@ -72,21 +73,24 @@ align = AlignIO.read(in_seq_path, "fasta")
 final_id = align[0].id
 if args.debug == 'TRUE':
   print(final_id)
-og_con = SeqRecord(seq= align[0].seq.replace("-", ""), id=align[0].id, name=align[0].id)
+if(float(Bio.__version__) >=1.79):
+  og_con = SeqRecord(seq= align[0].seq.replace("-", ""), id=align[0].id, name=align[0].id)
+else:
+  og_con = SeqRecord(seq= align[0].seq.ungap("-"), id=align[0].id, name=align[0].id)
 SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name),"fasta")
 align = align[1:len(align)]
 
-# cancel if less than 3 sequences, write to file for troubleshooting
+# cancel if less than minimum_seq sequences, write to file for troubleshooting
 if args.debug == 'TRUE':
   print('Reading determining number of sequences '+str(len(align)))
-if(len(align)<3):
+if(len(align)<args.minimum_seq):
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
-    sys.exit((seq_name+" contains less than 3 sequences"))
+    sys.exit((seq_name+" contains less than "+args.minimum_seq+" sequences"))
   else:
     sys.exit()
 if args.debug == 'TRUE':
-  print(seq_name+" contains at least 3 sequences")
+  print(seq_name+" contains at least "+args.minimum_seq+" sequences")
 
 # single bp trim
 bp_trimmed=single_trim(align)
@@ -97,7 +101,10 @@ if args.debug == 'TRUE':
   print('Creating unaligned sequences')
 with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name), "w") as o:
   for record in SeqIO.parse((args.directory+'/run_'+args.iteration+'/TEtrim_bp/trimmed_'+seq_name), "fasta"):
-    record.seq = record.seq.replace("-", "")
+    if(float(Bio.__version__) >=1.79):
+      record.seq = record.seq.replace("-", "")
+    else:
+      record.seq = record.seq.ungap("-")
     SeqIO.write(record, o, "fasta-2line")
 
 ### run blast ###
@@ -118,11 +125,11 @@ if df.empty is True:
 mean_covs=(statistics.mean(df.qcovs)/2)
 acceptable=list(df.query("(qcovs>@mean_covs) or (qcovs>50)")['sseqid'])
 
-# Check at least 3
-if len(acceptable) < 3:
+# Check at least minimum_seq
+if len(acceptable) < args.minimum_seq:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
-    sys.exit((seq_name+" contains less than 3 acceptable sequences"))
+    sys.exit((seq_name+" contains less than "+args.minimum_seq+" acceptable sequences"))
   else:
     sys.exit()
 
