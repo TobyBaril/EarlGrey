@@ -393,7 +393,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:h option
 do
 	case "${option}" 
 		in
