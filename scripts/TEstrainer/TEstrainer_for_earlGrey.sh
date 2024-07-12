@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Numver of iterations of BEET to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
+usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
 
 # default values
 STRAIN_SCRIPTS=INSERT_FILENAME_HERE
