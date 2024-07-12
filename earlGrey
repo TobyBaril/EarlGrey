@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 4.3.0
+	earlGrey version 4.4.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -19,6 +19,7 @@ usage()
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
+		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-h == Show help
 
 	Example Usage:
@@ -159,7 +160,7 @@ deNovo1()
 strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq
 	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
@@ -342,9 +343,15 @@ Checks()
 	fi
 
 	if [ -z "$Flank" ]; then
-		Flank=1000; echo "Blast, Extract, Extend, Trim Process Will Add 1000bp to Each End in Each Iteration"
+		Flank=1000; echo "Blast, Extend, Align, Trim Process Will Add 1000bp to Each End in Each Iteration"
 	else
-		echo "Blast, Extract, Extend, Trim Process Will Add 1000bp to Each End in Each Iteration"
+		echo "Blast, Extract, Extend, Trim Process Will Add $Flank to Each End in Each Iteration"
+	fi
+
+	if [ -z "$min_seq" ]; then
+		min_seq=3; echo "Blast, Extend, Align, Trim Process Will Require 3 Sequences to Generate a New Consensus Sequence"
+	else
+		echo "Blast, Extend, Align, Trim Process Will Require $min_seq Sequences to Generate a New Consensus Sequence"
 	fi
 
 	if [ ! -d "$SCRIPT_DIR" ]; then
@@ -386,7 +393,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:h option
 do
 	case "${option}" 
 		in
@@ -402,6 +409,7 @@ do
 		m) margin=${OPTARG};;
 		d) softMask=${OPTARG};;
 		n) no_seq=${OPTARG};;
+		a) min_seq=${OPTARG};;
 		h) usage; exit 0;; 
 	esac
 done
