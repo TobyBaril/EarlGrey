@@ -620,7 +620,7 @@ earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
 ```
 
 ## If you need the container to run offline and/or without interactive mode
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 4.2.3. You can use this image by pulling the container:
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 4.4.0. You can use this image by pulling the container:
 
 ```
 # Interactive mode
