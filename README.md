@@ -107,7 +107,7 @@ Directories created by earl grey:
 
 - RepeatLandscapes summarising relative TE activity using Kimura 2-Parameter Divergence (recent activity towards the RHS)
 
-
+<img width="849" alt="Screenshot 2024-08-12 at 13 55 06" src="https://github.com/user-attachments/assets/5e1b18b6-a84a-47e9-bc6d-6f341a2297ec">
 
 - TE annotations - These are in standard genomic information formats to be compatible with downstream analyses. NOTE: TE divergence calculated using Kimura 2-Parameter distance is now supplied for each insertion in column 9 of the GFF3 file:
 
