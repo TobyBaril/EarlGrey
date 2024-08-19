@@ -41,6 +41,7 @@ def file_check(repeat_library, in_gff, genome, out_gff, temp_dir):
         os.mkdir(temp_dir+"/qseqs")
     if(exists(temp_dir+"/split_library/") == False):
         os.mkdir(temp_dir+"/split_library/")
+        
 
 def splitter(in_seq, temp_dir):
     with open(in_seq, 'r') as handle:
@@ -200,6 +201,10 @@ if __name__ == "__main__":
 
     # break into chunks
     chunks = [in_gff.iloc[in_gff.index[i:i + chunk_size]] for i in range(0, in_gff.shape[0], chunk_size)]
+
+    # set pybedtools temp path
+    os.mkdir(args.temp_dir+"/pybedtools/")
+    pybedtools.set_tempdir(args.temp_dir+'/pybedtools')
 
     print("Starting calculations") 
     # Peform calulations in parallel
