@@ -9,7 +9,7 @@ option_list <- list(
   make_option(c("-o", "--out_directory"), default=NA, type = "character",
                 help="Directory to write plots to (required)"),
   make_option(c("-f", "--axis_flip"), action = "store_true",
-                default=FALSE, type = "logical", help="Flip x-axis on plots")
+                default=TRUE, type = "logical", help="Flip x-axis on plots")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
