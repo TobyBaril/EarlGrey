@@ -128,7 +128,7 @@ if(opt$axis_flip == TRUE){
     scale_x_continuous(limits = c(-0.01, 0.51),
                        expand = c(0,0), name = "Kimura 2-Parameter Distance")
 }
-ggsave(plot = subclass_kimura_plot, filename = paste0(out_directory, "/", species_name, "_subclass_div_plot.pdf"), device = "pdf", width = 12.85, height = 8.5)
+ggsave(plot = subclass_kimura_plot, filename = paste0(out_directory, "/", species_name, "_classification_landscape.pdf"), device = "pdf", width = 12.85, height = 8.5)
 
 split_subclass_kimura_plot <- kimura_plot + scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) + facet_grid(subclass~., scales = "free")
 # Flip axis if desired
@@ -142,7 +142,7 @@ if(opt$axis_flip == TRUE){
     scale_x_continuous(limits = c(-0.01, 0.51),
                        expand = c(0,0), name = "Kimura 2-Parameter Distance")
 }
-ggsave(plot = split_subclass_kimura_plot, filename = paste0(out_directory, "/", species_name, "_split_subclass_div_plot.pdf"), device = "pdf", width = 12.85, height = 8.5)
+ggsave(plot = split_subclass_kimura_plot, filename = paste0(out_directory, "/", species_name, "_split_class_landscape.pdf"), device = "pdf", width = 12.85, height = 8.5)
 
 # Perform maths for more divided plot
 divergence_eg_tes_rounded_for_superfamily_plot  <- divergence_eg_tes_gff %>%
