@@ -67,9 +67,7 @@ divergence_eg_tes_gff <- divergence_eg_tes_gff %>%
 summary_table <- divergence_eg_tes_gff %>%
   as_tibble %>%
   group_by(ID) %>%
-  dplyr::select(-seqnames, -start, -end, -strand, -source,
-                -score, -phase, -TSTART, -TEND, -SHORTTE, -Matches,
-                -MISMATCHES, -TEGROUP, -LTRGROUP, -named_subclass, -type) %>%
+  dplyr::select(width, KIMURA80, subclass, superfamily, ID) %>%
   mutate(total_bp = sum(width),
          mean_width = round(mean(width), digits = 2),
          min_width = round(min(width), digits = 2),
