@@ -357,9 +357,11 @@ Then paste ALL of the following:
 ```
 #!/bin/bash
 
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-r Numver of iterations of BEET to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
+usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
+
 
 # default values
+
 STRAIN_SCRIPTS=INSERT_FILENAME_HERE
 FLANK=1000
 THREADS=4
@@ -369,14 +371,16 @@ NO_SEQ=20
 TIME=$(date +"%s")
 TIME=${TIME: -4}
 MEM_FREE="200M"
+MIN_SEQ=3
 
 # parsing
-while getopts l:g:t:f:r:d:h:n:M flag; do
+while getopts l:g:t:f:m:r:d:h:n:M flag; do
   case "${flag}" in
     l) RM_LIBRARY_PATH=${OPTARG};;
     g) GENOME=${OPTARG};;
     t) THREADS=${OPTARG};;
     f) FLANK=${OPTARG};;
+    m) MIN_SEQ=${OPTARG};;
     r) RUNS=${OPTARG};;
     d) DATA_DIR=${OPTARG};;
     n) NO_SEQ=${OPTARG};;
@@ -461,7 +465,7 @@ do
 
   # trim
   echo "Trimming run "${RUN_NO}
-  parallel --bar --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR}
+  parallel --bar --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
   
   # compile completed curations
   if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/ 2>/dev/null)" ]; then
@@ -518,9 +522,6 @@ find ${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"
 if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
    touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
-else if [ $(wc -l ${DATA_DIR}/trf/${RM_LIBRARY}.sassr | awk '{print $1}') = 1 ]; then
-   rm ${DATA_DIR}/trf/${RM_LIBRARY}.sassr && touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
-fi
 fi
 
 $(which earlGrey | gsed 's/earlGrey/Rscript/g') ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR}
@@ -536,7 +537,9 @@ echo "Reclassifying repeats"
 mkdir -p ${DATA_DIR}/classify/
 cp ${DATA_DIR}/trf/${RM_LIBRARY}.nonsatellite ${DATA_DIR}/classify/
 cd ${DATA_DIR}/classify/
-RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
+if [ -s ${RM_LIBRARY}.nonsatellite ]; then
+    RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
+fi
 # legacy command for older installations - DEPRECATED
 # RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
 cd -
@@ -547,7 +550,9 @@ else
     touch ${DATA_DIR}/${RM_LIBRARY}.strained
 fi
 echo "Compiling library"
-cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
+if [ -f ${DATA_DIR}/trf/${RM_LIBRARY}.satellites ]; then
+    cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
+fi
 ```
 
 Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
