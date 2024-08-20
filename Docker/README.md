@@ -7,7 +7,7 @@
 In this case, we need to bind a system directory to the docker container. In the line below, we are binding a directory call `host_data` that is found on our current path to `/data/` in the docker container. Please replace the file path before `:` to the directory you wish to bind to `/data/` in the container. This container must be run in interactive mode the first time you use it.
 
 ```
-docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:4.4.2--h4ac6f70_0
+docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:4.4.3--h4ac6f70_0
 ```
 
 ## If you are running the container for the first time, you need to enable Earl Grey to configure the Dfam libraries correctly in interactive mode.
@@ -19,7 +19,7 @@ earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
 ```
 
 ## If you need the container to run offline and/or without interactive mode
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 4.4.2. You can use this image by pulling the container:
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 4.4.3. You can use this image by pulling the container:
 
 ```
 # Interactive mode
