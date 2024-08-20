@@ -203,7 +203,10 @@ if __name__ == "__main__":
     chunks = [in_gff.iloc[in_gff.index[i:i + chunk_size]] for i in range(0, in_gff.shape[0], chunk_size)]
 
     # set pybedtools temp path
-    os.mkdir(args.temp_dir+"/pybedtools/")
+    try:
+        os.mkdir(args.temp_dir+"/pybedtools/")
+    except FileExistsError:
+        pass
     pybedtools.set_tempdir(args.temp_dir+'/pybedtools')
 
     print("Starting calculations") 
