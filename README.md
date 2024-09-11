@@ -13,6 +13,8 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 [References and Acknowledgements](#references-and-acknowledgements)
 
+[Usage Without Installation](#usage-without-installation)
+
 [Recommended Installation](#recommended-installation-with-conda-or-mamba)
 
 [Workaround for Dfam 3.8](#dfam-workaround-for-latest-release)
