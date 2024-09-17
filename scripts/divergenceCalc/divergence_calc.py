@@ -35,6 +35,9 @@ args = parser.parse_args()
 def file_check(repeat_library, in_gff, genome, out_gff, temp_dir):
     if(exists(repeat_library) == False or exists(in_gff) == False or exists(genome) == False):
         sys.exit('Files not found. Requires the repeat library, path to the genome, and path to gff containing coordinates and corresponding repeat files')
+    if(exists(genome+".fai") == False):
+        print("Indexing genome")
+        subprocess.run(["samtools","faidx",genome], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     if(exists(temp_dir) == False):
         os.mkdir(temp_dir)
     if(exists(temp_dir+"/qseqs") == False):
@@ -114,20 +117,26 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
             query_path = temp_dir+"/qseqs/"+str(idx)
             # Create bedtools command and getfasta
             a=pybedtools.BedTool(bed_str, from_string=True)
-            a = a.sequence(fi=genome_path, fo=query_path, s=True)
-            # Set path to subject sequence
-            subject_path=temp_dir+"/split_library/"+repeat_family+".fasta"
-            # Run water, with timeout exception
-            test_command = shlex.split("water "+query_path+" "+subject_path+" -gapopen 10 -gapextend 0.5 -outfile "+query_path+".water -aformat fasta")
-            # Run test and kill if it takes more than 10 seconds
-            alignment_p = subprocess.Popen(test_command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             try:
-                alignment_p.wait(timeoutSeconds)
-            except subprocess.TimeoutExpired:
-                # if water fails to complete before timeout, kill and move on
+                a = a.sequence(fi=genome_path, fo=query_path, s=True)
+            except: # Occasionally a samtools error occurs, this overcomes this
                 with open(failed_file_name, "a") as failed_file:
                     failed_file.write(seqnames+":"+start+"-"+end+"_"+strand+"_"+repeat_family+"\n")
-                alignment_p.kill()
+            if exists(query_path) is True and getsize(query_path) > 0:
+                # Set path to subject sequence
+                subject_path=temp_dir+"/split_library/"+repeat_family+".fasta"
+                # Run water, with timeout exception
+                test_command = shlex.split("water "+query_path+" "+subject_path+" -gapopen 10 -gapextend 0.5 -outfile "+query_path+".water -aformat fasta")
+                # Run test and kill if it takes more than 10 seconds
+                alignment_p = subprocess.Popen(test_command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                try:
+                    alignment_p.wait(timeoutSeconds)
+                except subprocess.TimeoutExpired:
+                    # if water fails to complete before timeout, kill and move on
+                    with open(failed_file_name, "a") as failed_file:
+                        failed_file.write(seqnames+":"+start+"-"+end+"_"+strand+"_"+repeat_family+"\n")
+                    alignment_p.kill()
+
             if exists(query_path+".water") is False or getsize(query_path+".water") == 0:
                 # If no alignment is possible, set distances to NA and alignment length to 0
                 Kdist = "NA"
