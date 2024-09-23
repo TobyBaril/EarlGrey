@@ -55,7 +55,7 @@ if(
   } else {
   
     sassr <- read_tsv(paste0(opt$directory, "/trf/", opt$out_seq, ".sassr"), 
-                      skip = 1, col_names = c("seqnames", "ssr", "count", "start"), show_col_types = F) %>%
+                      skip = 1, col_names = c("seqnames", "ssr", "count", "start"), show_col_types = F, col_types = "ccdd") %>%
       mutate_if(is.logical, ~gsub("RUE|ALSE", "", .)) %>%
       dplyr::mutate(ssr = ifelse(is.na(ssr), "NA", ssr),
                     period = as.double(width(ssr))) %>%
@@ -92,7 +92,7 @@ if(
     
   } else {
     trf <- read_tsv(paste0(opt$directory, "/trf/", opt$out_seq, ".trf"),
-                    col_names = c("draft_seqnames", "start", "end", "period", "count", "ssr"), show_col_types = F) %>%
+                    col_names = c("draft_seqnames", "start", "end", "period", "count", "ssr"), show_col_types = F, col_types = "cddddc") %>%
       mutate_if(is.logical, ~gsub("RUE|ALSE", "", .)) %>%
       mutate(ssr = ifelse(is.na(ssr), "NA", ssr),
              draft_seqnames = sub("@", "", sub("#.*", "", draft_seqnames))) %>%
@@ -129,7 +129,7 @@ if(
   
   } else {
     mreps <- read_tsv(paste0(opt$directory, "/trf/", opt$out_seq, ".mreps"),
-                      col_names = c("draft_seqnames", "start", "end", "ssr_width", "period", "count", "error", "sequence"), show_col_types = F) %>%
+                      col_names = c("draft_seqnames", "start", "end", "ssr_width", "period", "count", "error", "sequence"), show_col_types = F, col_types = "cdddddcc") %>%
       mutate(ssr = substr(x = sequence, start = 0, stop = period)) %>%
       inner_join(in_seq_tbl, by = "draft_seqnames")
     
