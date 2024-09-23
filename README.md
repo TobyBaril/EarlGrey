@@ -69,7 +69,7 @@ Following this, Earl Grey will run through several processes depending on the op
 
 For a more in-depth description of Earl Grey's steps, please refer to the implementation section in the [manuscript](https://academic.oup.com/mbe/article/41/4/msae068/7635926).
 
-The runtime of Earl Grey will depend on the repeat content of your input genome. Once finished, you will notice that a number of directories have been created by Earl Grey. The most important results are found within the "summaryFiles" folder, however intermediate results are kept in case you wish to use alignments for further manual curation or investigation, for example. 
+The runtime of Earl Grey will depend on the repeat content of your input genome. Once finished, you will notice that a number of directories have been created by Earl Grey. The most important results are found within the "summaryFiles" folder, however intermediate results are kept in case you wish to use alignments for further manual curation or investigation, for example. NOTE: RepeatModeler2 remains the rate-limiting step, with runtimes leading into several days, or even weeks, with large repeat-rich genomes. This is normal. 
 
 Directories created by earl grey:
 ```
@@ -101,6 +101,8 @@ Directories created by earl grey:
     		+ _de novo_ repeat library in FASTA format
     		+ Combined repeat library in FASTA format (OPTIONAL)
 ```
+
+As of `v4.4.5`, there is an option to generate _de novo_ TE libraries without running subsequent annotation. To run this option, use `earlGreyLibConstruct` with the same command-line options as `earlGrey`. This will run everything up to the end of TEstrainer, and leave you a `families-fa.strained` library file in the `summaryFiles` directory, which you can then use for manual curation, or for pangenome studies.
 
 ### Example Outputs (NOTE: example data has been used here):
 
