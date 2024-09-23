@@ -56,6 +56,7 @@ if(
   
     sassr <- read_tsv(paste0(opt$directory, "/trf/", opt$out_seq, ".sassr"), 
                       skip = 1, col_names = c("seqnames", "ssr", "count", "start"), show_col_types = F) %>%
+      mutate_if(is.logical, ~gsub("RUE|ALSE", "", .)) %>%
       dplyr::mutate(ssr = ifelse(is.na(ssr), "NA", ssr),
                     period = as.double(width(ssr))) %>%
       dplyr::mutate(ssr_width = count*period, end = start + ssr_width, start = start +1) %>%
@@ -92,6 +93,7 @@ if(
   } else {
     trf <- read_tsv(paste0(opt$directory, "/trf/", opt$out_seq, ".trf"),
                     col_names = c("draft_seqnames", "start", "end", "period", "count", "ssr"), show_col_types = F) %>%
+      mutate_if(is.logical, ~gsub("RUE|ALSE", "", .)) %>%
       mutate(ssr = ifelse(is.na(ssr), "NA", ssr),
              draft_seqnames = sub("@", "", sub("#.*", "", draft_seqnames))) %>%
       dplyr::mutate(ssr_width = end - start + 1) %>%
