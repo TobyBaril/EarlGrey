@@ -7,19 +7,10 @@ Wherever you start this is where your /work directory will point to. Make sure y
 To start:
 ```
 # Build the image from the Docker image
-singularity build earlgrey.sif docker://tobybaril/earlgrey
+singularity build earlgrey.sif docker://tobybaril/earlgrey_dfam3.7
 
 # Run the sandbox
 singularity shell -C -H $(pwd):/work --writable-tmpfs -u earlgrey.sif
-```
-
-Then run the following before starting Earl Grey:
-
-```
-eval "$(/anaconda3/bin/conda shell.bash  hook)"
-conda env create -f /home/user/EarlGrey/earlGrey.yml
-conda activate earlGrey
-Rscript /home/user/EarlGrey/scripts/install_r_packages.R
 ```
 
 You are now ready to run Earl Grey!
