@@ -641,9 +641,9 @@ docker run -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest earlGrey -g /data/N
 
 # Dfam Workaround For Latest Release
 
-With the latest release of RepeatMasker (v4.1.6), Dfam 3.8 has been reorganised into partitions containing both curated and uncurated sequences for specific taxonomic groups (see https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt). Consequently, it is challenging to provide a stable conda release for RepeatMasker 4.1.6. 
+With the latest release of RepeatMasker (v4.1.7), Dfam 3.8 has been reorganised into partitions containing both curated and uncurated sequences for specific taxonomic groups (see https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt). Consequently, it is challenging to provide a stable conda release for RepeatMasker 4.1.7. 
 
-I have built a container for Earl Grey with RepeatMasker 4.1.6 and the root partition of Dfam version 3.8 preconfigured. This is particularly useful for those who require working with docker containers on their HPC infrastructure.
+I have built a container for Earl Grey with RepeatMasker 4.1.7 and the root partition (partition 0) of Dfam version 3.8 preconfigured. This is particularly useful for those who require working with docker containers on their HPC infrastructure.
 
 ```
 # to run in interactive mode with bound directories
@@ -655,7 +655,6 @@ docker run -w /data/ -v /path/to/system/directory/inputGenome.fasta:/data/inputG
 # to get the output files from the stopped container
 docker cp earlGreyContainer:/data/input_EarlGrey /path/to/system/directory
 ```
-
 
 If you require Dfam 3.8 for your studies, I have devised a workaround that remains functional. HOWEVER, I do not recommend attempting this unless you are comfortable with altering files within conda environments, and have a good level of experience in configuring tools. Undertake the below at your own risk!
 
@@ -675,10 +674,10 @@ Compress and back up RepeatMasker in case anything goes wrong, then delete the R
 tar -czvf RepeatMasker.bak.tar.gz RepeatMasker/ && rm -r ./RepeatMasker/
 ```
 
-Download and unpack RepeatMasker 4.1.6
+Download and unpack RepeatMasker 4.1.7
 ```
-wget https://repeatmasker.org/RepeatMasker/RepeatMasker-4.1.6.tar.gz
-tar -zxvf RepeatMasker-4.1.6.tar.gz
+wget https://repeatmasker.org/RepeatMasker/RepeatMasker-4.1.7-p1.tar.gz
+tar -zxvf RepeatMasker-4.1.7-p1.tar.gz
 ```
 
 Go to the famdb directory and fetch at least the root partition. check the [README](https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt) for which partition contains which species, and download all the ones you want.
