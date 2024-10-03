@@ -11,7 +11,7 @@ options(scipen = 100, stringsAsFactors = FALSE)
 # get inputs
 
 args <- commandArgs()
-print(args)
+# print(args)
 inDist <- args[6]
 gen <- args[7]
 spec <- args[8]

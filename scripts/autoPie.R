@@ -11,7 +11,7 @@ options(scipen = 100, stringsAsFactors = FALSE)
 
 
 args <- commandArgs()
-print(args)
+# print(args)
 inBed <- args[6]
 inGff <- args[7]
 gen <- args[8]

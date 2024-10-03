@@ -1,0 +1,14 @@
+genome=/data/toby/testenv/heliano_testing/NC_045808_EarlWorkshop.fasta 
+species=heliano_testing
+directory=/data/toby/testenv/heliano_testing/
+ProcNum=4
+heli=yes
+SCRIPT_DIR=/data/toby/EarlGrey/scripts/
+spe=$species
+dir=/data/toby/testenv/heliano_testing/heliano_testing_EarlGrey/heliano_testing_mergedRepeats/looseMerge
+threads=1
+Flank=1000
+num=10
+no_seq=20
+min_seq=3
+margin=no

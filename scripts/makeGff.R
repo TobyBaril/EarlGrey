@@ -1,7 +1,7 @@
 suppressPackageStartupMessages(library(tidyverse))
 
 args <- commandArgs()
-print(args)
+# print(args)
 bedIn <- args[6]
 gffIn <- args[7]
 gffOut <- args[8]

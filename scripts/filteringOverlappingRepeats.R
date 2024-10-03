@@ -10,9 +10,10 @@ options(scipen = 100, stringsAsFactors = FALSE)
 #get inputs
 
 args <- commandArgs()
-print(args)
+# print(args)
 gff.in <- args[6]
 gff.out <- args[7]
+heli <- args[8]
 
 # read gff
 
