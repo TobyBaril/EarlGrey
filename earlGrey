@@ -213,7 +213,7 @@ heliano_optional()
 mergeRep()
 {
 	mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
-	if [ -s $"helitron_gff" ]; then
+	if [ -s "$helitron_gff" ]; then
 		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
 	else
 		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
@@ -222,11 +222,15 @@ mergeRep()
 	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
 		awk '{OFS="\t"}{print $1, $2, $3, $4, $5, $6, $7, $8, toupper($9)}' ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.1 && mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff{.1,}
 	fi
-	
+
 	if [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
 		echo "ERROR: loose merge defragmentation failed, trying strict merge..."
 		cd ${OUTDIR}/${species}_mergedRepeats/
-		${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
+		if [ -s "$helitron_gff" ]; then
+			${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
+		else
+			${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
+		fi
 		if [ ! -f "${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed" ]; then
 			echo "ERROR: strict merge also failed, check ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out looks as expected"
 			exit 2
@@ -252,14 +256,22 @@ calcDivRL()
 {
 	cd ${OUTDIR}/${species}_RepeatLandscape
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		grep -i "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly
+		grep -i -v "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.noHelitrons
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.noHelitrons -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		cat ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly | sort -k4,4n > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff.1 && \
+		mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff{.1,}
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
 		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	else
+		grep -i "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly
+		grep -i -v "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.noHelitrons
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		cat ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly | sort -k4,4n > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff.1 && \
+		mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff{.1,}
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
 		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/

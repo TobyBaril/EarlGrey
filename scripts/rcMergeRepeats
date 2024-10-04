@@ -6,7 +6,7 @@ usage()
 }
 
 
-while getopts f:s:d:u:q:t:b:m:h option
+while getopts f:s:d:u:q:t:b:m:e:h option
     do
         case "${option}"
         in
