@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 4.5.0
+	earlGrey version 5.0.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -201,7 +201,6 @@ novoMask()
 ### TODO:
 heliano_optional()
 {
-	timestamp=$(date +"%Y%m%d_%H%M")
 	cd ${OUTDIR}/${species}_heliano/
 	heliano -g $genome -is1 0 -is2 0 -o ${OUTDIR}/${species}_heliano/HEL_${timestamp} -w 15000 -n $ProcNum
 	awk '{OFS="\t"}{print $1, "HELIANO", "RC/Helitron", $2+1, $3, $5, $6, ".", "ID="$9"_"$11";shortTE=F"}' ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.bed > ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
@@ -214,6 +213,7 @@ mergeRep()
 {
 	mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
 	if [ -s "$helitron_gff" ]; then
+		echo "Running loose merge with HELIANO output"
 		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
 	else
 		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
@@ -286,13 +286,13 @@ sweepUp()
 {
 	cd ${OUTDIR}/${species}_summaryFiles/
 	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ ! -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
-		cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff $latestFile ${OUTDIR}/${species}_summaryFiles/
+		cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff $latestFile ${OUTDIR}/${species}_summaryFiles/
 	elif [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
-		cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
+		cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
 	elif [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ ! -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
-		cp ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.gff $latestFile ${OUTDIR}/${species}_summaryFiles/
+		cp ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.withDivergence.gff $latestFile ${OUTDIR}/${species}_summaryFiles/
 	elif [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
-		cp ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
+		cp ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
 	else
 		echo "Error: Cannot find required summary files, please check one of the following is present: ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed and/or ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed"
 	fi
@@ -458,7 +458,7 @@ SECONDS=0
 # Step 1 - set up the directories and make sure all modules are present
 
 stage="Checking Parameters" && runningTea
-SCRIPT_DIR=/home/toby/miniforge3/envs/earlgrey_500_heliano/share/earlgrey-4.5.0-1/scripts/
+SCRIPT_DIR=/data/toby/EarlGrey/scripts/
 Checks
 stage="Making Directories" && runningTea
 makeDirectory
@@ -547,8 +547,15 @@ fi
 # Stage 5.5 - Run HELIANO as an optional step
 
 if [ "$heli" == "yes" ]; then
-	stage="Running HELIANO to Detect Helitrons" && runningTea
-	heliano_optional
+	if [ ! -s ${OUTDIR}/${species}_heliano/*/RC.representative.gff ]; then
+		stage="Running HELIANO to Detect Helitrons" && runningTea
+		timestamp=$(date +"%Y%m%d_%H%M")
+		heliano_optional
+	else
+		stage="HELITRON detection already complete, skipping..." && runningTea
+		"$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
+		helitron_gff="$(realpath $(ls -td -- ${OUTDIR}/${species}_heliano/*/ | head -n 1))/RC.representative.gff"
+	fi
 	sleep 1
 fi
 

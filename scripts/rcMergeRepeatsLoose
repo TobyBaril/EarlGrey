@@ -59,6 +59,8 @@ mergeRepeats()
     sort -s -k1,1 ${dir}/${spe}.rmerge.gff > ${dir}/${spe}.rmerge.gff.sorted
     if [ -s "$heli" ]; then
         bedtools intersect -v -a ${dir}/${spe}.rmerge.gff.sorted -b $heli > ${dir}/${spe}.rmerge.gff.noHeli
+        # for debugging
+        bedtools intersect -a ${dir}/${spe}.rmerge.gff.sorted -b $heli > ${dir}/${spe}.rmerge.gff.notFilteredHeli
         cat ${dir}/${spe}.rmerge.gff.noHeli $heli | sort -k4,4n > ${dir}/${spe}.rmerge.gff.sorted
     fi
     Rscript ${SCRIPT_DIR}/filteringOverlappingRepeats.R ${dir}/${spe}.rmerge.gff.sorted ${dir}/${spe}.rmerge.gff.filtered
