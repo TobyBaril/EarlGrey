@@ -553,8 +553,8 @@ if [ "$heli" == "yes" ]; then
 		heliano_optional
 	else
 		stage="HELITRON detection already complete, skipping..." && runningTea
-		"$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 		helitron_gff="$(realpath $(ls -td -- ${OUTDIR}/${species}_heliano/*/ | head -n 1))/RC.representative.gff"
+		echo "HELITRON GFF: $helitron_gff"
 	fi
 	sleep 1
 fi
