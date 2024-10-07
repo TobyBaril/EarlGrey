@@ -256,22 +256,14 @@ calcDivRL()
 {
 	cd ${OUTDIR}/${species}_RepeatLandscape
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
-		#grep -i "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly
-		#grep -i -v "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.noHelitrons
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
-		#cat ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly | sort -k4,4n > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff.1 && \
-		#mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff{.1,}
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
 		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	else
-		#grep -i "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly
-		#grep -i -v "ID=HLE" ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.noHelitrons
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
-		#cat ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.helitronsOnly | sort -k4,4n > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff.1 && \
-		#mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.withDivergence.gff{.1,}
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
 		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
