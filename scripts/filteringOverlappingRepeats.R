@@ -36,5 +36,3 @@ input %<>%
 
 # Write Table
 write.table(input, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
-
-

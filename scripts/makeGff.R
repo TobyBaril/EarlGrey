@@ -1,4 +1,6 @@
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(magrittr))
 
 args <- commandArgs()
 # print(args)
@@ -34,7 +36,9 @@ for (i in 1:length(fil$V1)) {
   }
 }
 
-fil$V2 <- "Earl_Grey"
-fil$V9 <- toupper(fil$V9)
+fil <- fil %>%
+  mutate(V2 = case_when(V9 %like% "^ID=HLE*" ~ "HELIANO",
+                        .default = "Earl_Grey"),
+         V9 = toupper(V9))
 
 write.table(fil, gffOut, quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")

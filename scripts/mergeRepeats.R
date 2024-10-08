@@ -8,7 +8,7 @@ options(scipen = 100, stringsAsFactors = FALSE)
   #####
 
 args <- commandArgs()
-print(args)
+# print(args)
 file <- args[6]
 output <- args[7]
 genomeSize <- args[8]
