@@ -202,7 +202,7 @@ novoMask()
 heliano_optional()
 {
 	cd ${OUTDIR}/${species}_heliano/
-	heliano -g $genome -is1 0 -is2 0 -o ${OUTDIR}/${species}_heliano/HEL_${timestamp} -w 15000 -n $ProcNum
+	heliano -g $genome --nearest -dn 6000 -flank_sim 0.5 -o ${OUTDIR}/${species}_heliano/HEL_${timestamp} -w 10000 -n $ProcNum
 	awk '{OFS="\t"}{print $1, "HELIANO", "RC/Helitron", $2+1, $3, $5, $6, ".", "ID="$9"_"$11";shortTE=F"}' ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.bed > ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
 	helitron_gff=${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
 }
