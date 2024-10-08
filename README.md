@@ -9,6 +9,8 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Contents
 
+[Changes in Latest Releast](#changes-in-latest-release)
+
 [Example Run](#example)
 
 [References and Acknowledgements](#references-and-acknowledgements)
@@ -22,6 +24,19 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 [Alternative Installation Methods](#alternative-installation-methods)
 
 <!-- toc -->
+
+# Changes in Latest Release
+Big changes in the latest release!
+
+*Earl Grey v5.0.0 is here!* 
+
+This release incorporates the incremental improvements made throughout the life of version 4. 
+
+In addition, I have also added an option to run [HELIANO](https://github.com/Zhenlisme/heliano) for improved detection of Helitrons, which are notoriously difficult to detect and classify using homology methods. This can be implemented by adding `-e yes` to the command line options after upgrading to v5.0.0. 
+
+Currently, HELIANO annotations replace those which they overlap following the RepeatMasker run, which is performed during defragmentation (in a similar way to full-length LTRs being dealth with in `RepeatCraft`). Feedback is welcomed on this implementation, and I am continuing to test and improve the implementation of HELIANO within Earl Grey. 
+
+Thank you for your continued support and enthusiasm for Earl Grey!
 
 # Example
 
@@ -45,6 +60,7 @@ Required Parameters:
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
+    -e == Optional: Run HELIANO for detection of Helitrons (yes/no, Default: no)
 		-h == Show help
 ```
 
