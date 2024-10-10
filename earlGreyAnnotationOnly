@@ -1,0 +1,400 @@
+#!/bin/bash
+
+usage()
+{
+	echo "	#############################
+	earlGreyAnnotationOnly version 5.0.0
+	Required Parameters:
+		-g == genome.fasta
+		-s == species name
+		-o == output directory
+        -l == Starting consensus library for annotation (in fasta format)
+
+	Optional Parameters:
+		-t == Number of Threads (DO NOT specify more than are available)
+        -r == RepeatMasker species for addition to custom library (Default: None)
+		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
+		-d == Create soft-masked genome at the end? (yes/no, Default: no)
+		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
+		-h == Show help
+
+	Example Usage:
+
+	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -l bombyx-families.fa.strained -t 16
+
+	Queries can be sent to:
+	tobias.baril[at]unine.ch
+
+	Please make use of the GitHub Issues and Discussion Tabs at: https://github.com/TobyBaril/EarlGrey
+	#############################"
+}
+
+# Subprocess Make Directories #
+makeDirectory()
+{
+	directory=$(realpath ${directory})
+	mkdir -p ${directory}/${species}_EarlGrey/ && OUTDIR=${directory}/${species}_EarlGrey
+    mkdir -p ${OUTDIR}/${species}_Curated_Library/
+	mkdir -p $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
+	mkdir -p $OUTDIR/${species}_RepeatLandscape/
+	mkdir -p $OUTDIR/${species}_mergedRepeats/
+	mkdir -p ${OUTDIR}/${species}_summaryFiles/
+	if [ ! -z "$heli" ]; then
+		mkdir -p ${OUTDIR}/${species}_heliano/
+	fi
+}
+
+# Subprocess PrepGenome #
+prepGenome()
+{
+	if [ ! -L ${genome} ]; then
+		genome=$(realpath ${genome})
+	fi
+	if [ -L $genome ]; then
+		genome=$(realpath -s ${genome})
+	fi
+	if [ ! -f ${genome}.prep ] || [ ! -f ${genome}.dict ]; then
+		cp ${genome} ${genome}.bak && gzip -f ${genome}.bak 
+		sed '/>/ s/ .*//g; /^$/d' ${genome} > ${genome}.tmp
+		${SCRIPT_DIR}/headSwap.sh -i ${genome}.tmp -o ${genome}.prep && rm ${genome}.tmp
+		mv ${genome}.tmp.dict ${genome}.dict
+		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
+		dict=${genome}.dict
+		genOrig=${genome}
+		genome=${genome}.prep
+	else
+		dict=${genome}.dict
+		genOrig=${genome}
+		genome=${genome}.prep
+	fi
+}
+
+# Subprocess novoMask
+# Run RepeatMasker with the final processed library
+novoMask()
+{
+	if [ -z "$RepSpec" ]; then
+		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
+		rmthreads=$(expr $ProcNum / 4)
+		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+	else
+		cd ${OUTDIR}/${species}_Curated_Library/
+		cat $latestFile $RepSub > ${species}_combined_library.fasta
+		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
+		rmthreads=$(expr $ProcNum / 4)
+		RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+	fi
+}
+
+# Subprocess heliano
+# Run HELIANO as an optional step, then replace overlapping repeats in the merged output with HELIANO outputs
+### TODO:
+heliano_optional()
+{
+	cd ${OUTDIR}/${species}_heliano/
+	heliano -g $genome --nearest -dn 6000 -flank_sim 0.5 -o ${OUTDIR}/${species}_heliano/HEL_${timestamp} -w 10000 -n $ProcNum
+	awk '{OFS="\t"}{print $1, "HELIANO", "RC/Helitron", $2+1, $3, $5, $6, ".", "ID="$9"_"$11";shortTE=F"}' ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.bed > ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
+	helitron_gff=${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
+}
+
+# Subprocess rcMergeRepeats
+# Defragment repeat sequences to adjust for insertion times
+mergeRep()
+{
+	mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
+	if [ -s "$helitron_gff" ]; then
+		echo "Running loose merge with HELIANO output"
+		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
+	else
+		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
+	fi
+
+	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
+		awk '{OFS="\t"}{print $1, $2, $3, $4, $5, $6, $7, $8, toupper($9)}' ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff.1 && mv ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff{.1,}
+	fi
+
+	if [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
+		echo "ERROR: loose merge defragmentation failed, trying strict merge..."
+		cd ${OUTDIR}/${species}_mergedRepeats/
+		if [ -s "$helitron_gff" ]; then
+			${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
+		else
+			${SCRIPT_DIR}/rcMergeRepeats -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/ -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin
+		fi
+		if [ ! -f "${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed" ]; then
+			echo "ERROR: strict merge also failed, check ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out looks as expected"
+			exit 2
+		fi
+	fi
+}
+
+# Subprocess pieChart
+# Generate a pie chart summary of TE content
+charts()
+{
+	cd ${OUTDIR}/${species}_summaryFiles/
+	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
+		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
+	else
+		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
+	fi
+}
+
+# Subprocess calcDivRL
+# Calculate divergence estimates
+calcDivRL()
+{
+	cd ${OUTDIR}/${species}_RepeatLandscape
+	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
+		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
+		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
+		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
+	else
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
+		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
+		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
+		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
+	fi
+}
+
+# Subprocess sweepUp
+# Puts required files into a summary folder
+sweepUp()
+{
+	cd ${OUTDIR}/${species}_summaryFiles/
+	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ ! -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
+		cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff $latestFile ${OUTDIR}/${species}_summaryFiles/
+	elif [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
+		cp ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
+	elif [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ ! -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
+		cp ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.gff $latestFile ${OUTDIR}/${species}_summaryFiles/
+	elif [ ! -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ] && [ -f "${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta" ]; then
+		cp ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.gff ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta $latestFile ${OUTDIR}/${species}_summaryFiles/
+	else
+		echo "Error: Cannot find required summary files, please check one of the following is present: ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed and/or ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed"
+	fi
+}
+
+# Subprocess runningTea 
+runningTea()
+{
+	echo "    
+              )  (
+	     (   ) )
+	     ) ( (
+	   _______)_
+	.-'---------|  
+       ( C|/\/\/\/\/|
+	'-./\/\/\/\/|
+	 '_________'
+	  '-------'
+	<<< $stage >>>"
+}
+
+# Subprocess GetTime
+convertsecs() 
+{
+	h=$(bc <<< "${1}/3600")
+	m=$(bc <<< "(${1}%3600)/60")
+	s=$(bc <<< "${1}%60")
+	printf "%02d:%02d:%05.2f\n" $h $m $s
+}
+
+# Subprocess Checks
+Checks()
+{
+	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] || [ -z "$startCust" ] ; then
+		usage; exit 1
+	fi
+
+	if [ -z "$ProcNum" ] ; then
+		ProcNum=1; echo "$ProcNum Cores Will Be Used"
+	else
+		echo "$ProcNum Cores Will Be Used"
+	fi
+
+	if [ -z "$RepSpec" ]; then
+		echo "RepeatMasker species not specified, running Earl Grey without known repeats"
+	else
+		echo "Running Earl Grey with sequences from configured databases in addition to custom library"
+	fi
+	
+	if [ -z "$softMask" ] || [ "$softMask" == "no" ] ; then
+		softMask=no; echo "Softmasked genome will not be generated"
+	elif [ "$softMask" == "yes" ]; then
+		softMask=yes; echo "Softmasked genome will be generated"
+	else
+		softMask=no; echo "Softmask not specified using (yes/no). Using default parameter (no)."
+	fi
+
+	if [ "$margin" == "yes" ] ; then
+		margin=yes; echo "Short TE sequences <100bp will be removed from annotation"
+	elif [ -z "$margin" ] || [ "$margin" == "no" ]; then
+		margin=no; echo "Short TE sequences <100bp will not be removed from annotation"
+	else
+		margin=no; echo "Margin not specified using (yes/no). Using default parameter (no)."
+	fi
+
+	if [ ! -d "$SCRIPT_DIR" ]; then
+		echo "ERROR: Script directory variable not set, please run the configure script in the Earl Grey directory before attempting to run Earl Grey"; exit 1
+	fi
+
+	if [ ! -d "$SCRIPT_DIR/TEstrainer/" ]; then
+		echo "ERROR: teStrainer module not found, please check all modules are present and run the configure script in the Earl Grey directory before attempting to run Earl Grey"; exit 1
+	fi
+
+	if [ "$heli" == "yes" ] ; then
+		heli=yes; echo "HELITRON detection will be run using HELIANO"
+	elif [ -z "$heli" ] || [ "$heli" == "no" ]; then
+		heli=no; echo "HELITRON detection will not be run"
+	else
+		heli=no; echo "HELITRON detection not specified using (yes/no). Using default parameter (no)."
+	fi
+
+	# biocontainer checks
+	if [ -d "/usr/local/share/RepeatMasker/Libraries/" ]; then
+		if grep -q Placeholder /usr/local/share/RepeatMasker/Libraries/Dfam.h5 ; then
+			while true; do
+				read -p "Are you using the biocontainer installation? If yes, we can configure RepeatMasker to work for you:[YyNn]" yn
+				case $yn in
+					[Yy]* ) cd /usr/local/share/RepeatMasker/Libraries/
+						curl -O https://dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz
+						gunzip Dfam_curatedonly.h5.gz && mv Dfam.h5 Dfam.h5.bak
+						mv Dfam_curatedonly.h5 Dfam.h5
+						cd /usr/local/share/RepeatMasker/
+						perl configure -rmblast_dir=/usr/local/bin -libdir=/usr/local/share/RepeatMasker/Libraries -trf_prgm=/usr/local/bin/trf -default_search_engine=rmblast
+						sed -i 's|${SCRIPT_DIR}/LTR_FINDER_parallel|perl ${SCRIPT_DIR}/LTR_FINDER_parallel|g' /usr/local/share/earlgrey*/scripts/rcMergeRepeatsLoose
+						sed -i 's|${SCRIPT_DIR}/LTR_FINDER_parallel|perl ${SCRIPT_DIR}/LTR_FINDER_parallel|g' /usr/local/share/earlgrey*/scripts/rcMergeRepeats
+						break;;
+					[Nn]* ) exit;;
+					* ) echo "Please answer yes or no.";;
+				esac
+			done
+		fi
+	fi
+}
+
+# Main #
+
+while getopts g:s:o:t:r:l:m:d:e:h option
+do
+	case "${option}" 
+		in
+		g) genome=${OPTARG};;
+		s) species=${OPTARG};;
+		o) directory=${OPTARG};;
+		t) ProcNum=${OPTARG};;
+		f) Flank=${OPTARG};;
+		i) num=${OPTARG};;
+		r) RepSpec=${OPTARG};;
+		l) startCust=${OPTARG};;
+		c) cluster=${OPTARG};;
+		m) margin=${OPTARG};;
+		d) softMask=${OPTARG};;
+		n) no_seq=${OPTARG};;
+		a) min_seq=${OPTARG};;
+		e) heli=${OPTARG};;
+		h) usage; exit 0;; 
+	esac
+done
+
+SECONDS=0
+
+# Step 1 - set up the directories and make sure all modules are present
+
+stage="Checking Parameters" && runningTea
+SCRIPT_DIR=/data/toby/EarlGrey/scripts/
+Checks
+stage="Making Directories" && runningTea
+makeDirectory
+
+# Start Logs - only bother starting if everything is present and correct
+exec > >(tee "${OUTDIR}/${species}EarlGrey.log") 2>&1
+stage="Cleaning Genome" && runningTea
+prepGenome
+sleep 1
+
+# Stage 2 - Assign libraries to variables
+latestFile=$(realpath $startCust)
+if [ ! -z "$RepSpec" ]; then
+    if [[ $(which RepeatMasker) == *"bin"* ]]; then
+		libpath="$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|g')"
+	else
+		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5"
+	fi
+	if [[ $(which RepeatMasker) == *"bin"* ]]; then
+		PATH=$PATH:"$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/|g')"
+	fi
+    famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+fi
+
+# Stage 5 - run the final RepeatMasker annotation using the refined TE consensus library
+if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
+	stage="Identifying Repeats Using Species-Specific Library" && runningTea
+	novoMask
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
+		echo "ERROR: RepeatMasker failed, please check logs" && exit 2
+	fi
+	sleep 1
+else
+	stage="Final masking already complete, skipping..." && runningTea
+	sleep 1
+fi
+
+# Stage 5.5 - Run HELIANO as an optional step
+
+if [ "$heli" == "yes" ]; then
+	if [ ! -s ${OUTDIR}/${species}_heliano/*/RC.representative.gff ]; then
+		stage="Running HELIANO to Detect Helitrons" && runningTea
+		timestamp=$(date +"%Y%m%d_%H%M")
+		heliano_optional
+	else
+		stage="HELITRON detection already complete, skipping..." && runningTea
+		helitron_gff="$(realpath $(ls -td -- ${OUTDIR}/${species}_heliano/*/ | head -n 1))/RC.representative.gff"
+		echo "HELITRON GFF: $helitron_gff"
+	fi
+	sleep 1
+fi
+
+# Stage 6
+if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ] ; then
+	stage="Defragmenting Repeats" && runningTea
+	mergeRep
+	sleep 1
+else
+	stage="Repeats already defragmented, skipping..." && runningTea
+	sleep 1
+fi
+
+# Stage 7
+stage="Generating Summary Plots" && runningTea
+charts
+calcDivRL
+sleep 1
+
+# Stage 8
+stage="Tidying Directories and Organising Important Files" && runningTea
+sweepUp
+sleep 1
+
+# Stage 8.5 Optional Softmask
+if [ "$softMask" == "yes" ]; then
+	stage="Generating Softmasked Genome" && runningTea
+	gunzip ${genome%.prep}.bak.gz && bedtools maskfasta -fi ${genome%.prep}.bak -bed ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -fo ${OUTDIR}/${species}_summaryFiles/${species}.softmasked.fasta -soft && gzip ${genome%.prep}.bak
+	sleep 1
+fi
+
+# Stage 9
+time=$(convertsecs $SECONDS)
+stage="Done in $time" && runningTea
+sleep 5
+
+# Stage 10
+stage="TE library, Summary Figures, and TE Quantifications in Standard Formats Can Be Found in ${OUTDIR}/${species}_summaryFiles/" && runningTea
+sleep 5
