@@ -10,9 +10,10 @@ options(scipen = 100, stringsAsFactors = FALSE)
 #get inputs
 
 args <- commandArgs()
-print(args)
+# print(args)
 gff.in <- args[6]
 gff.out <- args[7]
+heli <- args[8]
 
 # read gff
 
@@ -35,5 +36,3 @@ input %<>%
 
 # Write Table
 write.table(input, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
-
-

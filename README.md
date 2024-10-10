@@ -9,6 +9,8 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Contents
 
+[Changes in Latest Release](#changes-in-latest-release)
+
 [Example Run](#example)
 
 [References and Acknowledgements](#references-and-acknowledgements)
@@ -22,6 +24,20 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 [Alternative Installation Methods](#alternative-installation-methods)
 
 <!-- toc -->
+
+# Changes in Latest Release
+Big changes in the latest release!
+
+*Earl Grey v5.0.0 is here!* 
+
+This release incorporates the incremental improvements made throughout the life of version 4. 
+
+It is now possible to run some subroutines in Earl Grey (run either of these new commands with `-h` to see a list of options):
+- `earlGreyLibConstruct` can be used to run Earl Grey for _de novo_ TE detection, consensus generation, and improvement through the BEAT process. The output will be the strained TE consensus sequences, which can then be used for subsequent annotation. This is useful when you want to make a combined library from the libraries of several different genomes, where it is no longer required to waste time running annotations. Once the libraries are generated and you have curated them, you can then run the next step in isolation (next point!).
+- `earlGreyAnnotationOnly` can be used to run the final annotation and defragmentation steps in Earl Grey. This is useful if you have already run the BEAT process and have a library of _de novo_ TE consensus sequences that you would like to use to annotate a given genome. This script is also compatible with the `-r` flag to take known repeats from the databases used to configure RepeatMasker in addition to the custom repeat library.
+- *EXPERIMENTAL FEATURE:* I have also added an option to run [HELIANO](https://github.com/Zhenlisme/heliano) for improved detection of Helitrons, which are notoriously difficult to detect and classify using homology methods. This can be implemented by adding `-e yes` to the command line options after upgrading to v5.0.0. Currently, HELIANO annotations replace those which they overlap following the RepeatMasker run, which is performed during defragmentation (in a similar way to full-length LTRs being dealt with in `RepeatCraft`). Feedback is welcomed on this implementation, and I am continuing to test and improve the implementation of HELIANO within Earl Grey. 
+
+Thank you for your continued support and enthusiasm for Earl Grey!
 
 # Example
 
@@ -45,6 +61,7 @@ Required Parameters:
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
+    -e == Optional: Run HELIANO for detection of Helitrons (yes/no, Default: no)
 		-h == Show help
 ```
 
@@ -118,8 +135,8 @@ As of `v4.4.5`, there is an option to generate _de novo_ TE libraries without ru
 
 ```
 # BED format
-NC_045808.1     4964941 4965925 LINE/Penelope   5073    +
-NC_045808.1     7291353 7291525 LINE/L2 1279    +
+NC45808.1     4964941 4965925 LINE/Penelope   5073    +
+NC45808.1     7291353 7291525 LINE/L2 1279    +
 NC_045808.1     8922477 8923791 DNA/TcMar-Tc1   11957   +
 
 
@@ -617,7 +634,7 @@ You are ready to go! Just remember to activate the _intel_ terminal, then the co
 In this case, we need to bind a system directory to the docker container. In the line below, we are binding a directory call `host_data` that is found on our current path to `/data/` in the docker container. Please replace the file path before `:` to the directory you wish to bind to `/data/` in the container. This container must be run in interactive mode the first time you use it.
 
 ```
-docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:5.0.0--h4ac6f70_1
+docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:5.0.0--h4ac6f70_0
 ```
 
 ## If you are running the container for the first time, you need to enable Earl Grey to configure the Dfam libraries correctly in interactive mode.

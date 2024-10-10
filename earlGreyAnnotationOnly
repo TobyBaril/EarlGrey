@@ -3,29 +3,24 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 5.0.0
+	earlGreyAnnotationOnly version 5.0.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
 		-o == output directory
+        -l == Starting consensus library for annotation (in fasta format)
 
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
-		-r == RepeatMasker search term (e.g arthropoda/eukarya)
-		-l == Starting consensus library for an inital mask (in fasta format)
-		-i == Number of Iterations to BLAST, Extract, Extend (Default: 10)
-		-f == Number flanking basepairs to extract (Default: 1000)
-		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
+        -r == RepeatMasker species for addition to custom library (Default: None)
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
-		-n == Max number of sequences used to generate consensus sequences (Default: 20)
-		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-h == Show help
 
 	Example Usage:
 
-	earlGrey -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -t 16
+	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -l bombyx-families.fa.strained -t 16
 
 	Queries can be sent to:
 	tobias.baril[at]unine.ch
@@ -39,13 +34,7 @@ makeDirectory()
 {
 	directory=$(realpath ${directory})
 	mkdir -p ${directory}/${species}_EarlGrey/ && OUTDIR=${directory}/${species}_EarlGrey
-	if [ ! -z "$RepSpec" ] || [ ! -z "$startCust" ] ; then
-		mkdir -p $OUTDIR/${species}_RepeatMasker/
-	fi
-	mkdir -p $OUTDIR/${species}_Database/
-	mkdir -p $OUTDIR/${species}_RepeatModeler/
-	mkdir -p $OUTDIR/${species}_strainer/
-	mkdir -p $OUTDIR/${species}_Curated_Library/
+    mkdir -p ${OUTDIR}/${species}_Curated_Library/
 	mkdir -p $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
 	mkdir -p $OUTDIR/${species}_RepeatLandscape/
 	mkdir -p $OUTDIR/${species}_mergedRepeats/
@@ -80,110 +69,11 @@ prepGenome()
 	fi
 }
 
-# Subprocess getRepeatMaskerFasta
-# Generate a copy of the RepeatMasker library subset used for the initial TE mask in FASTA format (only used if a RepeatMasker run is specified)
-getRepeatMaskerFasta()
-{
-	if [[ $RepSpec = *" "* ]]; then
-		echo "ERROR: You have entered a species name that contains a space, please use the NCBI TaxID rather than name. E.G In place of \"Homo sapiens\" use \"9606\""
-		exit 2
-	fi
-	if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		libpath="$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|g')"
-	else
-		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5"
-	fi
-	if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		PATH=$PATH:"$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/|g')"
-	fi
-	famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
-	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
-}
-
-# Subprocess firstMask
-# Run the initial RepeatMasker run with the specified species subset (only used if a RepeatMasker run is specified)
-firstMask()
-{
-	cd ${OUTDIR}/${species}_RepeatMasker
-        rmthreads=$(expr $ProcNum / 4)
-	RepeatMasker -species $RepSpec -norna -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
-		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid species search term, if issue persists please use NCBI Taxids (E.G Drosophila is replaced with 7125)"; exit 2
-	fi
-}
-
-# Subprocess firstMaskCustomLib
-# Run the initial RepeatMasker run with the specific fasta consensus library
-firstMaskCustomLib()
-{
-	cd ${OUTDIR}/${species}_RepeatMasker
-	rmthreads=$(expr $ProcNum / 4)
-	RepeatMasker -lib ${startCust} -norna -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
-	RepSub=${startCust}
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
-		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid custom consensus file, check the fasta file looks as expected"; exit 2
-	fi
-}
-
-
-# Subprocess buildDB 
-# if masked genome exists, build database from this. If not, build database from original input genome
-buildDB()
-{
-	if [ -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
-		cd ${OUTDIR}/${species}_Database
-		BuildDatabase -name ${species} -engine ncbi ${OUTDIR}/${species}_RepeatMasker/*.masked
-	else
-		cd ${OUTDIR}/${species}_Database
-		BuildDatabase -name ${species} -engine ncbi $genome
-	fi
-}
-
-# Subprocess deNovo1
-# Run the initial de novo annotation run with RepeatModeler2, with error catches for weird genome sizes
-deNovo1()
-{
-	cd ${OUTDIR}/${species}_RepeatModeler
-	RepeatModeler -engine ncbi -threads ${ProcNum} -database ${OUTDIR}/${species}_Database/${species}
-	if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
-		echo "ERROR: RepeatModeler Failed, Retrying with limit set as Round 5"
-		RepeatModeler -engine ncbi -threads ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} -genomeSampleSizeMax 81000000
-		if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
-			echo "ERROR: RepeatModeler Failed, Retrying with limit set as Round 4"
-			RepeatModeler -engine ncbi -threads ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} -genomeSampleSizeMax 27000000
-			if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
-				echo "ERROR: RepeatModeler Failed"
-				exit 2
-			fi
-		fi
-	fi
-}
-
-# Subprocess strainer 
-# contains the BLAST, Extract, Extend, Trim pipeline from James Galbraith
-strainer()
-{
-	cd ${OUTDIR}/${species}_strainer/
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq
-	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
-	cp $latestFile ${OUTDIR}/${species}_strainer/
-}
-
-# Subprocess clust
-# optional wicker clustering of TE library consensus sequences to reduce redundancy
-clust()
-{
-	cd ${OUTDIR}/${species}_strainer/
-	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clstrd.fa
-	latestFile=$latestFile.clstrd.fa
-}
-
-
 # Subprocess novoMask
 # Run RepeatMasker with the final processed library
 novoMask()
 {
-	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
+	if [ -z "$RepSpec" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		rmthreads=$(expr $ProcNum / 4)
 		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
@@ -255,7 +145,7 @@ charts()
 calcDivRL()
 {
 	cd ${OUTDIR}/${species}_RepeatLandscape
-	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
+	if [ -z "$RepSpec" ]; then
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
@@ -318,7 +208,7 @@ convertsecs()
 # Subprocess Checks
 Checks()
 {
-	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] ; then
+	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] || [ -z "$startCust" ] ; then
 		usage; exit 1
 	fi
 
@@ -328,32 +218,12 @@ Checks()
 		echo "$ProcNum Cores Will Be Used"
 	fi
 
-	if [ -z "$RepSpec" ] && [ -z "$startCust" ] ; then
-		echo "RepeatMasker species not specified, running Earl Grey without an initial mask with known repeats"
+	if [ -z "$RepSpec" ]; then
+		echo "RepeatMasker species not specified, running Earl Grey without known repeats"
 	else
-		echo "Running Earl Grey with an intial mask with known repeats"
-	fi
-
-	if [ -z "$num" ] ; then
-		num=10; echo "De Novo Sequences Will Be Extended Through a Maximum of $num Iterations"
-	else
-		echo "De Novo Sequences Will Be Extended Through a Maximum of $num Iterations"
-	fi
-
-	if [ -z "$no_seq" ] ; then
-		no_seq=20; echo "$no_seq sequences will be used in BEAT consensus generation"
-	else
-		echo "$no_seq sequences will be used in BEAT consensus generation"
+		echo "Running Earl Grey with sequences from configured databases in addition to custom library"
 	fi
 	
-	if [ -z "$cluster" ] || [ "$cluster" == "no" ] ; then
-		cluster=no; echo "TE library consensus sequences will not be clustered"
-	elif [ "$cluster" == "yes" ]; then
-		cluster=yes; echo "TE library consensus sequences will be clustered, be aware of the impact this can have on subfamilies and chimeric TEs!"
-	else
-		clustering=no; echo "Clustering not specified using (yes/no). Using default parameter (no)."
-	fi
-
 	if [ -z "$softMask" ] || [ "$softMask" == "no" ] ; then
 		softMask=no; echo "Softmasked genome will not be generated"
 	elif [ "$softMask" == "yes" ]; then
@@ -368,18 +238,6 @@ Checks()
 		margin=no; echo "Short TE sequences <100bp will not be removed from annotation"
 	else
 		margin=no; echo "Margin not specified using (yes/no). Using default parameter (no)."
-	fi
-
-	if [ -z "$Flank" ]; then
-		Flank=1000; echo "Blast, Extend, Align, Trim Process Will Add 1000bp to Each End in Each Iteration"
-	else
-		echo "Blast, Extract, Extend, Trim Process Will Add $Flank to Each End in Each Iteration"
-	fi
-
-	if [ -z "$min_seq" ]; then
-		min_seq=3; echo "Blast, Extend, Align, Trim Process Will Require 3 Sequences to Generate a New Consensus Sequence"
-	else
-		echo "Blast, Extend, Align, Trim Process Will Require $min_seq Sequences to Generate a New Consensus Sequence"
 	fi
 
 	if [ ! -d "$SCRIPT_DIR" ]; then
@@ -423,7 +281,7 @@ Checks()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:h option
+while getopts g:s:o:t:r:l:m:d:e:h option
 do
 	case "${option}" 
 		in
@@ -461,66 +319,19 @@ stage="Cleaning Genome" && runningTea
 prepGenome
 sleep 1
 
-# Step 2 - initial annotation, either de novo, or if required an initial RepeatMasker followed by a de novo run
-if [ -z "$RepSpec" ]; then
-	sleep 1
-else
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
-		stage="Getting RepeatMasker Sequences for $RepSpec and Saving as Fasta" && runningTea
-		getRepeatMaskerFasta
-		stage="Running Initial Mask with Known Repeats" && runningTea
-		firstMask
+# Stage 2 - Assign libraries to variables
+latestFile=$(realpath $startCust)
+if [ ! -z "$RepSpec" ]; then
+    if [[ $(which RepeatMasker) == *"bin"* ]]; then
+		libpath="$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|g')"
 	else
-		stage="Genome has already been masked, skipping..." && runningTea
-		getRepeatMaskerFasta
+		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5"
 	fi
-fi
-
-if [ -z "$startCust" ]; then
-	sleep 1
-else
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
-		stage="Running Initial Mask with Known Repeats in Custom Library" && runningTea
-		firstMaskCustomLib
-	else
-		stage="Genome has already been masked, skipping..." && runningTea
+	if [[ $(which RepeatMasker) == *"bin"* ]]; then
+		PATH=$PATH:"$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/|g')"
 	fi
-fi
-
-# Step 3 - make a database from the genome, and then run a de novo TE annotation using RepeatModeler2
-if [ ! -f ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
-	stage="Detecting Novel Repeats" && runningTea
-	buildDB
-	deNovo1
-	sleep 1
-else
-	stage="De novo repeats have already been detected, skipping..." && runningTea
-	sleep 1
-fi
-
-# Step 4 - run TEstrainer, which runs a BLAST, extract, extent, trim, on the the de novo repeat library to refine consensus sequences
-if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
-	stage="Straining TEs and Refining de novo Consensus Sequences" && runningTea
-	if [ -f ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
-		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
-	fi
-	strainer
-	if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
-		echo "WARNING: TEstrainer failed to produce a strain file, please check the log file for more information. If you have run an intial mask with known repeats, this could be due RepeatModeler2 failing to identify any new repeats. Please check if this is expected."
-	fi
-	sleep 1
-else
-	stage="TEs already strained, skipping..." && runningTea
-	latestFile=${OUTDIR}/${species}_strainer/${species}-families.fa.strained
-	sleep 1
-fi
-
-# Step 4.5 - cluster TE library IF REQUIRED
-
-if [ "$cluster" == "yes" ]; then
-	stage="Clustering TE sequences to Wicker TE Family Level (80-80-80 rule)" && runningTea
-	clust
-	sleep 1
+    famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 fi
 
 # Stage 5 - run the final RepeatMasker annotation using the refined TE consensus library

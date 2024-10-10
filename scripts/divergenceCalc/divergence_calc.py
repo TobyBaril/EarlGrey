@@ -58,12 +58,14 @@ def parse_gff(in_gff):
     gff = pd.read_table(in_gff, header = None, names=['seqnames', 'tool', 'repeat_class', 'start', 'end', 'score', 'strand', 'phase', 'metadata'])
     simple_gff = gff[gff['repeat_class'].str.contains('Simple_repeat|Satellite|Low_complexity')].reset_index()
     gff = gff[~gff['repeat_class'].str.contains('Simple_repeat|Satellite|Low_complexity')].reset_index()
+    other_gff = gff[~gff['tool'].str.contains('Earl_Grey|RepeatMasker')].reset_index()
+    gff = gff[gff['tool'].str.contains('Earl_Grey|RepeatMasker')].reset_index()
     gff['metadata_tmp'] = gff['metadata'].str.replace(';SHORTTE.*', '', regex=True)
     gff[['tstart', 'tend', 'repeat_family']] = gff['metadata_tmp'].str.split(';', n=3, expand=True)
     gff = gff.drop(columns = ['metadata_tmp', 'tstart', 'tend'])
     gff['repeat_family'] = gff['repeat_family'].str.replace('ID=', '', regex=True)
     gff['repeat_family'] = gff['repeat_family'].str.lower()
-    return(gff, simple_gff)
+    return(gff, simple_gff, other_gff)
 
 def file_name_generator():
     import random
@@ -165,7 +167,7 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
 
     return(holder_file_name)
 
-def tmp_out_parser(file_list, simple_gff):
+def tmp_out_parser(file_list, simple_gff, other_gff):
     # Loop through results 
     gff=pd.DataFrame()
     for file in file_list:
@@ -180,10 +182,10 @@ def tmp_out_parser(file_list, simple_gff):
     # Remove unnecessary rows
     gff = gff.drop(columns = ['Kimura', 'repeat_family'])
     # Combine columns, sort and drop unneccessary columns
-    gff = pd.concat([gff, simple_gff], ignore_index=True)
+    gff = pd.concat([gff, simple_gff, other_gff], ignore_index=True)
+    gff = gff.drop(columns = ['level_0', 'index'])
     gff = gff.sort_values(by=['seqnames', 'start'])
     gff = gff.reset_index()
-    gff = gff.drop(columns = ['level_0', 'index'])
 
     return(gff)
 
@@ -200,7 +202,7 @@ if __name__ == "__main__":
 
     # read in gff and take head
     print("Reading in gff")
-    in_gff, simple_gff = parse_gff(args.in_gff)
+    in_gff, simple_gff, other_gff = parse_gff(args.in_gff)
     
     # create as many processes as instructed cores
     num_processes = args.cores
@@ -232,10 +234,10 @@ if __name__ == "__main__":
     del in_gff
   
     # Read in temp files, fix metadata, add simple repeats back, and sort
-    calc_gff = tmp_out_parser(results, simple_gff)
+    calc_gff = tmp_out_parser(results, simple_gff, other_gff)
         
-    # write to file
-    calc_gff.to_csv(args.out_gff, sep = "\t", header = False, index=False)
+    # remove first column and write to file
+    calc_gff.drop(columns = ['index']).to_csv(args.out_gff, sep = "\t", header = False, index=False)
 
     # print run time for number of rows
     run_time = time() - start_time
