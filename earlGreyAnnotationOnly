@@ -145,7 +145,7 @@ charts()
 calcDivRL()
 {
 	cd ${OUTDIR}/${species}_RepeatLandscape
-	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
+	if [ -z "$RepSpec" ]; then
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
