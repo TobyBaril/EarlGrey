@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../testenv/heliano_testing"
+		}
+	],
+	"settings": {}
+}
