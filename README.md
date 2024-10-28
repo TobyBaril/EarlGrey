@@ -62,7 +62,7 @@ Required Parameters:
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
-    -e == Optional: Run HELIANO for detection of Helitrons (yes/no, Default: no)
+                -e == Optional: Run HELIANO for detection of Helitrons (yes/no, Default: no)
 		-h == Show help
 ```
 
