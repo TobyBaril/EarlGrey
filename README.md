@@ -54,7 +54,7 @@ Required Parameters:
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
 		-r == RepeatMasker search term (e.g arthropoda/eukarya)
-		-l == Starting consensus library for an inital mask (in fasta format)
+		-l == Starting consensus library for an initial mask (in fasta format)
 		-i == Number of Iterations to BLAST, Extract, Extend (Default: 10)
 		-f == Number flanking basepairs to extract (Default: 1000)
 		-c == Cluster TE library to reduce redundancy? (yes/no, Default: no)
