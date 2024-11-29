@@ -8,11 +8,11 @@ usage()
 		-g == genome.fasta
 		-s == species name
 		-o == output directory
-        -l == Starting consensus library for annotation (in fasta format)
+        	-l == Starting consensus library for annotation (in fasta format)
 
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
-        -r == RepeatMasker species for addition to custom library (Default: None)
+       	 	-r == RepeatMasker species for addition to custom library (Default: None)
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
