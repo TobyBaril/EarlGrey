@@ -45,7 +45,6 @@ makeDirectory()
 	mkdir -p $OUTDIR/${species}_Database/
 	mkdir -p $OUTDIR/${species}_RepeatModeler/
 	mkdir -p $OUTDIR/${species}_strainer/
-	mkdir -p $OUTDIR/${species}_Curated_Library/
 	mkdir -p $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
 	mkdir -p $OUTDIR/${species}_RepeatLandscape/
 	mkdir -p $OUTDIR/${species}_mergedRepeats/
@@ -96,6 +95,7 @@ getRepeatMaskerFasta()
 	if [[ $(which RepeatMasker) == *"bin"* ]]; then
 		PATH=$PATH:"$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/|g')"
 	fi
+	mkdir -p $OUTDIR/${species}_Curated_Library/
 	famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 }
