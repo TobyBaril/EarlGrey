@@ -92,8 +92,9 @@ def Kimura80(qseq, sseq):
     # count number of bp which align (excludes gaps, Ns)
     aln_len = m + ts + tv
     # calculate p and q 
-    p = ts/aln_len
-    q = tv/aln_len
+    if aln_len != 0:
+        p = ts/aln_len
+        q = tv/aln_len
     
     # calculate Kimura distance
     Kimura_dist = -0.5 * log((1 - 2*p - q) * sqrt( 1 - 2*q ))
