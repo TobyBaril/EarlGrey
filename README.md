@@ -26,6 +26,11 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 <!-- toc -->
 
 # Changes in Latest Release
+
+Earl Grey v5.1.0 contains small changes that drastically improve memory usage in the divergence calculator. We have replaced the use of EMBOSS `water` with EMBOSS `matcher`, which reduces memory consumption on large alignments whilst remaining rigorous. For more information, please see the notes section in the [EMBOSS Manual](https://www.bioinformatics.nl/cgi-bin/emboss/help/matcher). This should prevent jobs running out of memory, particularly when using queuing systems and shared resources. 
+
+### Previous Changes
+
 Big changes in the latest release!
 
 *Earl Grey v5.0.0 is here!* 
