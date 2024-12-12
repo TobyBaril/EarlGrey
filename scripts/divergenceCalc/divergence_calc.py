@@ -28,7 +28,7 @@ parser.add_argument('-tmp', '--temp_dir', type=str, default='tmp/',
 parser.add_argument('-t', '--cores', type=int, default=4,
                     help='Number of cores')
 parser.add_argument('-k', '--timeout', type=int, default=30,
-                    help='Seconds after which water will be cancelled and repeat treated as unalignable')
+                    help='Seconds after which matcher will be cancelled and repeat treated as unalignable')
 
 args = parser.parse_args()
 
@@ -131,27 +131,27 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
             if exists(query_path) is True and getsize(query_path) > 0:
                 # Set path to subject sequence
                 subject_path=temp_dir+"/split_library/"+repeat_family+".fasta"
-                # Run water, with timeout exception
-                test_command = shlex.split("water "+query_path+" "+subject_path+" -gapopen 10 -gapextend 0.5 -outfile "+query_path+".water -aformat fasta")
+                # Run matcher, with timeout exception
+                test_command = shlex.split("matcher "+query_path+" "+subject_path+" -outfile "+query_path+".matcher -aformat fasta")
                 # Run test and kill if it takes more than 10 seconds
                 alignment_p = subprocess.Popen(test_command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
                 try:
                     alignment_p.wait(timeoutSeconds)
                 except subprocess.TimeoutExpired:
-                    # if water fails to complete before timeout, kill and move on
+                    # if matcher fails to complete before timeout, kill and move on
                     with open(failed_file_name, "a") as failed_file:
                         failed_file.write(seqnames+":"+start+"-"+end+"_"+strand+"_"+repeat_family+"\n")
                     alignment_p.kill()
 
-            if exists(query_path+".water") is False or getsize(query_path+".water") == 0:
+            if exists(query_path+".matcher") is False or getsize(query_path+".matcher") == 0:
                 # If no alignment is possible, set distances to NA and alignment length to 0
                 Kdist = "NA"
                 os.remove(query_path)
-                if exists(query_path+".water") is True:
-                    os.remove(query_path+".water")
+                if exists(query_path+".matcher") is True:
+                    os.remove(query_path+".matcher")
             else:
                 # Read in alignments
-                aln = list(SeqIO.parse(query_path+".water", 'fasta'))
+                aln = list(SeqIO.parse(query_path+".matcher", 'fasta'))
                 ref_seq, gen_seq = str(aln[0].seq).upper(), str(aln[1].seq).upper()
                 # Check ref and genome sequence are same length, set Kdist to NA if not
                 if len(ref_seq) == len(gen_seq):
@@ -163,7 +163,7 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
                 else:
                     Kdist = "NA"
                 # Delete temporary files
-                os.remove(query_path+".water")
+                os.remove(query_path+".matcher")
                 os.remove(query_path)
             # Make line for temporary file and write to file
             tmp_holder = row[1].to_list()[1:]
