@@ -3,7 +3,7 @@
 usage()
 {
         echo "  #############################
-        earlGrey version 5.1.0 (Library Construction Only)
+        earlGrey version 5.1.1 (Library Construction Only)
         Required Parameters:
                 -g == genome.fasta
                 -s == species name
@@ -55,7 +55,7 @@ prepGenome()
         fi
         if [ ! -f ${genome}.prep ] || [ ! -f ${genome}.dict ]; then
                 cp ${genome} ${genome}.bak && gzip -f ${genome}.bak 
-                sed '/>/ s/ .*//g; /^$/d' ${genome} > ${genome}.tmp
+                sed '/>/ s/[[:space:]].*//g; /^$/d' ${genome} > ${genome}.tmp
                 ${SCRIPT_DIR}/headSwap.sh -i ${genome}.tmp -o ${genome}.prep && rm ${genome}.tmp
                 mv ${genome}.tmp.dict ${genome}.dict
                 sed -i.bak '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
