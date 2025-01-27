@@ -586,4 +586,5 @@ sleep 5
 
 # Stage 10
 stage="TE library, Summary Figures, and TE Quantifications in Standard Formats Can Be Found in ${OUTDIR}/${species}_summaryFiles/" && runningTea
+cat ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.kable
 sleep 5
