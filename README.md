@@ -32,7 +32,7 @@ Earl Grey v5.1.1 contains very small patches to improve compatibility with publi
 In addition, new _pretty_ tables are now generated in the `summaryFiles` directory and at the end of a successful run. These contain the same information as the `txt` tables, but in the familiar pipe format for readability. These can be added to markdown files if required. One is produced for the high level count as well as for the family level count. Below is an example of the table that is printed at the end of Earl Grey runs as of `v5.1.1`:
 
 ```
-TE Classification                          | Coverage (bp)| Copy Number| % Genome Coverage| Genome Size| TE Family Count|
+|TE Classification                          | Coverage (bp)| Copy Number| % Genome Coverage| Genome Size| TE Family Count|
 |:------------------------------------------|-------------:|-----------:|-----------------:|-----------:|---------------:|
 |DNA                                        |         69284|         190|         0.6516560|    10631990|               9|
 |Rolling Circle                             |         71788|         316|         0.6752076|    10631990|              12|
