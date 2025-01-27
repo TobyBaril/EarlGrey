@@ -110,6 +110,7 @@ pieSum$tclassif %<>% as.factor() %>% ordered(levels = c("DNA",
 # get proportions
 
 pieSum$proportion <- pieSum$cov / gen
+pieSum$percentage <- (pieSum$cov / gen) * 100
 pieSum$gen <- gen
 
 # plot pie
