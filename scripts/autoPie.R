@@ -2,6 +2,7 @@
 
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(kableExtra))
 
 # set options
 
@@ -138,8 +139,25 @@ input2$family <- gsub(".*ID=", "", input2$attributes)
 input2$family <- gsub(";.*", "", input2$family)
 input2$family <- toupper(input2$family)
 classCount <- input2 %>% group_by(tclassif, family) %>% tally(name = "Number_of_Copies") %>% group_by(tclassif) %>% tally(name = "Number_of_Distinct_Classifications")
-pieSum <- left_join(pieSum, classCount)
+pieSum <- left_join(pieSum, classCount) %>%
+  ungroup() %>%
+  select(-c(proportion))
 
+pieSum$tclassif %<>% as.factor() %>% ordered(levels = c("DNA",
+                                                        "Rolling Circle",
+                                                        "Penelope",
+                                                        "LINE",
+                                                        "SINE",
+                                                        "LTR",
+                                                        "Other (Simple Repeat, Microsatellite, RNA)",
+                                                        "Unclassified",
+                                                        "Non-Repeat"))
+
+pieSum <- pieSum %>%
+  arrange(tclassif)
+
+colnames(pieSum) <- c("TE Classification", "Coverage (bp)", "Copy Number", "% Genome Coverage", "Genome Size", "TE Family Count")
+      
 # generate summary of TE family abundance
 
 familyAbundance <- input2 %>%
@@ -156,7 +174,18 @@ familyTally <- input2 %>%
 familyAbundance <- merge(familyAbundance, familyTally) %>%
         arrange(-coverage)
 
+colnames(familyAbundance) <- c("TE Family", "Coverage (bp)", "Copy Number")
+
 saveFam <- gsub("highLevelCount", "familyLevelCount", saveTab)
 
 write.table(pieSum, saveTab, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 write.table(familyAbundance, saveFam, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+
+# add a user-readable version of the final table
+saveKable <- gsub(".txt", ".kable", saveTab)
+kable(pieSum, format = "pipe") %>%
+  writeLines(saveKable)
+
+saveKableFam <- gsub(".txt", ".kable", saveFam)
+kable(familyAbundance, format = "pipe") %>%
+  writeLines(saveKableFam)
