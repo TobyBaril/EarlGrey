@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 5.1.0
+	earlGrey version 5.1.1
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -65,7 +65,7 @@ prepGenome()
 	fi
 	if [ ! -f ${genome}.prep ] || [ ! -f ${genome}.dict ]; then
 		cp ${genome} ${genome}.bak && gzip -f ${genome}.bak 
-		sed '/>/ s/ .*//g; /^$/d' ${genome} > ${genome}.tmp
+		sed '/>/ s/[[:space:]].*//g; /^$/d' ${genome} > ${genome}.tmp
 		${SCRIPT_DIR}/headSwap.sh -i ${genome}.tmp -o ${genome}.prep && rm ${genome}.tmp
 		mv ${genome}.tmp.dict ${genome}.dict
 		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
@@ -88,12 +88,12 @@ getRepeatMaskerFasta()
 		exit 2
 	fi
 	if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		libpath="$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|g')"
+		libpath="$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|')"
 	else
 		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5"
 	fi
 	if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		PATH=$PATH:"$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/|g')"
+		PATH=$PATH:"$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/|')"
 	fi
 	mkdir -p $OUTDIR/${species}_Curated_Library/
 	famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
@@ -586,4 +586,5 @@ sleep 5
 
 # Stage 10
 stage="TE library, Summary Figures, and TE Quantifications in Standard Formats Can Be Found in ${OUTDIR}/${species}_summaryFiles/" && runningTea
+cat ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.kable
 sleep 5
