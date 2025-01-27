@@ -29,6 +29,21 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 Earl Grey v5.1.1 contains very small patches to improve compatibility with publicly available genome sequencing data. In rare instances, strange characters in fasta headers were causing issues preventing the pipeline from running. These have been resolved in the preparation step. 
 
+In addition, new _pretty_ tables are now generated in the `summaryFiles` directory and at the end of a successful run. These contain the same information as the `txt` tables, but in the familiar pipe format for readability. These can be added to markdown files if required. One is produced for the high level count as well as for the family level count. Below is an example of the table that is printed at the end of Earl Grey runs as of `v5.1.1`:
+
+```
+TE Classification                          | Coverage (bp)| Copy Number| % Genome Coverage| Genome Size| TE Family Count|
+|:------------------------------------------|-------------:|-----------:|-----------------:|-----------:|---------------:|
+|DNA                                        |         69284|         190|         0.6516560|    10631990|               9|
+|Rolling Circle                             |         71788|         316|         0.6752076|    10631990|              12|
+|Penelope                                   |        139334|         869|         1.3105167|    10631990|               6|
+|LINE                                       |        141841|         491|         1.3340964|    10631990|              22|
+|SINE                                       |         44137|         191|         0.4151339|    10631990|               1|
+|Other (Simple Repeat, Microsatellite, RNA) |        191645|        4235|         1.8025318|    10631990|             940|
+|Unclassified                               |        155836|         905|         1.4657275|    10631990|              35|
+|Non-Repeat                                 |       9818125|          NA|        92.3451301|    10631990|              NA|
+```
+
 ### Previous Changes
 
 Earl Grey v5.1.0 contains small changes that drastically improve memory usage in the divergence calculator. We have replaced the use of EMBOSS `water` with EMBOSS `matcher`, which reduces memory consumption on large alignments whilst remaining rigorous. For more information, please see the notes section in the [EMBOSS Manual](https://www.bioinformatics.nl/cgi-bin/emboss/help/matcher). This should prevent jobs running out of memory, particularly when using queuing systems and shared resources. 
