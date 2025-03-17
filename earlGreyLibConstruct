@@ -269,6 +269,63 @@ Checks()
                         done
                 fi
         fi
+
+        # Dfam 3.9 checks
+	library_path=$(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/famdb|g')
+	if [ -f "${library_path}/min_init.0.h5" ] ; then
+    		echo "WARNING: Earl Grey v5.2.0 has updated to Dfam v3.9." 
+    		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/current/families/FamDB/)"
+    		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
+    		echo "I have written the required commands for you to faciliate the process."
+    		echo "Please follow these carefully to ensure successful configuration of RepeatMasker with Dfam 3.9."
+    		echo "As a note, these DB paritions are BIG, so only download the ones you need for your studies (or, if you do need all of them, make sure you have the space for them)"
+    		echo "########################################################"
+    		echo "A script for modification and automation of these steps has been generated in $(pwd)/configure_dfam39.sh"
+    		echo "Please open the script in your preferred text editor (e.g. nano or vim) and change the partition numbers in [] to those that you would like to download"
+    		echo "then, make the script executable (chmod +x $(pwd)/configure_dfam39.sh) and run it: ./configure_dfam39.sh"
+    		echo "Alternatively, you can run the steps below one-by-one to achieve the same outcome:"
+    		echo "########################################################"
+    		echo ""
+    		if [ -f "$(pwd)/configure_dfam39.sh" ]; then
+        		rm $(pwd)/configure_dfam39.sh
+    		fi
+    		echo "# first, change directory to the famdb library location" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "cd ${library_path}/" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# download the partitions you require from Dfam 3.9. In the below, change the numbers or range inside the square brackets to choose your subsets." | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# e.g. to download partitions 0 to 10: [0-10]; or to download partitions 3,5, and 7: [3,5,7]; [0-16] is ALL PARTITIONS" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "curl -o 'dfam39_full.#1.h5.gz' 'https://dfam.org/releases/current/families/FamDB/dfam39_full.[0-16].h5.gz'" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# decompress Dfam 3.9 paritions" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "gunzip *.gz" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# move up to RepeatMasker main directory" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "cd $(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/|g')" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# Replace famdb with version 2.0.1 (required for the Dfam 3.9)" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "wget https://github.com/Dfam-consortium/FamDB/archive/refs/tags/2.0.1.tar.gz && tar --wildcards -zxvf 2.0.1.tar.gz FamDB-2.0.1/famdb.py FamDB-2.0.1/famdb_*.py" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "mv FamDB-2.0.1/*.py . && rm -rf 2.0.1.tar.gz FamDB-2.0.1/" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# save the min_init partition as a backup, just in case!" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "mv ${library_path}/min_init.0.h5 ${library_path}/min_init.0.h5.bak" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# Rerun RepeatMasker configuration" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "perl ./configure -libdir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/|g') \
+    		-trf_prgm $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin/trf|g') \
+   		-rmblast_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
+    		-hmmer_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
+    		-abblast_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
+    		-crossmatch_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
+    		-default_search_engine rmblast" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		sed -i '/^perl/  s/\s\s*/ /g' $(pwd)/configure_dfam39.sh
+    		echo "########################################################"
+    		echo ""
+    		echo "Following these steps should enable you to use Dfam 3.9 with RepeatMasker and Earl Grey"
+    		echo "You will not see this message again if configuration is successful"
+    		echo "If you are still having trouble, please open an issue on the Earl Grey github and we will try to help!"
+    		exit 2
+	fi
 }
 
 # Main #
