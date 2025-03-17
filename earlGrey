@@ -456,6 +456,9 @@ Checks()
     		echo "wget https://github.com/Dfam-consortium/FamDB/archive/refs/tags/2.0.1.tar.gz && tar --wildcards -zxvf 2.0.1.tar.gz FamDB-2.0.1/famdb.py FamDB-2.0.1/famdb_*.py" | tee -a $(pwd)/configure_dfam39.sh
     		echo "mv FamDB-2.0.1/*.py . && rm -rf 2.0.1.tar.gz FamDB-2.0.1/" | tee -a $(pwd)/configure_dfam39.sh
     		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "# save the min_init partition as a backup, just in case!" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "mv ${library_path}/min_init.0.h5 ${library_path}/min_init.0.h5.bak" | tee -a $(pwd)/configure_dfam39.sh
+    		echo "" | tee -a $(pwd)/configure_dfam39.sh
     		echo "# Rerun RepeatMasker configuration" | tee -a $(pwd)/configure_dfam39.sh
     		echo "perl ./configure -libdir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/|g') \
     		-trf_prgm $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin/trf|g') \
@@ -464,9 +467,6 @@ Checks()
     		-abblast_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
     		-crossmatch_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
     		-default_search_engine rmblast" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "# save the min_init partition as a backup, just in case!" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "mv ${library_path}/min_init.0.h5 ${library_path}/min_init.0.h5.bak" | tee -a $(pwd)/configure_dfam39.sh
     		echo "" | tee -a $(pwd)/configure_dfam39.sh
     		sed -i '/^perl/  s/\s\s*/ /g' $(pwd)/configure_dfam39.sh
     		echo "########################################################"
