@@ -422,7 +422,9 @@ Checks()
 
 	# Dfam 3.9 checks
 	library_path=$(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/famdb|g')
-	if [ -f "${library_path}/min_init.0.h5" ] ; then
+	expected_file="${library_path}/dfam39_full.0.h5"
+	file_count=$(find "$library_path" -maxdepth 1 -type f | wc -l)
+	if [ $file_count -eq 1 ] && [ -f $expected_file ] ; then
     		echo "WARNING: Earl Grey v6.0.0 has updated to Dfam v3.9." 
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/current/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
@@ -452,10 +454,10 @@ Checks()
     		echo "# move up to RepeatMasker main directory" | tee -a $(pwd)/configure_dfam39.sh
     		echo "cd $(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/|g')" | tee -a $(pwd)/configure_dfam39.sh
     		echo "" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "# Replace famdb with version 2.0.1 (required for the Dfam 3.9)" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "wget https://github.com/Dfam-consortium/FamDB/archive/refs/tags/2.0.1.tar.gz && tar --wildcards -zxvf 2.0.1.tar.gz FamDB-2.0.1/famdb.py FamDB-2.0.1/famdb_*.py" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "mv FamDB-2.0.1/*.py . && rm -rf 2.0.1.tar.gz FamDB-2.0.1/" | tee -a $(pwd)/configure_dfam39.sh
-    		echo "" | tee -a $(pwd)/configure_dfam39.sh
+    		#echo "# Replace famdb with version 2.0.1 (required for the Dfam 3.9)" | tee -a $(pwd)/configure_dfam39.sh
+    		#echo "wget https://github.com/Dfam-consortium/FamDB/archive/refs/tags/2.0.1.tar.gz && tar --wildcards -zxvf 2.0.1.tar.gz FamDB-2.0.1/famdb.py FamDB-2.0.1/famdb_*.py" | tee -a $(pwd)/configure_dfam39.sh
+    		#echo "mv FamDB-2.0.1/*.py . && rm -rf 2.0.1.tar.gz FamDB-2.0.1/" | tee -a $(pwd)/configure_dfam39.sh
+    		#echo "" | tee -a $(pwd)/configure_dfam39.sh
     		echo "# save the min_init partition as a backup, just in case!" | tee -a $(pwd)/configure_dfam39.sh
     		echo "mv ${library_path}/min_init.0.h5 ${library_path}/min_init.0.h5.bak" | tee -a $(pwd)/configure_dfam39.sh
     		echo "" | tee -a $(pwd)/configure_dfam39.sh
@@ -473,7 +475,9 @@ Checks()
     		echo ""
     		echo "Following these steps should enable you to use Dfam 3.9 with RepeatMasker and Earl Grey"
     		echo "You will not see this message again if configuration is successful"
+			echo "If you only want partition 0, you do not have to do anything except rerun your Earl Grey command"
     		echo "If you are still having trouble, please open an issue on the Earl Grey github and we will try to help!"
+			touch ${library_path}/.earlgrey.config.complete
     		exit 2
 	fi
 }
