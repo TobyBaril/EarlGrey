@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 5.2.0
+	earlGrey version 6.0.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -423,7 +423,7 @@ Checks()
 	# Dfam 3.9 checks
 	library_path=$(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/famdb|g')
 	if [ -f "${library_path}/min_init.0.h5" ] ; then
-    		echo "WARNING: Earl Grey v5.2.0 has updated to Dfam v3.9." 
+    		echo "WARNING: Earl Grey v6.0.0 has updated to Dfam v3.9." 
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/current/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
     		echo "I have written the required commands for you to faciliate the process."
