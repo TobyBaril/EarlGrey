@@ -190,9 +190,10 @@ novoMask()
 	else
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
+		latestFile=$(realpath ${species}_combined_library.fasta)
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		rmthreads=$(expr $ProcNum / 4)
-		RepeatMasker -lib ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib $latestFile -norna -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
 
