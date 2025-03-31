@@ -425,7 +425,7 @@ Checks()
 	library_path=$(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/famdb|g')
 	expected_file="${library_path}/dfam39_full.0.h5"
 	file_count=$(find "$library_path" -maxdepth 1 -type f | wc -l)
-	if [ $file_count -eq 1 ] && [ -f $expected_file ] ; then
+	if [ $file_count -eq 2 ] && [ -f $expected_file ] && [ -f ${library_path}/rmlib.config ] ; then
     		echo "WARNING: Earl Grey v6.0.0 has updated to Dfam v3.9." 
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/current/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
