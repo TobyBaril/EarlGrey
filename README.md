@@ -680,8 +680,8 @@ Ensure the genome you wish to annotate is found in the directory you want to bin
 earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
 ```
 
-## If you need the container to run offline and/or without interactive mode
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 6.0.1. You can use this image by pulling the container:
+## If you need the container to run offline and/or without interactive mode (ONLY DFAM 3.7 CURATED)
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 5.1.1. You can use this image by pulling the container:
 
 ```
 # Interactive mode
@@ -691,7 +691,7 @@ docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
 docker run -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
 ```
 
-# Dfam Workaround For Latest Release
+# Dfam Workaround For DFAM 3.8 (DEPRECATED AS OF EARL GREY VERSION 6)
 
 With the latest release of RepeatMasker (v4.1.7), Dfam 3.8 has been reorganised into partitions containing both curated and uncurated sequences for specific taxonomic groups (see https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt). Consequently, it is challenging to provide a stable conda release for RepeatMasker 4.1.7. 
 
