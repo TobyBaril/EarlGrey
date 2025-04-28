@@ -27,7 +27,19 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Notes / Updates
 
-We have been made aware of some instability in repeat annotation percentages when high numbers of CPUs are employed in repeat-rich genomes (_i.e. ~60,000+ de novo TE families detected_) . We are investigating the cause of this. In the meantime, we recommend using between 8 and 16 CPUs (or more if you are happy to do your own testing) and providing at least 64G of RAM for each run.
+We have been made aware of some instability in repeat annotation percentages when high numbers of CPUs are employed in certain server environments. Please be sure to check logs carefully for instances of interruption. Known cases so far will show the following message:
+
+```
+OpenBLAS blas_thread_init: pthread_create failed for thread X of X: Resource temporarily unavailable
+OpenBLAS blas_thread_init: ensure that your address space and process count limits are big enough (ulimit -a)
+OpenBLAS blas_thread_init: or set a smaller OPENBLAS_NUM_THREADS to fit into what you have available
+```
+
+If you see this message, re-run analysis with less threads. Alternatively, you can modify your instance of the TEstrainer script `initial_mafft_setup.py` to add the following after `import os`:
+
+```
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+```
 
 # Changes in Latest Release
 
