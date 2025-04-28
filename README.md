@@ -25,11 +25,17 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 <!-- toc -->
 
+# Notes / Updates
+
+We have been made aware of some instability in repeat annotation percentages when high numbers of CPUs are employed in repeat-rich genomes (_i.e. ~60,000+ de novo TE families detected_) . We are investigating the cause of this. In the meantime, we recommend using between 8 and 16 CPUs (or more if you are happy to do your own testing) and providing at least 64G of RAM for each run.
+
 # Changes in Latest Release
 
-Earl Grey v6.0.1 contains small bug fixes to verify installed RepeatMasker Libraries correctly. There is now a Docker container for Earl Grey v6.0.1 that contains all partitions of Dfam (so it is BIG!).
+Earl Grey v6.0.2 patches an issue where the use of existing libraries did not work with the new `famdb` formats. 
 
 ### Previous Changes
+
+Earl Grey v6.0.1 contains small bug fixes to verify installed RepeatMasker Libraries correctly. There is now a Docker container for Earl Grey v6.0.1 that contains all partitions of Dfam (so it is BIG!).
 
 *Earl Grey v6.0.0 is here!* 
 

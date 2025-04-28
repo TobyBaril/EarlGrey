@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 6.0.1
+	earlGrey version 6.0.2
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -88,9 +88,9 @@ getRepeatMaskerFasta()
 		exit 2
 	fi
 	if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		libpath="$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|')"
+		libpath="$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/famdb/|')"
 	else
-		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5"
+		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/famdb/"
 	fi
 	if [[ $(which RepeatMasker) == *"bin"* ]]; then
 		PATH=$PATH:"$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/|')"
@@ -426,7 +426,7 @@ Checks()
 	expected_file="${library_path}/dfam39_full.0.h5"
 	file_count=$(find "$library_path" -maxdepth 1 -type f | wc -l)
 	if [ $file_count -eq 2 ] && [ -f $expected_file ] && [ -f ${library_path}/rmlib.config ] ; then
-    		echo "WARNING: Earl Grey v6.0.1 has updated to Dfam v3.9." 
+    		echo "WARNING: Earl Grey v6.0.2 has updated to Dfam v3.9." 
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/current/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
     		echo "I have written the required commands for you to faciliate the process."
