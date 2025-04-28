@@ -31,9 +31,11 @@ We have been made aware of some instability in repeat annotation percentages whe
 
 # Changes in Latest Release
 
-Earl Grey v6.0.2 patches an issue where the use of existing libraries did not work with the new `famdb` formats. 
+Earl Grey v6.0.3 reduces CPU usage for TEstrainer to reduce memory pressure.
 
 ### Previous Changes
+
+Earl Grey v6.0.2 patches an issue where the use of existing libraries did not work with the new `famdb` formats. 
 
 Earl Grey v6.0.1 contains small bug fixes to verify installed RepeatMasker Libraries correctly. There is now a Docker container for Earl Grey v6.0.1 that contains all partitions of Dfam (so it is BIG!).
 
