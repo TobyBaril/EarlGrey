@@ -43,9 +43,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.0.3 reduces CPU usage for TEstrainer to reduce memory pressure.
+Earl Grey v6.1.0 reintroduces the `--curated` flag when known elements are used to pre-mask your input genome. As usual, unless a good quality TE library already exists for your species of interest, or a _very_ closely related one, we do not recommend pre-masking your input genome. This reduces the amount of information available for _de novo_ annotation, and can lead to overestimations of TE divergence and lower-quality consensus sequences. 
 
 ### Previous Changes
+
+Earl Grey v6.0.3 reduces CPU usage for TEstrainer to reduce memory pressure.
 
 Earl Grey v6.0.2 patches an issue where the use of existing libraries did not work with the new `famdb` formats. 
 
