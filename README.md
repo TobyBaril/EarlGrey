@@ -684,20 +684,23 @@ echo "export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')" >>
 
 You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
 
-# A Docker container has been generated with all of Dfam v3.9 
+# A Docker container has been generated with all of Dfam v3.9  (or with none of Dfam 3.9, but with script generation to source required partitions)
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.0.1 and an image with Dfam 3.7 curated elements only and v5.1.1. You can use these images by pulling the container:
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.1.0 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required paritions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container:
 
 ```
 # Interactive mode
-# Version 6.0.1 with Dfam 3.9
+# Version 6.1.0 with Dfam 3.9
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest
+
+# Version 6.1.0 with no preconfigured partitions
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.1.0-nodfam
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
 docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
 
 # Non interactive mode example:
-# Version 6.0.1 with Dfam 3.9
+# Version 6.1.0 with Dfam 3.9 preconfigured
 docker run -v 'pwd':/data/ tobybaril/earlgrey:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
@@ -782,13 +785,13 @@ NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and
 
 #==============================================================================================================================================================================#
 
-## Earl Grey is available in a [Docker container](./Docker) preconfigured with Dfam curated version 3.7
+## Earl Grey is available in a [Docker container](./Docker) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
 
 To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory](./Docker) in this repository. Please consult the README in the Docker directory for installation instructions.
 
 #==============================================================================================================================================================================#
 
-## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam curated version 3.7
+## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
 
 To use this container, please make sure Singularity is installed and configured on your system. All instructions relating to the singularity installation are found within the [Singularity directory](./Singularity) in this repository. Please consult the README in the Singularity directory for installation instructions.
 
