@@ -385,14 +385,14 @@ sleep 1
 latestFile=$(realpath $startCust)
 if [ ! -z "$RepSpec" ]; then
     if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		libpath="$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/Libraries/RepeatMaskerLib.h5|g')"
+		libpath="$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/famdb/|')"
 	else
-		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/RepeatMaskerLib.h5"
+		libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/famdb/"
 	fi
 	if [[ $(which RepeatMasker) == *"bin"* ]]; then
-		PATH=$PATH:"$(which RepeatMasker | sed 's|bin.*|share/RepeatMasker/|g')"
+		PATH=$PATH:"$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/|g')"
 	fi
-    famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+    famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d --curated $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 fi
 
