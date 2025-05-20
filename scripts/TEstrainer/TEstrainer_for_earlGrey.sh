@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
+usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Amount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
 
 # default values
 STRAIN_SCRIPTS=/data/toby/EarlGrey/scripts/TEstrainer/scripts/
@@ -15,7 +15,7 @@ MEM_FREE="200M"
 MIN_SEQ=3
 
 # parsing
-while getopts l:g:t:f:m:r:d:h:n:M flag; do
+while getopts l:g:t:f:m:r:d:h:n:M: flag; do
   case "${flag}" in
     l) RM_LIBRARY_PATH=${OPTARG};;
     g) GENOME=${OPTARG};;
