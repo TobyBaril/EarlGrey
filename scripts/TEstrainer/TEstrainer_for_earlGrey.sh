@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Amount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
+usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Amount of memory TEstrainer needs to keep free] [-R Resume interrupted run in directory specified by -d]" 1>&2; exit 1; }
 
 # default values
 STRAIN_SCRIPTS=/data/toby/EarlGrey/scripts/TEstrainer/scripts/
@@ -15,7 +15,7 @@ MEM_FREE="200M"
 MIN_SEQ=3
 
 # parsing
-while getopts l:g:t:f:m:r:d:h:n:M: flag; do
+while getopts l:g:t:f:m:r:d:h:n:M:R flag; do
   case "${flag}" in
     l) RM_LIBRARY_PATH=${OPTARG};;
     g) GENOME=${OPTARG};;
@@ -26,6 +26,7 @@ while getopts l:g:t:f:m:r:d:h:n:M: flag; do
     d) DATA_DIR=${OPTARG};;
     n) NO_SEQ=${OPTARG};;
     M) MEM_FREE=${OPTARG};;
+    R) RESUME=true;;
     h | *)
       print_usage
       exit_script
@@ -35,42 +36,59 @@ done
 # determine further variables and check files exist
 if [ ! -f ${RM_LIBRARY_PATH} ]; then echo "Library not found"; usage; fi
 if [ -z ${RM_LIBRARY_PATH} ]; then echo "Library must be supplied"; usage; else RM_LIBRARY=$(echo $RM_LIBRARY_PATH | sed 's/.*\///'); fi
-if [[ $RUNS -gt 0 ]]; then 
+if [[ $RUNS -gt 0 ]]; then
   if [ -z ${GENOME} ]; then echo "If refining genome must be supplied"; usage; fi
   if [ ! -f ${GENOME} ]; then echo "Refining genome not found"; usage; fi
 fi
-if [ -z "$DATA_DIR" ]; then DATA_DIR=$(echo "TS_"${RM_LIBRARY}"_"${TIME}); fi
-
-# create data dir if missing
-if [ ! -d ${DATA_DIR} ] 
-then
-    mkdir ${DATA_DIR}
-fi
-
 
 if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
 
-# make directories
-mkdir -p ${DATA_DIR}/run_0/
-mkdir -p ${DATA_DIR}/tmp/
+if [ -z "$RESUME" ]
+then
+  if [ -z "$DATA_DIR" ]; then DATA_DIR=$(echo "TS_"${RM_LIBRARY}"_"${TIME}); fi
 
-# initial copy
-cp ${RM_LIBRARY_PATH} ${DATA_DIR}/${RM_LIBRARY}
+  # create data dir if missing
+  if [ ! -d ${DATA_DIR} ]
+  then
+    mkdir ${DATA_DIR}
+  fi
 
-# cp starting seq to starting directory
-mkdir -p ${DATA_DIR}/run_0/og
-cp ${RM_LIBRARY_PATH} ${DATA_DIR}/run_0/further_${RM_LIBRARY}
-# create reference of original sequences
-python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/run_0/further_${RM_LIBRARY} -o ${DATA_DIR}/run_0/og
+  # make directories
+  mkdir -p ${DATA_DIR}/run_0/
+  mkdir -p ${DATA_DIR}/tmp/
 
-# runs
-python ${STRAIN_SCRIPTS}/indexer.py -g ${GENOME}
-if [ ! -f "${GENOME}".nsq ]; then
-  makeblastdb -in ${GENOME} -dbtype nucl -out ${GENOME} # makeblastb if needed
+  # initial copy
+  cp ${RM_LIBRARY_PATH} ${DATA_DIR}/${RM_LIBRARY}
+
+  # cp starting seq to starting directory
+  mkdir -p ${DATA_DIR}/run_0/og
+  cp ${RM_LIBRARY_PATH} ${DATA_DIR}/run_0/further_${RM_LIBRARY}
+  # create reference of original sequences
+  python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/run_0/further_${RM_LIBRARY} -o ${DATA_DIR}/run_0/og
+
+  # runs
+  python ${STRAIN_SCRIPTS}/indexer.py -g ${GENOME}
+  if [ ! -f "${GENOME}".nsq ]; then
+    makeblastdb -in ${GENOME} -dbtype nucl -out ${GENOME} # makeblastb if needed
+  fi
+
+  # curation
+  RUN_NO=1
+else
+  if [ -z "$DATA_DIR" ]; then echo "When resuming, out directory (-d) must be specified"; usage; fi
+  RUN_NO=$(ls ${DATA_DIR} | grep -P '^run_\d+$' | sed 's/run_//' | sort -n | tail -n 1)
+  if [ $RUN_NO -gt $RUNS ]
+  then
+    echo "Trying to resume, but more runs than expected have already been completed"
+    usage
+  elif [ $RUN_NO -eq $RUNS ] && [ -f ${DATA_DIR}/${RM_LIBRARY} ]
+  then
+    RUN_NO=$RUN_NO+1
+  else
+    rm -r ${DATA_DIR}/run_${RUN_NO}
+  fi
 fi
 
-# curation
-RUN_NO=1
 while  [ $RUN_NO -le $RUNS ]
 do
 
@@ -87,7 +105,7 @@ do
            ${DATA_DIR}/run_${RUN_NO}/TEtrim_mafft \
            ${DATA_DIR}/run_${RUN_NO}/TEtrim_further \
            ${DATA_DIR}/run_${RUN_NO}/TEtrim_bp
-  
+
   # split
   cp ${DATA_DIR}/run_$(expr $RUN_NO - 1)/further_${RM_LIBRARY} ${DATA_DIR}/run_${RUN_NO}/${RM_LIBRARY}
   echo "Splitting run "${RUN_NO}
@@ -99,7 +117,7 @@ do
   echo "Initial blast and preparation for MSA "${RUN_NO}
   # initial blast and extention
   parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/initial_mafft_setup.py -d ${DATA_DIR} -r ${RUN_NO} -s {} -g ${GENOME} -f ${FLANK} -D -n ${NO_SEQ}
-  
+
   ## first mafft alignment
   find ${DATA_DIR}/run_${RUN_NO}/to_align -type f | sed 's/.*\///' > ${DATA_DIR}/run_${RUN_NO}/to_align.txt
   echo "Primary alignment run "${RUN_NO}
@@ -108,12 +126,12 @@ do
   # trim
   echo "Trimming run "${RUN_NO}
   parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
-  
+
   # compile completed curations
   if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/ 2>/dev/null)" ]; then
      cat ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/*fasta > ${DATA_DIR}/run_${RUN_NO}/complete_${RM_LIBRARY}
   fi
-  
+
   # Either compile consensuses for further curation
   if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_further/ 2>/dev/null)" ]; then
     cat ${DATA_DIR}/run_${RUN_NO}/TEtrim_further/*fasta > ${DATA_DIR}/run_${RUN_NO}/further_${RM_LIBRARY}
@@ -140,7 +158,7 @@ if [[ -s ${DATA_DIR}/missing_consensi.txt ]]; then
     cat $file_name >> ${DATA_DIR}/${RM_LIBRARY}
   done < ${DATA_DIR}/missing_consensi.txt
 fi
-  
+
 sed -i 's/ .*//' ${DATA_DIR}/${RM_LIBRARY}
 
 # Identify simple repeats and satellites, trim ends of LINEs/SINEs
