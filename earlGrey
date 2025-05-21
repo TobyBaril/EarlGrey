@@ -583,6 +583,7 @@ if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
         strainer
     elif [ -d ${OUTDIR}/${species}_strainer/TS_${species}-families.fa_* ]; then
+        stage="Resuming TEstrainer" && runningTea
         strainerResume
     else
         strainer
