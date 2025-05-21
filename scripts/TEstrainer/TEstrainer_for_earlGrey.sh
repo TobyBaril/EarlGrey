@@ -51,8 +51,8 @@ then
   then
     echo "Attempting to resume a run that was interrupted before iterations started"
     unset RESUME
-    rm -r ${DATA_DIR}/run_0/
-    rm -r ${DATA_DIR}/tmp/
+    if [ -d ${DATA_DIR}/run_0/ ]; then rm -r ${DATA_DIR}/run_0/ ; fi
+    if [ -d ${DATA_DIR}/tmp/ ]; then rm -r ${DATA_DIR}/tmp/ ; fi
   elif [ $RUN_NO -gt $RUNS ]
   then
     echo "Trying to resume, but more runs than expected have already been completed"
