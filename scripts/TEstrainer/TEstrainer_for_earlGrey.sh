@@ -53,7 +53,6 @@ then
     unset RESUME
     rm -r ${DATA_DIR}/run_0/
     rm -r ${DATA_DIR}/tmp/
-  fi
   elif [ $RUN_NO -gt $RUNS ]
   then
     echo "Trying to resume, but more runs than expected have already been completed"
