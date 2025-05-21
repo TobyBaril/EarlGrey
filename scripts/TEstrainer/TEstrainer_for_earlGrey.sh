@@ -43,6 +43,29 @@ fi
 
 if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
 
+if [ -n "$RESUME" ]
+then
+  if [ -z "$DATA_DIR" ]; then echo "When resuming, out directory (-d) must be specified"; usage; fi
+  RUN_NO=$(ls ${DATA_DIR} | grep -P '^run_\d+$' | sed 's/run_//' | sort -n | tail -n 1)
+  if [ -z "$RUN_NO" ] || [ $RUN_NO -eq 0 ]
+  then
+    echo "Attempting to resume a run that was interrupted before iterations started"
+    unset RESUME
+    rm -r ${DATA_DIR}/run_0/
+    rm -r ${DATA_DIR}/tmp/
+  fi
+  elif [ $RUN_NO -gt $RUNS ]
+  then
+    echo "Trying to resume, but more runs than expected have already been completed"
+    usage
+  elif [ $RUN_NO -eq $RUNS ] && [ -f ${DATA_DIR}/${RM_LIBRARY} ]
+  then
+    RUN_NO=$RUN_NO+1
+  else
+    rm -r ${DATA_DIR}/run_${RUN_NO}
+  fi
+fi
+
 if [ -z "$RESUME" ]
 then
   if [ -z "$DATA_DIR" ]; then DATA_DIR=$(echo "TS_"${RM_LIBRARY}"_"${TIME}); fi
@@ -74,19 +97,6 @@ then
 
   # curation
   RUN_NO=1
-else
-  if [ -z "$DATA_DIR" ]; then echo "When resuming, out directory (-d) must be specified"; usage; fi
-  RUN_NO=$(ls ${DATA_DIR} | grep -P '^run_\d+$' | sed 's/run_//' | sort -n | tail -n 1)
-  if [ $RUN_NO -gt $RUNS ]
-  then
-    echo "Trying to resume, but more runs than expected have already been completed"
-    usage
-  elif [ $RUN_NO -eq $RUNS ] && [ -f ${DATA_DIR}/${RM_LIBRARY} ]
-  then
-    RUN_NO=$RUN_NO+1
-  else
-    rm -r ${DATA_DIR}/run_${RUN_NO}
-  fi
 fi
 
 while  [ $RUN_NO -le $RUNS ]
