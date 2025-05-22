@@ -34,7 +34,7 @@ makeDirectory()
 {
 	directory=$(realpath ${directory})
 	mkdir -p ${directory}/${species}_EarlGrey/ && OUTDIR=${directory}/${species}_EarlGrey
-    mkdir -p ${OUTDIR}/${species}_Curated_Library/
+    	mkdir -p ${OUTDIR}/${species}_Curated_Library/
 	mkdir -p $OUTDIR/${species}_RepeatMasker_Against_Custom_Library/
 	mkdir -p $OUTDIR/${species}_RepeatLandscape/
 	mkdir -p $OUTDIR/${species}_mergedRepeats/
@@ -256,6 +256,9 @@ Checks()
 	else
 		heli=no; echo "HELITRON detection not specified using (yes/no). Using default parameter (no)."
 	fi
+
+	echo "Please cite the following paper when using this software:"
+	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 
 	# biocontainer checks
 	if [ -d "/usr/local/share/RepeatMasker/Libraries/" ]; then
