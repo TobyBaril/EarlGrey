@@ -49,9 +49,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.1.0 reintroduces the `--curated` flag when known elements are used to pre-mask your input genome. As usual, unless a good quality TE library already exists for your species of interest, or a _very_ closely related one, we do not recommend pre-masking your input genome with known repeats. This reduces the amount of information available for _de novo_ annotation, and can lead to overestimations of TE divergence and lower-quality consensus sequences. If in doubt, leave this option out!
+Earl Grey v6.1.1 patches a bug where threads set to <4 caused TEstrainer to crash (only present in 6.1.0 and not earlier versions)
 
 ### Previous Changes
+
+Earl Grey v6.1.0 reintroduces the `--curated` flag when known elements are used to pre-mask your input genome. As usual, unless a good quality TE library already exists for your species of interest, or a _very_ closely related one, we do not recommend pre-masking your input genome with known repeats. This reduces the amount of information available for _de novo_ annotation, and can lead to overestimations of TE divergence and lower-quality consensus sequences. If in doubt, leave this option out!
 
 Earl Grey v6.0.3 reduces CPU usage for TEstrainer to reduce memory pressure.
 
