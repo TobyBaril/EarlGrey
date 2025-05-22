@@ -25,7 +25,13 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 <!-- toc -->
 
+# Important Considerations
+
+Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which paritions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, esoecially if you want to pre-mask your input genome. Please make use of issues and discussions tabs if you have questions about this, we are always happy to help!
+
 # Notes / Updates
+
+We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect, and be very RAM-hungry. As some generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks! Things will be running even if it doesn't look like they are. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters, and Earl Grey will skip completed steps. `TEstrainer` and the final `divergence calculator` use a lot of memory. Check carefully for OOM errors in the logs!
 
 We have been made aware of some instability in repeat annotation percentages when high numbers of CPUs are employed in certain server environments. Please be sure to check logs carefully for instances of interruption. Known cases so far will show the following message:
 
@@ -43,9 +49,13 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.0.3 reduces CPU usage for TEstrainer to reduce memory pressure.
+Earl Grey v6.1.1 patches a bug where threads set to <4 caused TEstrainer to crash (only present in 6.1.0 and not earlier versions)
 
 ### Previous Changes
+
+Earl Grey v6.1.0 reintroduces the `--curated` flag when known elements are used to pre-mask your input genome. As usual, unless a good quality TE library already exists for your species of interest, or a _very_ closely related one, we do not recommend pre-masking your input genome with known repeats. This reduces the amount of information available for _de novo_ annotation, and can lead to overestimations of TE divergence and lower-quality consensus sequences. If in doubt, leave this option out!
+
+Earl Grey v6.0.3 reduces CPU usage for TEstrainer to reduce memory pressure.
 
 Earl Grey v6.0.2 patches an issue where the use of existing libraries did not work with the new `famdb` formats. 
 
@@ -245,13 +255,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 NOTE: This pipeline is currently running with Dfam 3.7 curated elements only. We are working on updating to Dfam 3.8 for a future release. If required, you can modify the conda installation of RepeatMasker within the conda environment (do at your own risk!)
 
-Earl Grey version 6.0.1 (latest stable release) with all required and configured dependencies is found in the `toby_baril_bio` and `biooconda` conda channels. To install, simply run the following depending on your installation:
+Earl Grey version 6.1.0 (latest stable release) with all required and configured dependencies is found in the `toby_baril_bio` and `biooconda` conda channels. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.0.1
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.1.1
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.0.1
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.1.1
 ```
 
 # Recommended Installation with Conda or Mamba on ARM-based Mac Systems (M chips)
@@ -425,7 +435,7 @@ brewIntel install coreutils
 
 Change TEstrainer_for_earlGrey.sh for the macOS version:
 ```
-nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 
 # delete everything in this file.
 ```
@@ -636,12 +646,12 @@ Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
 
 Make sure the updated file is executable:
 ```
-chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit the script directory path in this file by running the following:
 ```
-gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.0.1-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.1.1-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit famdb.py for use with our environment:
@@ -651,12 +661,12 @@ gsed -i 's/python3/python/g' $(which earlGrey | gsed 's|bin.*|share/RepeatMasker
 
 Edit LTR_FINDER_PARALLEL to be compatible with zsh
 ```
-gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/LTR_FINDER_parallel|g')
+gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/LTR_FINDER_parallel|g')
 ```
 
 Install LTR_Finder from source
 ```
-cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/bin|g')
+cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/bin|g')
 git clone https://github.com/xzhub/LTR_Finder
 cd ./LTR_Finder/source
 make
@@ -665,14 +675,14 @@ cp * ../../LTR_FINDER.x86_64-1.0.7/
 
 Edit rcMergeRepeatsLoose:
 ```
-gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/rcMergeRepeatsLoose|g')
 var=$(which earlGrey | gsed "s/earlGrey/Rscript/g")
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/rcMergeRepeatsLoose|g')
 ```
 
 Edit main earlGrey script:
 ```
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.0.1-0/earlGrey|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/earlGrey|g')
 ```
 
 Add an important directory to PERL5LIB (for RepeatMasker)
@@ -682,20 +692,23 @@ echo "export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')" >>
 
 You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
 
-# A Docker container has been generated with all of Dfam v3.9 
+# A Docker container has been generated with all of Dfam v3.9  (or with none of Dfam 3.9, but with script generation to source required partitions)
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.0.1 and an image with Dfam 3.7 curated elements only and v5.1.1. You can use these images by pulling the container:
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.1.0 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required paritions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container:
 
 ```
 # Interactive mode
-# Version 6.0.1 with Dfam 3.9
+# Version 6.1.1 with Dfam 3.9
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest
+
+# Version 6.1.1 with no preconfigured partitions
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.1.1-nodfam
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
 docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
 
 # Non interactive mode example:
-# Version 6.0.1 with Dfam 3.9
+# Version 6.1.1 with Dfam 3.9 preconfigured
 docker run -v 'pwd':/data/ tobybaril/earlgrey:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
@@ -780,13 +793,13 @@ NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and
 
 #==============================================================================================================================================================================#
 
-## Earl Grey is available in a [Docker container](./Docker) preconfigured with Dfam curated version 3.7
+## Earl Grey is available in a [Docker container](./Docker) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
 
 To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory](./Docker) in this repository. Please consult the README in the Docker directory for installation instructions.
 
 #==============================================================================================================================================================================#
 
-## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam curated version 3.7
+## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
 
 To use this container, please make sure Singularity is installed and configured on your system. All instructions relating to the singularity installation are found within the [Singularity directory](./Singularity) in this repository. Please consult the README in the Singularity directory for installation instructions.
 
