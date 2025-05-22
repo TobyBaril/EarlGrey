@@ -164,6 +164,25 @@ strainer()
         cp $latestFile ${OUTDIR}/${species}_strainer/
 }
 
+# Subprocess strainerResume
+# resumes interrupted TEstrainer runs
+strainerResume() {
+    cd ${OUTDIR}/${species}_strainer/
+    strainDataDir=$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*")
+    if [ ! $(echo "$strainDataDir" | wc -l) -eq 1 ]; then
+        echo "ERROR: There are more TEstrainer directories than expected present"
+        exit 2
+    fi
+    if [ "$ProcNum" -ge 4 ]; then
+        strainthreads=$(expr $ProcNum / 4)
+    else
+        strainthreads=$ProcNum
+    fi
+    ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${strainthreads} -f $Flank -r $num -n $no_seq -m $min_seq -d ${strainDataDir} -R
+    latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
+    cp $latestFile ${OUTDIR}/${species}_strainer/
+}
+
 # Subprocess sweepUp
 # Puts required files into a summary folder
 sweepUp()
@@ -417,8 +436,13 @@ if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
         stage="Straining TEs and Refining de novo Consensus Sequences" && runningTea
         if [ -f ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
                 rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
+                strainer
+        elif [ -d ${OUTDIR}/${species}_strainer/TS_${species}-families.fa_* ]; then
+                stage="Resuming TEstrainer" && runningTea
+                strainerResume
+        else
+                strainer
         fi
-        strainer
         if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
                 echo "WARNING: TEstrainer failed to produce a strain file, please check the log file for more information. If you have run an intial mask with known repeats, this could be due RepeatModeler2 failing to identify any new repeats. Please check if this is expected."
         fi
