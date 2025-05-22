@@ -164,7 +164,11 @@ deNovo1()
 strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	strainthreads=$(expr $ProcNum / 4)
+	if [ "$ProcNum" -ge 4 ]; then
+		strainthreads=$(expr $ProcNum / 4)
+	else
+		strainthreads=$ProcNum
+	fi
 	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${strainthreads} -f $Flank -r $num -n $no_seq -m $min_seq
 	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
