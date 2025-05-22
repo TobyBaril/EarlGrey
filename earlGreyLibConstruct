@@ -252,6 +252,8 @@ Checks()
                 echo "ERROR: teStrainer module not found, please check all modules are present and run the configure script in the Earl Grey directory before attempting to run Earl Grey"; exit 1
         fi
 
+	echo "Please cite the following paper when using this software:"
+	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 
         # biocontainer checks
         if [ -d "/usr/local/share/RepeatMasker/Libraries/" ]; then
