@@ -253,7 +253,7 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 # Recommended Installation with Conda or Mamba
 
-NOTE: This pipeline is currently running with Dfam 3.7 curated elements only. We are working on updating to Dfam 3.8 for a future release. If required, you can modify the conda installation of RepeatMasker within the conda environment (do at your own risk!)
+Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which paritions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, esoecially if you want to pre-mask your input genome.
 
 Earl Grey version 6.1.0 (latest stable release) with all required and configured dependencies is found in the `toby_baril_bio` and `biooconda` conda channels. To install, simply run the following depending on your installation:
 ```
