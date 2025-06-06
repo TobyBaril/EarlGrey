@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
+usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Amount of memory TEstrainer needs to keep free] [-R Resume interrupted run in directory specified by -d]" 1>&2; exit 1; }
 
 # default values
 STRAIN_SCRIPTS=/data/toby/EarlGrey/scripts/TEstrainer/scripts/
@@ -15,7 +15,7 @@ MEM_FREE="200M"
 MIN_SEQ=3
 
 # parsing
-while getopts l:g:t:f:m:r:d:h:n:M flag; do
+while getopts l:g:t:f:m:r:d:h:n:M:R flag; do
   case "${flag}" in
     l) RM_LIBRARY_PATH=${OPTARG};;
     g) GENOME=${OPTARG};;
@@ -26,6 +26,7 @@ while getopts l:g:t:f:m:r:d:h:n:M flag; do
     d) DATA_DIR=${OPTARG};;
     n) NO_SEQ=${OPTARG};;
     M) MEM_FREE=${OPTARG};;
+    R) RESUME=true;;
     h | *)
       print_usage
       exit_script
@@ -39,38 +40,64 @@ if [[ $RUNS -gt 0 ]]; then
   if [ -z ${GENOME} ]; then echo "If refining genome must be supplied"; usage; fi
   if [ ! -f ${GENOME} ]; then echo "Refining genome not found"; usage; fi
 fi
-if [ -z "$DATA_DIR" ]; then DATA_DIR=$(echo "TS_"${RM_LIBRARY}"_"${TIME}); fi
-
-# create data dir if missing
-if [ ! -d ${DATA_DIR} ] 
-then
-    mkdir ${DATA_DIR}
-fi
-
 
 if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
 
-# make directories
-mkdir -p ${DATA_DIR}/run_0/
-mkdir -p ${DATA_DIR}/tmp/
-
-# initial copy
-cp ${RM_LIBRARY_PATH} ${DATA_DIR}/${RM_LIBRARY}
-
-# cp starting seq to starting directory
-mkdir -p ${DATA_DIR}/run_0/og
-cp ${RM_LIBRARY_PATH} ${DATA_DIR}/run_0/further_${RM_LIBRARY}
-# create reference of original sequences
-python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/run_0/further_${RM_LIBRARY} -o ${DATA_DIR}/run_0/og
-
-# runs
-python ${STRAIN_SCRIPTS}/indexer.py -g ${GENOME}
-if [ ! -f "${GENOME}".nsq ]; then
-  makeblastdb -in ${GENOME} -dbtype nucl -out ${GENOME} # makeblastb if needed
+if [ -n "$RESUME" ]
+then
+  if [ -z "$DATA_DIR" ]; then echo "When resuming, out directory (-d) must be specified"; usage; fi
+  RUN_NO=$(ls ${DATA_DIR} | grep -P '^run_\d+$' | sed 's/run_//' | sort -n | tail -n 1)
+  if [ -z "$RUN_NO" ] || [ $RUN_NO -eq 0 ]
+  then
+    echo "Attempting to resume a run that was interrupted before iterations started"
+    unset RESUME
+    if [ -d ${DATA_DIR}/run_0/ ]; then rm -r ${DATA_DIR}/run_0/ ; fi
+    if [ -d ${DATA_DIR}/tmp/ ]; then rm -r ${DATA_DIR}/tmp/ ; fi
+  elif [ $RUN_NO -gt $RUNS ]
+  then
+    echo "Trying to resume, but more runs than expected have already been completed"
+    usage
+  elif [ $RUN_NO -eq $RUNS ] && [ -f ${DATA_DIR}/${RM_LIBRARY} ]
+  then
+    RUN_NO=$RUN_NO+1
+  else
+    rm -r ${DATA_DIR}/run_${RUN_NO}
+  fi
 fi
 
-# curation
-RUN_NO=1
+if [ -z "$RESUME" ]
+then
+  if [ -z "$DATA_DIR" ]; then DATA_DIR=$(echo "TS_"${RM_LIBRARY}"_"${TIME}); fi
+
+  # create data dir if missing
+  if [ ! -d ${DATA_DIR} ]
+  then
+    mkdir ${DATA_DIR}
+  fi
+
+  # make directories
+  mkdir -p ${DATA_DIR}/run_0/
+  mkdir -p ${DATA_DIR}/tmp/
+
+  # initial copy
+  cp ${RM_LIBRARY_PATH} ${DATA_DIR}/${RM_LIBRARY}
+
+  # cp starting seq to starting directory
+  mkdir -p ${DATA_DIR}/run_0/og
+  cp ${RM_LIBRARY_PATH} ${DATA_DIR}/run_0/further_${RM_LIBRARY}
+  # create reference of original sequences
+  python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/run_0/further_${RM_LIBRARY} -o ${DATA_DIR}/run_0/og
+
+  # runs
+  python ${STRAIN_SCRIPTS}/indexer.py -g ${GENOME}
+  if [ ! -f "${GENOME}".nsq ]; then
+    makeblastdb -in ${GENOME} -dbtype nucl -out ${GENOME} # makeblastb if needed
+  fi
+
+  # curation
+  RUN_NO=1
+fi
+
 while  [ $RUN_NO -le $RUNS ]
 do
 
