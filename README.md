@@ -49,9 +49,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.1.1 patches a bug where threads set to <4 caused TEstrainer to crash (only present in 6.1.0 and not earlier versions)
+Earl Grey v6.2.0 now includes better checkpoints for TEstrainer. In the event of an interrupted run, resubmit your `earlGrey` command with _exactly_ the same parameters and Earl Grey will skip successfully completed steps. With this new update, TEstrainer intermediate files will no longer be deleted and a new run started from scratch. Now, TEstrainer can be recovered mid-run to save time and resources.
 
 ### Previous Changes
+
+Earl Grey v6.1.1 patches a bug where threads set to <4 caused TEstrainer to crash (only present in 6.1.0 and not earlier versions)
 
 Earl Grey v6.1.0 reintroduces the `--curated` flag when known elements are used to pre-mask your input genome. As usual, unless a good quality TE library already exists for your species of interest, or a _very_ closely related one, we do not recommend pre-masking your input genome with known repeats. This reduces the amount of information available for _de novo_ annotation, and can lead to overestimations of TE divergence and lower-quality consensus sequences. If in doubt, leave this option out!
 
@@ -255,13 +257,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which paritions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, esoecially if you want to pre-mask your input genome.
 
-Earl Grey version 6.1.1 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
+Earl Grey version 6.2.0 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.1.1
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.2.0
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.1.1
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.2.0
 
 # Then run
 earlGrey
@@ -440,7 +442,7 @@ brewIntel install coreutils
 
 Change TEstrainer_for_earlGrey.sh for the macOS version:
 ```
-nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 
 # delete everything in this file.
 ```
@@ -651,12 +653,12 @@ Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
 
 Make sure the updated file is executable:
 ```
-chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit the script directory path in this file by running the following:
 ```
-gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.1.1-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.2.0-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit famdb.py for use with our environment:
@@ -666,12 +668,12 @@ gsed -i 's/python3/python/g' $(which earlGrey | gsed 's|bin.*|share/RepeatMasker
 
 Edit LTR_FINDER_PARALLEL to be compatible with zsh
 ```
-gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/LTR_FINDER_parallel|g')
+gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/LTR_FINDER_parallel|g')
 ```
 
 Install LTR_Finder from source
 ```
-cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/bin|g')
+cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/bin|g')
 git clone https://github.com/xzhub/LTR_Finder
 cd ./LTR_Finder/source
 make
@@ -680,14 +682,14 @@ cp * ../../LTR_FINDER.x86_64-1.0.7/
 
 Edit rcMergeRepeatsLoose:
 ```
-gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/rcMergeRepeatsLoose|g')
 var=$(which earlGrey | gsed "s/earlGrey/Rscript/g")
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/rcMergeRepeatsLoose|g')
 ```
 
 Edit main earlGrey script:
 ```
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.1.1-0/earlGrey|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/earlGrey|g')
 ```
 
 Add an important directory to PERL5LIB (for RepeatMasker)
@@ -703,17 +705,17 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 
 ```
 # Interactive mode
-# Version 6.1.1 with Dfam 3.9
+# Version 6.2.0 with Dfam 3.9
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest
 
-# Version 6.1.1 with no preconfigured partitions
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.1.1-nodfam
+# Version 6.2.0 with no preconfigured partitions
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.2.0-nodfam
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
 docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
 
 # Non interactive mode example:
-# Version 6.1.1 with Dfam 3.9 preconfigured
+# Version 6.2.0 with Dfam 3.9 preconfigured
 docker run -v 'pwd':/data/ tobybaril/earlgrey:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
