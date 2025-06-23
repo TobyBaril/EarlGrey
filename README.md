@@ -794,22 +794,4 @@ nano ./RepeatMaskerConfig.pm
                                      },
 ```
 
-# Alternative installation methods
-
-Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
-NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo privileges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
-
-
-#==============================================================================================================================================================================#
-
-## Earl Grey is available in a [Docker container](./Docker) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
-
-To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory](./Docker) in this repository. Please consult the README in the Docker directory for installation instructions.
-
-#==============================================================================================================================================================================#
-
-## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
-
-To use this container, please make sure Singularity is installed and configured on your system. All instructions relating to the singularity installation are found within the [Singularity directory](./Singularity) in this repository. Please consult the README in the Singularity directory for installation instructions.
-
 
