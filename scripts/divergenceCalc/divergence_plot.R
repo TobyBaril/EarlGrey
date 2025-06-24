@@ -66,8 +66,8 @@ divergence_eg_tes_gff <- divergence_eg_tes_gff %>%
 # Create summary of families
 summary_table <- divergence_eg_tes_gff %>%
   as_tibble %>%
-  group_by(Name) %>%
-  dplyr::select(width, KIMURA80, subclass, superfamily, Name) %>%
+  group_by(NAME) %>%
+  dplyr::select(width, KIMURA80, subclass, superfamily, NAME) %>%
   mutate(total_bp = sum(width),
          mean_width = round(mean(width), digits = 2),
          min_width = round(min(width), digits = 2),
@@ -81,8 +81,8 @@ summary_table <- divergence_eg_tes_gff %>%
   ) %>%
   dplyr::select(-width, -div, -KIMURA80) %>%
   base::unique() %>%
-  dplyr::arrange(subclass, superfamily, Name) %>%
-  dplyr::rename(family = Name)
+  dplyr::arrange(subclass, superfamily, NAME) %>%
+  dplyr::rename(family = NAME)
 
 # Save summary to file
 readr::write_tsv(x = summary_table, file = paste0(out_directory, "/", species_name, "_summary_table.tsv"))
