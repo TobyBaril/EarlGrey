@@ -39,6 +39,10 @@ for (i in 1:length(fil$V1)) {
 fil <- fil %>%
   mutate(V2 = case_when(V9 %like% "^ID=HLE*" ~ "HELIANO",
                         .default = "Earl_Grey"),
-         V9 = toupper(V9))
+         V9 = toupper(V9),
+         ID = paste0(sub(".*;ID=", "ID=", sub(";SHORTTE.*$", "", V9)), "_", row_number()),
+         Name = paste0(sub(".*;ID=", "Name=", sub(";SHORTTE.*$", "", V9))),
+         V9 = paste0(ID, ";", Name, ";", sub(";ID=.*", "", V9), ";", sub(".*SHORTTE", "SHORTTE", V9))) %>%
+  select(-c(ID, Name))
 
 write.table(fil, gffOut, quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")

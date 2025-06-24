@@ -49,9 +49,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.2.0 now includes better checkpoints for TEstrainer. In the event of an interrupted run, resubmit your `earlGrey` command with _exactly_ the same parameters and Earl Grey will skip successfully completed steps. With this new update, TEstrainer intermediate files will no longer be deleted and a new run started from scratch. Now, TEstrainer can be recovered mid-run to save time and resources.
+Earl Grey v6.3.0 makes some important changes. Firstly, RepeatMasker now runs without checking for IS element contamination `-no_is`. In final GFF files, each insertion is now given a unique ID with `ID=`. The TE family is designated with `Name=`. This should enable parsing with Geneious or other visualisers. Other script changes are related to this change in field designation. 
 
 ### Previous Changes
+
+Earl Grey v6.2.0 now includes better checkpoints for TEstrainer. In the event of an interrupted run, resubmit your `earlGrey` command with _exactly_ the same parameters and Earl Grey will skip successfully completed steps. With this new update, TEstrainer intermediate files will no longer be deleted and a new run started from scratch. Now, TEstrainer can be recovered mid-run to save time and resources.
 
 Earl Grey v6.1.1 patches a bug where threads set to <4 caused TEstrainer to crash (only present in 6.1.0 and not earlier versions)
 
@@ -791,23 +793,5 @@ nano ./RepeatMaskerConfig.pm
                                        'value' => 'rmblast'
                                      },
 ```
-
-# Alternative installation methods
-
-Before using Earl Grey, please ensure RepeatMasker (>=version 4.1.4) and RepeatModeler (>=version 2.0.4) are installed and configured. If these are not, please follow the instructions below to install these before continuing with Earl Grey Installation. 
-NOTE: These instructions are provided to install RepeatMasker, RepeatModeler and related programs with sudo privileges. If you are working on a shared cluster, please request installation of RepeatMasker and RepeatModeler by your sysadmin before working with Earl Grey. Earl Grey will function with RepeatMasker and RepeatModeler installed in the local path environment, or when the modules are loaded on a HPC cluster.
-
-
-#==============================================================================================================================================================================#
-
-## Earl Grey is available in a [Docker container](./Docker) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
-
-To use this container, please make sure Docker is installed and configured on your system. All instructions relating to the docker installation are found within the [Docker directory](./Docker) in this repository. Please consult the README in the Docker directory for installation instructions.
-
-#==============================================================================================================================================================================#
-
-## Earl Grey is available for [Singularity](./Singularity) preconfigured with Dfam version 3.9 or empty, but with the option to install required partitions
-
-To use this container, please make sure Singularity is installed and configured on your system. All instructions relating to the singularity installation are found within the [Singularity directory](./Singularity) in this repository. Please consult the README in the Singularity directory for installation instructions.
 
 
