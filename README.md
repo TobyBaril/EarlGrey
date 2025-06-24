@@ -703,7 +703,7 @@ You are ready to go! Just remember to activate the _intel_ terminal, then the co
 
 # A Docker container has been generated with all of Dfam v3.9  (or with none of Dfam 3.9, but with script generation to source required partitions)
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.1.0 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required paritions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container:
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.0.1 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required paritions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container. I recommend using `-nodfam` and choosing your own partitions.
 
 ```
 # Interactive mode
