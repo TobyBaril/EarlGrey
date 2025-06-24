@@ -712,7 +712,7 @@ docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.3.0-nodfam
 # then, move to famdb directory, alter script with required partitions, and run the configuration script
 cd /usr/local/share/RepeatMasker/Libraries/famdb/
 
-# change 0-16 to whichever you require, but at least 0
+# change 0-16 to whichever you require, but at least 0. This relates to the partitions of Dfam 3.9 (https://www.dfam.org/releases/Dfam_3.9/families/FamDB/)
 ##### e.g. for 0-5:
 sed -i '/^curl/ s/0-16/0-5/g' configure_dfam39.sh
 ##### e.g for 1,3,5:
