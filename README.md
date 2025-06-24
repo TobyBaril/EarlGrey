@@ -259,13 +259,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which paritions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, esoecially if you want to pre-mask your input genome.
 
-Earl Grey version 6.2.0 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
+Earl Grey version 6.3.0 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.2.0
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.3.0
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.2.0
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.3.0
 
 # Then run
 earlGrey
@@ -444,7 +444,7 @@ brewIntel install coreutils
 
 Change TEstrainer_for_earlGrey.sh for the macOS version:
 ```
-nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 
 # delete everything in this file.
 ```
@@ -655,12 +655,12 @@ Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
 
 Make sure the updated file is executable:
 ```
-chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit the script directory path in this file by running the following:
 ```
-gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.2.0-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.3.0-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit famdb.py for use with our environment:
@@ -670,12 +670,12 @@ gsed -i 's/python3/python/g' $(which earlGrey | gsed 's|bin.*|share/RepeatMasker
 
 Edit LTR_FINDER_PARALLEL to be compatible with zsh
 ```
-gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/LTR_FINDER_parallel|g')
+gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/LTR_FINDER_parallel|g')
 ```
 
 Install LTR_Finder from source
 ```
-cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/bin|g')
+cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/bin|g')
 git clone https://github.com/xzhub/LTR_Finder
 cd ./LTR_Finder/source
 make
@@ -684,14 +684,14 @@ cp * ../../LTR_FINDER.x86_64-1.0.7/
 
 Edit rcMergeRepeatsLoose:
 ```
-gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/rcMergeRepeatsLoose|g')
 var=$(which earlGrey | gsed "s/earlGrey/Rscript/g")
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/scripts/rcMergeRepeatsLoose|g')
 ```
 
 Edit main earlGrey script:
 ```
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.2.0-0/earlGrey|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.0-0/earlGrey|g')
 ```
 
 Add an important directory to PERL5LIB (for RepeatMasker)
@@ -707,17 +707,31 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 
 ```
 # Interactive mode
-# Version 6.2.0 with Dfam 3.9
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest
+# Version 6.3.0 with no preconfigured partitions (RECOMMENDED!)
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.3.0-nodfam
+# then, move to famdb directory, alter script with required partitions, and run the configuration script
+cd /usr/local/share/RepeatMasker/Libraries/famdb/
 
-# Version 6.2.0 with no preconfigured partitions
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.2.0-nodfam
+# change 0-16 to whichever you require, but at least 0
+##### e.g. for 0-5:
+sed -i '/^curl/ s/0-16/0-5/g' configure_dfam39.sh
+##### e.g for 1,3,5:
+sed -i '/^curl/ s/0-16/1,3,5/g' configure_dfam39.sh
+
+# run the configuration script
+bash configure_dfam39.sh
+
+# return to your data directory
+cd /data/
+
+# Version 6.0.1 with Dfam 3.9 (BIG - requires at least 1TB free, not recommended)
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
 docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
 
 # Non interactive mode example:
-# Version 6.2.0 with Dfam 3.9 preconfigured
+# Version 6.0.1 with Dfam 3.9 preconfigured (BIG - requires at least 1TB free, not recommended)
 docker run -v 'pwd':/data/ tobybaril/earlgrey:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # Version 5.1.1 with Dfam 3.7 curated elements only
