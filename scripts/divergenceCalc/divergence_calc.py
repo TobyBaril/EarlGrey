@@ -63,7 +63,7 @@ def parse_gff(in_gff):
     gff['metadata_tmp'] = gff['metadata'].str.replace(';TSTART.*', '', regex=True)
     gff[['repeat_id', 'repeat_family']] = gff['metadata_tmp'].str.split(';', n=2, expand=True)
     gff = gff.drop(columns = ['metadata_tmp', 'repeat_id'])
-    gff['repeat_family'] = gff['repeat_family'].str.replace('Name=', '', regex=True)
+    gff['repeat_family'] = gff['repeat_family'].str.replace('NAME=', '', regex=True)
     gff['repeat_family'] = gff['repeat_family'].str.lower()
     return(gff, simple_gff, other_gff)
 
