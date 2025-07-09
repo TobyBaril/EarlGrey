@@ -163,7 +163,7 @@ colnames(pieSum) <- c("TE Classification", "Coverage (bp)", "Copy Number", "% Ge
 familyAbundance <- input2 %>%
         mutate(name = paste0(family, "#", classif)) %>%
         group_by(name) %>%
-        summarise(coverage = sum((end - start))) %>% 
+        summarise(coverage = sum((end - start) + 1)) %>% 
         arrange(-coverage)
 
 familyTally <- input2 %>% 
