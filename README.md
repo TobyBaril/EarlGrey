@@ -27,7 +27,7 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Important Considerations
 
-Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which paritions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, esoecially if you want to pre-mask your input genome. Please make use of issues and discussions tabs if you have questions about this, we are always happy to help!
+Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome. Please make use of issues and discussions tabs if you have questions about this, we are always happy to help!
 
 # Notes / Updates
 
@@ -257,7 +257,7 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 # Recommended Installation with Conda or Mamba
 
-Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which paritions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, esoecially if you want to pre-mask your input genome.
+Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome.
 
 Earl Grey version 6.3.1 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
 ```
@@ -703,7 +703,7 @@ You are ready to go! Just remember to activate the _intel_ terminal, then the co
 
 # A Docker container has been generated with all of Dfam v3.9  (or with none of Dfam 3.9, but with script generation to source required partitions)
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.0.1 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required paritions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container. I recommend using `-nodfam` and choosing your own partitions.
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.0.1 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required partitions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container. I recommend using `-nodfam` and choosing your own partitions.
 
 ```
 # Interactive mode
