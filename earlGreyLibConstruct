@@ -3,7 +3,7 @@
 usage()
 {
         echo "  #############################
-        earlGrey version 6.3.0 (Library Construction Only)
+        earlGrey version 6.3.3 (Library Construction Only)
         Required Parameters:
                 -g == genome.fasta
                 -s == species name
@@ -295,7 +295,11 @@ Checks()
                         done
                 fi
         fi
+}
 
+# Subprocess Dfam Checks
+dfamCheck()
+{
 	# Dfam 3.9 checks
 	library_path=$(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/famdb|g')
 	expected_file="${library_path}/dfam39_full.0.h5"
@@ -340,7 +344,7 @@ Checks()
     		echo "# Rerun RepeatMasker configuration" | tee -a $(pwd)/configure_dfam39.sh
     		echo "perl ./configure -libdir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/|g') \
     		-trf_prgm $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin/trf|g') \
-   		-rmblast_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
+   			-rmblast_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
     		-hmmer_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
     		-abblast_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
     		-crossmatch_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
@@ -384,6 +388,7 @@ SECONDS=0
 
 stage="Checking Parameters" && runningTea
 SCRIPT_DIR=/data/toby/mambaforge/envs/earlgrey_440/share/earlgrey-4.4.0-0/scripts/
+dfamCheck
 Checks
 stage="Making Directories" && runningTea
 makeDirectory
