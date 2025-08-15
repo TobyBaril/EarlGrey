@@ -49,9 +49,12 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.3.0 makes some important changes. Firstly, RepeatMasker now runs without checking for IS element contamination `-no_is`. In final GFF files, each insertion is now given a unique ID with `ID=`. The TE family is designated with `Name=`. This should enable parsing with Geneious or other visualisers. Other script changes are related to this change in field designation. 
+Earl Grey v6.3.3 adds small updates to improve user-friendliness when installing and running for the first time.
+ 
 
 ### Previous Changes
+
+Earl Grey v6.3.0 makes some important changes. Firstly, RepeatMasker now runs without checking for IS element contamination `-no_is`. In final GFF files, each insertion is now given a unique ID with `ID=`. The TE family is designated with `Name=`. This should enable parsing with Geneious or other visualisers. Other script changes are related to this change in field designation.
 
 Earl Grey v6.2.0 now includes better checkpoints for TEstrainer. In the event of an interrupted run, resubmit your `earlGrey` command with _exactly_ the same parameters and Earl Grey will skip successfully completed steps. With this new update, TEstrainer intermediate files will no longer be deleted and a new run started from scratch. Now, TEstrainer can be recovered mid-run to save time and resources.
 
