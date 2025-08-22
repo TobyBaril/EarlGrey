@@ -1,0 +1,45 @@
+import glob
+
+# Get list of input files
+input_files = glob.glob("data/input*.txt")
+samples = [f.split("/")[-1].replace(".txt", "").replace("input", "") for f in input_files]
+
+#print("Samples found:", samples)
+
+rule all:
+    input:
+        expand("results/combined_sample{sample}.txt", sample=samples)
+
+rule concat_lines:
+    input:
+        "data/input{sample}.txt"
+    output:
+        "results/concatenated_{sample}.txt"
+    shell:
+        "bash scripts/concat_lines.sh {input} {output}"
+
+rule to_uppercase:
+    input:
+        "results/concatenated_{sample}.txt"
+    output:
+        "results/uppercase_{sample}.txt"
+    shell:
+        "bash scripts/to_uppercase.sh {input} {output}"
+
+rule combine_results:
+    input:
+        expand("results/uppercase_{sample}.txt", sample=samples)
+    output:
+        "results/combined_upper.txt"
+    shell:
+        "bash scripts/combine_results.sh {input} {output}"
+
+
+rule combine_samples_with_uppercase:
+    input:
+        "data/input{sample}.txt",
+        "results/combined_upper.txt"
+    output:
+        "results/combined_sample{sample}.txt"
+    shell:
+        "bash scripts/combine_results.sh {input} {output}"
