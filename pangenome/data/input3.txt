@@ -1,0 +1,3 @@
+Line 1 of input3.txt
+Line 2 of input3.txt
+Line 3 of input3.txt
