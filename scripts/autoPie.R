@@ -43,7 +43,7 @@ input$tclassif <- gsub("^LINE.*", "LINE", input$tclassif)
 input$tclassif <- gsub("^SINE.*", "SINE", input$tclassif)
 input$tclassif <- gsub("^LTR.*", "LTR", input$tclassif)
 input$tclassif <- gsub("^Unknown.*|Retroposon.*|Unspecified.*|^unknown.*", "Unclassified", input$tclassif)
-input$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*", "Other (Simple Repeat, Microsatellite, RNA)", input$tclassif)
+input$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*|^Microsatellite.*", "Other (Simple Repeat, Microsatellite, RNA)", input$tclassif)
 
 input2$tclassif <- input2$classif
 input2$tclassif <- gsub("^DNA.*", "DNA", input2$tclassif)
@@ -53,7 +53,7 @@ input2$tclassif <- gsub("^LINE.*", "LINE", input2$tclassif)
 input2$tclassif <- gsub("^SINE.*", "SINE", input2$tclassif)
 input2$tclassif <- gsub("^LTR.*", "LTR", input2$tclassif)
 input2$tclassif <- gsub("^Unknown.*|Retroposon.*|Unspecified.*|^unknown.*", "Unclassified", input2$tclassif)
-input2$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*", "Other (Simple Repeat, Microsatellite, RNA)", input2$tclassif)
+input2$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*|^Microsatellite.*", "Other (Simple Repeat, Microsatellite, RNA)", input2$tclassif)
 
 
 # set colours
