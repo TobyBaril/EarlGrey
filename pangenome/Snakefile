@@ -1,6 +1,7 @@
+sys.path.append(os.path.dirname(workflow.snakefile))
+from starting_function import startup_checks
 
 configfile: "config/config.yaml"
-
 include: "rules/lib_construct.smk"
 include: "rules/clustering.smk"
 include: "rules/annotate_simple.smk"
@@ -15,6 +16,26 @@ ITER = config["iterations"]
 FLANK = config["flank"]
 MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
+
+onstart:
+    # Display tea art
+    running_tea("Earl Grey Pipeline Starting")
+    
+    # Validate parameters
+    validated_config = validate_parameters(config)
+    
+    # Check directories
+    check_script_directories(script_dir)
+    
+    # Check biocontainer
+    check_biocontainer()
+    
+    # Check Dfam 3.9
+    check_dfam39()
+    
+    print("All startup checks completed successfully!")
+
+    
 
 rule all:
     input:
