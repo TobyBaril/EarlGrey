@@ -49,10 +49,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.3.3 adds small updates to improve user-friendliness when installing and running for the first time.
- 
+Earl Grey v6.3.4 adds small patches to correct TE family count table, which was previously using ID rather than Name. Also, a new awk one-liner has been added to clean the final GFF to make all attributes compliant with genometools, geneious etc.
 
 ### Previous Changes
+
+Earl Grey v6.3.3 adds small updates to improve user-friendliness when installing and running for the first time.
 
 Earl Grey v6.3.0 makes some important changes. Firstly, RepeatMasker now runs without checking for IS element contamination `-no_is`. In final GFF files, each insertion is now given a unique ID with `ID=`. The TE family is designated with `Name=`. This should enable parsing with Geneious or other visualisers. Other script changes are related to this change in field designation.
 
