@@ -82,6 +82,10 @@ def truefusete(gffp,gapsize,outfile):
 						#print("last one have label") # debug
 						# check consensus information (all in last group)
 						groupnumber = d[col[0]][cattrD["ID"]]["groupcnt"]
+						# Ensure groupnumber is an integer (fix for corrupted groupcnt from reversed coordinates)
+						if not isinstance(groupnumber, int):
+							groupnumber = 1
+							d[col[0]][cattrD["ID"]]["groupcnt"] = 1
 						o = False
 						for i in range(cattrD["Tstart"],cattrD["Tend"]):
 							if i in list(d[col[0]][cattrD["ID"]][groupnumber]):
@@ -115,7 +119,12 @@ def truefusete(gffp,gapsize,outfile):
 
 					else: # the lastcol is the first element is this group, just need to check if last and current copies overlap
 						#print("last copy no label") # debug
-						o = min(d[col[0]][cattrD["ID"]]["Tend"], cattrD["Tstart"]) - max(d[col[0]][cattrD["ID"]]["Tstart"], cattrD["Tend"])
+						# Fix overlap calculation to handle reversed Tstart/Tend correctly
+						prev_start = min(d[col[0]][cattrD["ID"]]["Tstart"], d[col[0]][cattrD["ID"]]["Tend"])
+						prev_end = max(d[col[0]][cattrD["ID"]]["Tstart"], d[col[0]][cattrD["ID"]]["Tend"])
+						curr_start = min(cattrD["Tstart"], cattrD["Tend"])
+						curr_end = max(cattrD["Tstart"], cattrD["Tend"])
+						o = min(prev_end, curr_end) - max(prev_start, curr_start)
 						if o > 0:  # Consensus position overlap, don't need to group them just print
 							#print("consensus overlap") # debug
 							print(*d[col[0]][cattrD["ID"]]["lastcol"], sep="\t")
