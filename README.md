@@ -49,9 +49,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.3.5 patches the annotation only pipeline to use the correct divergence calculator when a custom library is used without a RepBase term.
+Earl Grey v6.3.6 patches a RepeatCraft bug that arises extremely rarely in specific genomes, linked to dictionary initialisation. 
 
 ### Previous Changes
+
+Earl Grey v6.3.5 patches the annotation only pipeline to use the correct divergence calculator when a custom library is used without a RepBase term.
 
 Earl Grey v6.3.4 adds small patches to correct TE family count table, which was previously using ID rather than Name. Also, a new awk one-liner has been added to clean the final GFF to make all attributes compliant with genometools, geneious etc.
 
