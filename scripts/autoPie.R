@@ -14,28 +14,30 @@ options(scipen = 100, stringsAsFactors = FALSE)
 args <- commandArgs()
 # print(args)
 inBed <- args[6]
+inBed <- "~/testEnv/test_636_EarlGrey/test_636_mergedRepeats/looseMerge/test_636.filteredRepeats.summary"
 inGff <- args[7]
+inGff <- "~/testEnv/test_636_EarlGrey/test_636_mergedRepeats/looseMerge/test_636.filteredRepeats.gff"
 gen <- args[8]
+gen <- 10631990
 savePie <- args[9]
+savePie <- "~/testEnv/test_636_EarlGrey/test_636_summaryFiles/test_636.summaryPie.pdf"
 saveTab <- args[10]
+saveTab <- "~/testEnv/test_636_EarlGrey/test_636_summaryFiles/test_636.highLevelCount.txt"
 ## bed file
 ## genome size
 ## pieName
 
 # read table
 
-input <- read.table(inBed, header = FALSE, sep = "\t")
+input <- read.table(inBed, header = TRUE, sep = "\t")
 input2 <- read.table(inGff, header = FALSE, sep = "\t")
 gen <- as.numeric(gen)
 
 # set colnames
-
-colnames(input) <- c("scaf", "start", "end", "classif", "score", "strand")
 colnames(input2) <- c("scaf", "method", "classif", "start", "end", "score", "strand", "dot", "attributes")
 
 # simple classification
-
-input$tclassif <- input$classif
+input$tclassif <- input$Family
 input$tclassif <- gsub("^DNA.*", "DNA", input$tclassif)
 input$tclassif <- gsub("^RC.*", "Rolling Circle", input$tclassif)
 input$tclassif <- gsub(".*Penelope|^PLE.*", "Penelope", input$tclassif)
@@ -44,6 +46,10 @@ input$tclassif <- gsub("^SINE.*", "SINE", input$tclassif)
 input$tclassif <- gsub("^LTR.*", "LTR", input$tclassif)
 input$tclassif <- gsub("^Unknown.*|Retroposon.*|Unspecified.*|^unknown.*", "Unclassified", input$tclassif)
 input$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*|^Microsatellite.*", "Other (Simple Repeat, Microsatellite, RNA)", input$tclassif)
+input <- input %>%
+  mutate(tclassif = case_when(input$Family %like% "-nested" ~ paste0(tclassif, "-nested"),
+                              .default = tclassif))
+input$tclassif <- gsub("Unmasked", "Non-Repeat", input$tclassif)
 
 input2$tclassif <- input2$classif
 input2$tclassif <- gsub("^DNA.*", "DNA", input2$tclassif)
@@ -54,6 +60,9 @@ input2$tclassif <- gsub("^SINE.*", "SINE", input2$tclassif)
 input2$tclassif <- gsub("^LTR.*", "LTR", input2$tclassif)
 input2$tclassif <- gsub("^Unknown.*|Retroposon.*|Unspecified.*|^unknown.*", "Unclassified", input2$tclassif)
 input2$tclassif <- gsub(".*RNA.*|^Satellite.*|^Simple_repeat.*|^Low_complexity.*|^ARTEFACT.*|^repeat.*|^Other.*|^Microsatellite.*", "Other (Simple Repeat, Microsatellite, RNA)", input2$tclassif)
+input2 <- input2 %>%
+  mutate(tclassif = case_when(attributes %like% "FULLY_NESTED" ~ paste0(tclassif, "-nested"),
+                              .default = tclassif))
 
 
 # set colours
@@ -86,43 +95,49 @@ names(col) <- colours$tclassif
 
 # summary table
 
-pieSum <- input %>% group_by(tclassif) %>% summarise(cov = sum(abs(end - start)))
-pieCou <- input %>% group_by(tclassif) %>% tally()
+# use summary table generated previously...
+pieCou <- input %>% 
+  select(tclassif, Number.of.Elements)
 colnames(pieCou) <- c("tclassif", "count")
-pieSum <- merge(pieSum, pieCou)
-
-# add non-repeat
-nr <- data.frame("Non-Repeat", gen - sum(abs(input$end - input$start)))
-colnames(nr) <- c("tclassif", "cov")
-pieSum <- dplyr::bind_rows(pieSum, nr)
+pieSum <- input
 
 # set factor order
-
 pieSum$tclassif %<>% as.factor() %>% ordered(levels = c("DNA",
+                                                        "DNA-nested",
                                                         "Rolling Circle",
+                                                        "Rolling Circle-nested",
                                                         "Penelope",
+                                                        "Penelope-nested",
                                                         "LINE",
+                                                        "LINE-nested",
                                                         "SINE",
+                                                        "SINE-nested",
                                                         "LTR",
+                                                        "LTR-nested",
                                                         "Other (Simple Repeat, Microsatellite, RNA)",
+                                                        "Other (Simple Repeat, Microsatellite, RNA)-nested",
                                                         "Unclassified",
+                                                        "Unclassified-nested",
+                                                        "Total Interspersed Repeat",
                                                         "Non-Repeat"))
 
 # get proportions
 
-pieSum$proportion <- pieSum$cov / gen
-pieSum$percentage <- (pieSum$cov / gen) * 100
-pieSum$genome_size <- gen
+pieSum$proportion <- pieSum$Percentage.of.Sequence / 100
+pieSum$percentage <- pieSum$Percentage.of.Sequence
+pieSum$genome_size <- pieSum$GenomeSize
 
 # plot pie
 
-plot <- ggplot(pieSum, aes(x = as.numeric(gen/2), y = proportion, fill = tclassif, width = as.numeric(gen))) +
-        geom_bar(stat = "identity", position = "fill") +
-        coord_polar("y", start = 0) +
-        scale_fill_manual(values = col) +
-        theme_classic() +
-        theme(axis.line = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank(),
-              strip.text = element_text(size = 16, face = "italic"), legend.text = element_text(size = 16), legend.title = element_blank())
+plot <- ggplot(pieSum %>%
+                 filter(! tclassif %like% "-nested",
+                        ! tclassif %in% c("Total Interspersed Repeat")), aes(x = as.numeric(gen/2), y = proportion, fill = tclassif, width = as.numeric(gen))) +
+  geom_bar(stat = "identity", position = "fill") +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(values = col) +
+  theme_classic() +
+  theme(axis.line = element_blank(), axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank(),
+        strip.text = element_text(size = 16, face = "italic"), legend.text = element_text(size = 16), legend.title = element_blank())
 
 ggsave(savePie,
        plot = plot,
@@ -133,50 +148,76 @@ ggsave(savePie,
        dpi = 300,
        limitsize = FALSE)
 
-# add number of classifications for each of the main (ie how many families)
 
-input2$family <- gsub(".*NAME=", "", input2$attributes)
-input2$family <- gsub(";.*", "", input2$family)
-input2$family <- toupper(input2$family)
-classCount <- input2 %>% group_by(tclassif, family) %>% tally(name = "Number_of_Copies") %>% group_by(tclassif) %>% tally(name = "Number_of_Distinct_Classifications")
-pieSum <- left_join(pieSum, classCount) %>%
-  ungroup() %>%
-  select(-c(proportion))
 
-pieSum$tclassif %<>% as.factor() %>% ordered(levels = c("DNA",
-                                                        "Rolling Circle",
-                                                        "Penelope",
-                                                        "LINE",
-                                                        "SINE",
-                                                        "LTR",
-                                                        "Other (Simple Repeat, Microsatellite, RNA)",
-                                                        "Unclassified",
-                                                        "Non-Repeat"))
-
-pieSum <- pieSum %>%
-  arrange(tclassif)
-
-colnames(pieSum) <- c("TE Classification", "Coverage (bp)", "Copy Number", "% Genome Coverage", "Genome Size", "TE Family Count")
-      
 # generate summary of TE family abundance
 
 familyAbundance <- input2 %>%
-        mutate(name = paste0(family, "#", classif)) %>%
-        group_by(name) %>%
-        summarise(coverage = sum((end - start) + 1)) %>% 
-        arrange(-coverage)
+  mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
+  mutate(name = paste0(family, "#", classif)) %>%
+  group_by(name) %>%
+  summarise(coverage = sum((end - start) + 1)) %>% 
+  arrange(-coverage)
 
 familyTally <- input2 %>% 
-        mutate(name = paste0(family, "#", classif)) %>%
-        group_by(name) %>%
-        tally(name = "copy_number")
+  mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
+  mutate(name = paste0(family, "#", classif)) %>%
+  group_by(name) %>%
+  tally(name = "copy_number")
 
 familyAbundance <- merge(familyAbundance, familyTally) %>%
-        arrange(-coverage)
+  arrange(-coverage)
 
 colnames(familyAbundance) <- c("TE Family", "Coverage (bp)", "Copy Number")
 
 saveFam <- gsub("highLevelCount", "familyLevelCount", saveTab)
+
+classTally <- input2 %>% 
+  group_by(tclassif) %>%
+  tally(name = "Copy.Number") %>%
+  rename("tclassif" = "Family")
+
+classFamilyCount <- input2 %>%
+  mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
+  select(family, tclassif) %>%
+  distinct() %>%
+  group_by(tclassif) %>%
+  tally(name = "Family.Count") %>%
+  rename("tclassif" = "Family")
+
+pieSum <- pieSum %>%
+  ungroup() %>%
+  select(-c(Family)) %>%
+  rename("tclassif" = "Family") %>%
+  left_join(classTally) %>%
+  left_join(classFamilyCount)
+
+# finalise table
+pieSum$Family %<>% as.factor() %>% ordered(levels = c("DNA",
+                                                      "DNA-nested",
+                                                      "Rolling Circle",
+                                                      "Rolling Circle-nested",
+                                                      "Penelope",
+                                                      "Penelope-nested",
+                                                      "LINE",
+                                                      "LINE-nested",
+                                                      "SINE",
+                                                      "SINE-nested",
+                                                      "LTR",
+                                                      "LTR-nested",
+                                                      "Other (Simple Repeat, Microsatellite, RNA)",
+                                                      "Other (Simple Repeat, Microsatellite, RNA)-nested",
+                                                      "Unclassified",
+                                                      "Unclassified-nested",
+                                                      "Total Interspersed Repeat",
+                                                      "Non-Repeat"))
+
+pieSum <- pieSum %>%
+  arrange(Family) %>%
+  select(-c(percentage, genome_size, proportion, Copy.Number)) %>%
+  relocate(Family, Length.Occupied, Number.of.Elements, Percentage.of.Sequence, GenomeSize, Family.Count)
+
+colnames(pieSum) <- c("TE Classification", "Coverage (bp)", "Copy Number", "% Genome Coverage", "Genome Size", "TE Family Count")
 
 write.table(pieSum, saveTab, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 write.table(familyAbundance, saveFam, col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
