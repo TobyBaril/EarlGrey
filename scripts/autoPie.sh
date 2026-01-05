@@ -9,7 +9,7 @@ usage()
 main()
 {
 	genome_size=$(sed -n '4p' $intbl | rev | cut -f1,1 -d ':' | rev | sed 's/ bp.*//g; s/ //g')
-	Rscript ${SCRIPT_DIR}/autoPie.R $inbed ${inbed%.bed}.gff $genome_size $outplot $sumtab
+	Rscript ${SCRIPT_DIR}/autoPie.R $inbed ${inbed%.summary}.gff $genome_size $outplot $sumtab
 }
 
 

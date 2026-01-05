@@ -49,9 +49,69 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
-Earl Grey v6.3.6 patches a RepeatCraft bug that arises extremely rarely in specific genomes, linked to dictionary initialisation. 
+☕ Earl Grey v7.0.0 is here!
+
+Some long-awaited changes in this release—thank you for your patience while I found the time to properly test and implement them.
+
+🐞 RepeatCraft fixes
+First, I’ve fixed an issue in RepeatCraft where distal TEs could be grouped erroneously. This occurred in rare edge cases where the internal counter failed to iterate when new distal copies of an existing TE were detected on the same contig. This should now be fully resolved.
+
+🧬 Fully nested TE handling (major update)
+I’ve also completely revamped the Earl Grey post-processing and summary steps to properly deal with Fully Nested TEs.
+Partially overlapping TEs are handled as before, following the approach described in the original Earl Grey paper.
+Fully nested TEs are now identified using a new iterative process:
+The GFF is scanned for nested TEs
+These are labelled and stored in a separate file
+The nested TE is removed and the GFF is re-scanned to detect deeper (multi-level) nesting
+This continues until no new nested TEs are found
+
+📊 Changes to coverage and summaries (important)
+Nested TEs are no longer included in the TE coverage calculation used to generate the pie chart in the `summaryFiles` directory.
+
+Instead:
+Summary tables now include new categories showing how many base pairs are comprised of nested TEs
+These base pairs are not counted toward Total Interspersed Repeats, as doing so would result in double-counting genomic space.
+
+⚠️ This represents a substantial change from previous versions, so please be aware of this difference when upgrading to v7.
+
+The output table summary now has the following format:
+
+```
+|TE Classification                                 | Coverage (bp)|Copy Number   | % Genome Coverage| Genome Size| TE Family Count|
+|:-------------------------------------------------|-------------:|:-------------|-----------------:|-----------:|---------------:|
+|DNA                                               |         80886|326           |         0.7607795|    10631990|             326|
+|DNA-nested                                        |          1449|29            |         0.0136287|    10631990|              29|
+|Rolling Circle                                    |          8022|31            |         0.0754515|    10631990|              31|
+|Rolling Circle-nested                             |             0|0             |         0.0000000|    10631990|              NA|
+|Penelope                                          |        112822|812           |         1.0611560|    10631990|             812|
+|Penelope-nested                                   |          1268|13            |         0.0119263|    10631990|              13|
+|LINE                                              |        132133|426           |         1.2427871|    10631990|             426|
+|LINE-nested                                       |          1268|13            |         0.0119263|    10631990|               4|
+|SINE                                              |             0|0             |         0.0000000|    10631990|              NA|
+|SINE-nested                                       |             0|0             |         0.0000000|    10631990|              NA|
+|LTR                                               |             0|0             |         0.0000000|    10631990|              NA|
+|LTR-nested                                        |             0|0             |         0.0000000|    10631990|              NA|
+|Other (Simple Repeat, Microsatellite, RNA)        |        189999|4241          |         1.7870502|    10631990|            4241|
+|Other (Simple Repeat, Microsatellite, RNA)-nested |          1225|34            |         0.0115218|    10631990|              34|
+|Unclassified                                      |        274026|1291          |         2.5773726|    10631990|            1291|
+|Unclassified-nested                               |             0|0             |         0.0000000|    10631990|              NA|
+|Total Interspersed Repeat                         |        607889|2886          |         5.7175468|    10631990|              NA|
+|Non-Repeat                                        |      10024101|notApplicable |        94.2824532|    10631990|              NA|
+```
+
+In the final GFF output, nested TEs are clearly labelled with a `nested=FULLY_NESTED` attribute in column 9, enabling quick identification and downstream filtering.
+
+```
+NC_045808.1	Earl_Grey	Simple_repeat	51840	51871	14	+	.	ID=(CGCA)N_33;Name=(CGCA)N;tstart=1;tend=31;shortte=F;nested=FULLY_NESTED-ROUND1
+```
+
+As always, thank you to the TE community for your enthusiasm in using Earl Grey, and for your invaluable feedback and bug reports. I’ll continue to incorporate improvements and fixes as quickly—and carefully—as possible.
+
+Happy New Year! 🎉
 
 ### Previous Changes
+
+Earl Grey v6.3.6 patches a RepeatCraft bug that arises extremely rarely in specific genomes, linked to dictionary initialisation. 
 
 Earl Grey v6.3.5 patches the annotation only pipeline to use the correct divergence calculator when a custom library is used without a RepBase term.
 
@@ -267,13 +327,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome.
 
-Earl Grey version 6.3.6 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
+Earl Grey version 7.0.0 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=6.3.6
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.0.0
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=6.3.6
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.0.0
 
 # Then run
 earlGrey
@@ -452,7 +512,7 @@ brewIntel install coreutils
 
 Change TEstrainer_for_earlGrey.sh for the macOS version:
 ```
-nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 
 # delete everything in this file.
 ```
@@ -663,12 +723,12 @@ Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
 
 Make sure the updated file is executable:
 ```
-chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit the script directory path in this file by running the following:
 ```
-gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-6.3.6-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
+gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-7.0.0-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
 ```
 
 Edit famdb.py for use with our environment:
@@ -678,12 +738,12 @@ gsed -i 's/python3/python/g' $(which earlGrey | gsed 's|bin.*|share/RepeatMasker
 
 Edit LTR_FINDER_PARALLEL to be compatible with zsh
 ```
-gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/LTR_FINDER_parallel|g')
+gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/LTR_FINDER_parallel|g')
 ```
 
 Install LTR_Finder from source
 ```
-cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/bin|g')
+cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/bin|g')
 git clone https://github.com/xzhub/LTR_Finder
 cd ./LTR_Finder/source
 make
@@ -692,14 +752,14 @@ cp * ../../LTR_FINDER.x86_64-1.0.7/
 
 Edit rcMergeRepeatsLoose:
 ```
-gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/rcMergeRepeatsLoose|g')
 var=$(which earlGrey | gsed "s/earlGrey/Rscript/g")
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/scripts/rcMergeRepeatsLoose|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/scripts/rcMergeRepeatsLoose|g')
 ```
 
 Edit main earlGrey script:
 ```
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-6.3.6-0/earlGrey|g')
+gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.0-0/earlGrey|g')
 ```
 
 Add an important directory to PERL5LIB (for RepeatMasker)
@@ -715,8 +775,8 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 
 ```
 # Interactive mode
-# Version 6.3.6 with no preconfigured partitions (RECOMMENDED!)
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v6.3.6-nodfam
+# Version 7.0.0 with no preconfigured partitions (RECOMMENDED!)
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v7.0.0-nodfam
 # then, move to famdb directory, alter script with required partitions, and run the configuration script
 cd /usr/local/share/RepeatMasker/Libraries/famdb/
 

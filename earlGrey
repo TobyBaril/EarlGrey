@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 6.3.6
+	earlGrey version 7.0.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -269,9 +269,9 @@ charts()
 {
 	cd ${OUTDIR}/${species}_summaryFiles/
 	if [ -f "${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed" ]; then
-		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
+		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.summary -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
 	else
-		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.bed -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
+		${SCRIPT_DIR}/autoPie.sh -i ${OUTDIR}/${species}_mergedRepeats/${species}.filteredRepeats.summary -t ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -p ${OUTDIR}/${species}_summaryFiles/${species}.summaryPie.pdf -o ${OUTDIR}/${species}_summaryFiles/${species}.highLevelCount.txt
 	fi
 }
 
@@ -283,16 +283,14 @@ calcDivRL()
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
-		#mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
-		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
+		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
 		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	else
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
-		#mv ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff && \
-		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
+		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
 		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
