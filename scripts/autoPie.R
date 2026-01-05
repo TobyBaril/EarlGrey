@@ -167,7 +167,7 @@ saveFam <- gsub("highLevelCount", "familyLevelCount", saveTab)
 classTally <- input2 %>% 
   group_by(tclassif) %>%
   tally(name = "Copy.Number") %>%
-  rename("tclassif" = "Family")
+  rename("Family" = "tclassif")
 
 classFamilyCount <- input2 %>%
   mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
@@ -175,12 +175,12 @@ classFamilyCount <- input2 %>%
   distinct() %>%
   group_by(tclassif) %>%
   tally(name = "Family.Count") %>%
-  rename("tclassif" = "Family")
+  rename("Family" = "tclassif")
 
 pieSum <- pieSum %>%
   ungroup() %>%
   select(-c(Family)) %>%
-  rename("tclassif" = "Family") %>%
+  rename("Family" = "tclassif") %>%
   left_join(classTally) %>%
   left_join(classFamilyCount)
 
