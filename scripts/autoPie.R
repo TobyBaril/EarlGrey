@@ -145,14 +145,14 @@ ggsave(savePie,
 # generate summary of TE family abundance
 
 familyAbundance <- input2 %>%
-  mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
+  mutate(family = gsub(".*NAME=", "", gsub(";TSTART.*", "", attributes))) %>%
   mutate(name = paste0(family, "#", classif)) %>%
   group_by(name) %>%
   summarise(coverage = sum((end - start) + 1)) %>% 
   arrange(-coverage)
 
 familyTally <- input2 %>% 
-  mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
+  mutate(family = gsub(".*NAME=", "", gsub(";TSTART.*", "", attributes))) %>%
   mutate(name = paste0(family, "#", classif)) %>%
   group_by(name) %>%
   tally(name = "copy_number")
@@ -170,7 +170,7 @@ classTally <- input2 %>%
   rename("Family" = "tclassif")
 
 classFamilyCount <- input2 %>%
-  mutate(family = gsub(".*Name=", "", gsub(";TSTART.*", "", attributes))) %>%
+  mutate(family = gsub(".*NAME=", "", gsub(";TSTART.*", "", attributes))) %>%
   select(family, tclassif) %>%
   distinct() %>%
   group_by(tclassif) %>%
