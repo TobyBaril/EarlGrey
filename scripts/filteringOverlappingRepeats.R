@@ -13,13 +13,10 @@ args <- commandArgs()
 # print(args)
 gff.in <- args[6]
 gff.out <- args[7]
-heli <- args[8]
 
 # read gff
 
 input <- read.gff(gff.in)
-#input <- read.gff("/home/toby/projects/earlGreyREwrite/TESTENV/autoTest_RM_EarlGrey/autoTest_RM_mergedRepeats/looseMerge/autoTest_RM.rmerge.gff.sorted")
-#input <- read.gff("/home/toby/projects/earlGreyREwrite/TESTENV/autoTest_newOverlapFilter_EarlGrey/autoTest_newOverlapFilter_mergedRepeats/looseMerge/autoTest_newOverlapFilter.rmerge.gff.sorted")
 
 # cut overlapping regions in half
 input %<>%
@@ -34,5 +31,57 @@ input %<>%
          end = new.end) %>%
   select(-c(new.start, new.end))
 
+# identify nested and unnested TEs
+
+# nest detect function
+detect_nesting <- function(df) {
+  df %>%
+    arrange(seqid, start) %>%
+    mutate(
+      nested = case_when(
+        seqid == lag(seqid) &
+          start > lag(start) &
+          end   < lag(end) ~ "FULLY_NESTED",
+        TRUE ~ "NOT_NESTED"
+      )
+    )
+}
+
+# iterate to detect all nestings
+all_nested <- list()
+
+iteration <- 1
+current <- input
+
+repeat {
+  print(paste0("Searching for Nested TEs. Iteration:", iteration))
+  annotated <- detect_nesting(current)
+  
+  newly_nested <- annotated %>%
+    filter(nested == "FULLY_NESTED") %>%
+    mutate(nesting_round = iteration)
+  
+  if (nrow(newly_nested) == 0) break
+  
+  all_nested[[iteration]] <- newly_nested
+  
+  current <- annotated %>%
+    filter(nested == "NOT_NESTED") %>%
+    select(-nested)
+  
+  iteration <- iteration + 1
+}
+
+nested_only <- bind_rows(all_nested)
+unnested_only <- current
+
+# recombine to make GFF
+nested_only <- nested_only %>%
+  mutate(attributes = paste0(attributes, ";nested=", nested, "-round", nesting_round)) %>%
+  select(-c(nested, nesting_round))
+
+output.gff <- bind_rows(nested_only, unnested_only) %>%
+  arrange(seqid, start)
+
 # Write Table
-write.table(input, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
+write.table(output.gff, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)
