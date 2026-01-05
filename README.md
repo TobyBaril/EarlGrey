@@ -74,7 +74,36 @@ These base pairs are not counted toward Total Interspersed Repeats, as doing so 
 
 ⚠️ This represents a substantial change from previous versions, so please be aware of this difference when upgrading to v7.
 
+The output table summary now has the following format:
+
+```
+|TE Classification                                 | Coverage (bp)|Copy Number   | % Genome Coverage| Genome Size| TE Family Count|
+|:-------------------------------------------------|-------------:|:-------------|-----------------:|-----------:|---------------:|
+|DNA                                               |         80886|326           |         0.7607795|    10631990|             326|
+|DNA-nested                                        |          1449|29            |         0.0136287|    10631990|              29|
+|Rolling Circle                                    |          8022|31            |         0.0754515|    10631990|              31|
+|Rolling Circle-nested                             |             0|0             |         0.0000000|    10631990|              NA|
+|Penelope                                          |        112822|812           |         1.0611560|    10631990|             812|
+|Penelope-nested                                   |          1268|13            |         0.0119263|    10631990|              13|
+|LINE                                              |        132133|426           |         1.2427871|    10631990|             426|
+|LINE-nested                                       |          1268|13            |         0.0119263|    10631990|               4|
+|SINE                                              |             0|0             |         0.0000000|    10631990|              NA|
+|SINE-nested                                       |             0|0             |         0.0000000|    10631990|              NA|
+|LTR                                               |             0|0             |         0.0000000|    10631990|              NA|
+|LTR-nested                                        |             0|0             |         0.0000000|    10631990|              NA|
+|Other (Simple Repeat, Microsatellite, RNA)        |        189999|4241          |         1.7870502|    10631990|            4241|
+|Other (Simple Repeat, Microsatellite, RNA)-nested |          1225|34            |         0.0115218|    10631990|              34|
+|Unclassified                                      |        274026|1291          |         2.5773726|    10631990|            1291|
+|Unclassified-nested                               |             0|0             |         0.0000000|    10631990|              NA|
+|Total Interspersed Repeat                         |        607889|2886          |         5.7175468|    10631990|              NA|
+|Non-Repeat                                        |      10024101|notApplicable |        94.2824532|    10631990|              NA|
+```
+
 In the final GFF output, nested TEs are clearly labelled with a `nested=FULLY_NESTED` attribute in column 9, enabling quick identification and downstream filtering.
+
+```
+NC_045808.1	Earl_Grey	Simple_repeat	51840	51871	14	+	.	ID=(CGCA)N_33;Name=(CGCA)N;tstart=1;tend=31;shortte=F;nested=FULLY_NESTED-ROUND1
+```
 
 As always, thank you to the TE community for your enthusiasm in using Earl Grey, and for your invaluable feedback and bug reports. I’ll continue to incorporate improvements and fixes as quickly—and carefully—as possible.
 
