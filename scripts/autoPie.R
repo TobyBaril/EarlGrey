@@ -14,18 +14,10 @@ options(scipen = 100, stringsAsFactors = FALSE)
 args <- commandArgs()
 # print(args)
 inBed <- args[6]
-inBed <- "~/testEnv/test_636_EarlGrey/test_636_mergedRepeats/looseMerge/test_636.filteredRepeats.summary"
 inGff <- args[7]
-inGff <- "~/testEnv/test_636_EarlGrey/test_636_mergedRepeats/looseMerge/test_636.filteredRepeats.gff"
 gen <- args[8]
-gen <- 10631990
 savePie <- args[9]
-savePie <- "~/testEnv/test_636_EarlGrey/test_636_summaryFiles/test_636.summaryPie.pdf"
 saveTab <- args[10]
-saveTab <- "~/testEnv/test_636_EarlGrey/test_636_summaryFiles/test_636.highLevelCount.txt"
-## bed file
-## genome size
-## pieName
 
 # read table
 
