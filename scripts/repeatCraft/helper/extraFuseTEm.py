@@ -75,6 +75,9 @@ def truefusete(gffp,gapsize,outfile):
 					d[col[0]][cattrD["ID"]]["Tstart"] = cattrD["Tstart"]
 					d[col[0]][cattrD["ID"]]["Tend"] = cattrD["Tend"]
 					d[col[0]][cattrD["ID"]]["lastTElabel"] = False
+					# Reset group state so the next group gets a new number
+					if d[col[0]][cattrD["ID"]]["groupcnt"]:
+						d[col[0]][cattrD["ID"]]["groupcnt"] = d[col[0]][cattrD["ID"]]["groupcnt"] + 1
 				else:
 					#print("less than 150") # debug
 					# Is the lastcol carrying a TEgroup label?
