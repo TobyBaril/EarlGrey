@@ -1,7 +1,7 @@
 ![earlGreyIcon](https://user-images.githubusercontent.com/46785187/136248346-21e980ee-1154-48c2-9398-70938bbe2404.png)
 
-[![DOI](https://zenodo.org/badge/412126708.svg)](https://zenodo.org/badge/latestdoi/412126708) [![Anaconda_version](https://anaconda.org/bioconda/earlgrey/badges/version.svg)](https://anaconda.org/bioconda/earlgrey) [![Anaconda_downloads](https://anaconda.org/bioconda/earlgrey/badges/downloads.svg)](
-https://anaconda.org/bioconda/earlgrey) [![Anaconda_platforms](https://anaconda.org/bioconda/earlgrey/badges/platforms.svg)](https://anaconda.org/bioconda/earlgrey) ![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2FTobyBaril%2FEarlGrey%2F)
+[![DOI](https://zenodo.org/badge/412126708.svg)](https://zenodo.org/badge/latestdoi/412126708) [![Anaconda-Server Badge](https://anaconda.org/bioconda/earlgrey/badges/version.svg)](https://anaconda.org/bioconda/earlgrey) [![Anaconda_downloads](https://anaconda.org/bioconda/earlgrey/badges/downloads.svg)](
+https://anaconda.org/bioconda/earlgrey) [![Anaconda_platforms](https://anaconda.org/bioconda/earlgrey/badges/platforms.svg)](https://anaconda.org/bioconda/earlgrey) [![Anaconda-Server Badge](https://anaconda.org/bioconda/earlgrey/badges/latest_release_relative_date.svg)](https://anaconda.org/bioconda/earlgrey)
 
 # Earl Grey
 
