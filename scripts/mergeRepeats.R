@@ -46,7 +46,7 @@ other <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satell
 other <- other[! other$Repeat == "SINE",]
 
 sine.nest <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(str_detect(Repeat, "Penelope")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 ltr.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LTR")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 dna.nest <- mergedRepeats %>% filter(str_detect(Repeat, "DNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 rc.nest <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
