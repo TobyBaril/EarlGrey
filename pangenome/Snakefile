@@ -1,5 +1,9 @@
 sys.path.append(os.path.dirname(workflow.snakefile))
-from starting_function import startup_checks
+from scripts.on_start_functions import (
+    running_tea, 
+    validate_parameters, 
+    check_script_directories
+)
 
 configfile: "config/config.yaml"
 include: "rules/lib_construct.smk"
@@ -16,6 +20,8 @@ ITER = config["iterations"]
 FLANK = config["flank"]
 MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
+SCRIPT_DIR = config["script_dir"]
+
 
 onstart:
     # Display tea art
@@ -25,15 +31,7 @@ onstart:
     validated_config = validate_parameters(config)
     
     # Check directories
-    check_script_directories(script_dir)
-    
-    # Check biocontainer
-    check_biocontainer()
-    
-    # Check Dfam 3.9
-    check_dfam39()
-    
-    print("All startup checks completed successfully!")
+    check_script_directories(SCRIPT_DIR)
 
     
 

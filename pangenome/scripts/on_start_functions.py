@@ -1,12 +1,13 @@
 import os
 import sys
+import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
 
 def running_tea(stage="Starting Earl Grey"):
     """Display ASCII art tea cup with stage name"""
-    tea_art = f"""    
+    tea_art = rf"""    
           )  (
          (   ) )
          ) ( (
@@ -21,14 +22,15 @@ def running_tea(stage="Starting Earl Grey"):
 
 def convert_seconds(seconds):
     """Convert seconds to HH:MM:SS.ss format"""
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
+    seconds = int(seconds)
+    h = seconds // 3600
+    m = seconds % 3600 // 60
     s = seconds % 60
     return f"{h:02d}:{m:02d}:{s:05.2f}"
 
 def validate_parameters(config):
     """Validate and set default parameters"""
-    required_params = ['genome', 'species', 'directory']
+    required_params = ['genome', 'species', 'output_dir']
     
     # Check required parameters
     for param in required_params:
@@ -156,6 +158,7 @@ def configure_biocontainer(lib_path):
         print(f"Error configuring biocontainer: {e}")
         sys.exit(1)
 
+
 def check_dfam39():
     """Check for Dfam 3.9 configuration requirements"""
     try:
@@ -169,6 +172,7 @@ def check_dfam39():
         complete_marker = os.path.join(library_path, ".earlgrey.config.complete")
         
         # Check if configuration is needed
+        #Check with Toby should these be "OR" instead of "AND"? Should there be a more complex check?
         if (os.path.isdir(library_path) and 
             len([f for f in os.listdir(library_path) if os.path.isfile(os.path.join(library_path, f))]) == 2 and
             os.path.isfile(expected_file) and 
@@ -177,6 +181,10 @@ def check_dfam39():
             
             generate_dfam39_config_script(library_path, rm_path)
             sys.exit(2)
+        #Check with Toby for the following
+        #else :
+        #    open(complete_marker, "w").close()
+        return complete_marker
             
     except subprocess.CalledProcessError:
         print("Warning: Could not locate RepeatMasker installation")
@@ -226,7 +234,7 @@ def generate_dfam39_config_script(library_path, rm_path):
     with open(script_path, 'w') as f:
         f.write(script_content)
     
-    os.chmod(script_path, 0o755)
+    #os.chmod(script_path, 0o755)
     print(f"Make the script executable and run: chmod +x {script_path} && ./{script_path}")
 
 
