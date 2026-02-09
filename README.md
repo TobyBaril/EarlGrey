@@ -19,7 +19,7 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 [Recommended Installation](#recommended-installation-with-conda-or-mamba)
 
-[Alternative Installation Methods](#alternative-installation-methods)
+[Docker Container](#docker-container)
 
 <!-- toc -->
 
@@ -771,7 +771,9 @@ echo "export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')" >>
 
 You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
 
-# A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
+# Docker Container 
+
+A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
 
 I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running.
 
