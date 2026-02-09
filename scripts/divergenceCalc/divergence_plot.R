@@ -164,6 +164,7 @@ divergence_eg_tes_rounded_for_superfamily_plot <- split(divergence_eg_tes_rounde
                                                         f = divergence_eg_tes_rounded_for_superfamily_plot$subclass)
 
 # Create plots of superfamilies of DNA transposons, LINEs, LTR retrotransposons and SINEs
+
 kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$DNA,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -211,6 +212,30 @@ kimura_superfamily_plot_4 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
 if (inherits(try(ggplot_build(kimura_superfamily_plot_4)), "try-error")) 
   kimura_superfamily_plot_4 <- NULL
 
+kimura_superfamily_plot_5 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$PLE,
+                                    aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
+  geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
+  theme_bw() +
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
+  facet_grid(subclass~., scales = "free") +
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_brewer(palette = "Purples", direction = -1)
+if (inherits(try(ggplot_build(kimura_superfamily_plot_5)), "try-error")) 
+  kimura_superfamily_plot_5 <- NULL
+
+kimura_superfamily_plot_6 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$RC,
+                                    aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
+  geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
+  theme_bw() +
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
+  facet_grid(subclass~., scales = "free") +
+  guides(fill=guide_legend(ncol=3)) +
+  scale_fill_brewer(palette = "Oranges", direction = -1)
+if (inherits(try(ggplot_build(kimura_superfamily_plot_6)), "try-error")) 
+  kimura_superfamily_plot_6 <- NULL
+
 # flip axis if desired
 # Flip axis if desired
 if(opt$axis_flip == TRUE){
@@ -241,8 +266,12 @@ if(opt$axis_flip == TRUE){
                        expand = c(0,0), name = "Kimura 2-Parameter Distance")
 }
 
+# get list of valid plots
+valid_plots <- list(kimura_superfamily_plot_1, kimura_superfamily_plot_2, kimura_superfamily_plot_3, kimura_superfamily_plot_4, kimura_superfamily_plot_5, kimura_superfamily_plot_6)
+valid_plots <- valid_plots[!sapply(valid_plots, is.null)]
+
 # Combine plots and title
-superfamily_kimura_plot <- plot_grid(kimura_superfamily_plot_1, kimura_superfamily_plot_2, kimura_superfamily_plot_3, kimura_superfamily_plot_4, 
+superfamily_kimura_plot <- plot_grid(plotlist = valid_plots, 
                                      ncol = 1, align = "v")
 superfamily_kimura_plot_titled <- plot_grid(title_plot, superfamily_kimura_plot, ncol = 1, rel_heights = c(1, 30))
 

@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.0.1
+	earlGrey version 7.0.2
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -106,7 +106,7 @@ firstMask()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
         rmthreads=$(expr $ProcNum / 4)
-	RepeatMasker -species $RepSpec -norna -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
+	RepeatMasker -species $RepSpec -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid species search term, if issue persists please use NCBI Taxids (E.G Drosophila is replaced with 7125)"; exit 2
 	fi
@@ -118,7 +118,7 @@ firstMaskCustomLib()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
 	rmthreads=$(expr $ProcNum / 4)
-	RepeatMasker -lib ${startCust} -norna -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
+	RepeatMasker -lib ${startCust} -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	RepSub=${startCust}
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid custom consensus file, check the fasta file looks as expected"; exit 2
@@ -210,14 +210,14 @@ novoMask()
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		rmthreads=$(expr $ProcNum / 4)
-		RepeatMasker -lib $latestFile -norna -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		rmthreads=$(expr $ProcNum / 4)
-		RepeatMasker -lib $latestFile -norna -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
 

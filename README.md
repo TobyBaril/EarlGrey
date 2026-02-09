@@ -19,9 +19,7 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 [Recommended Installation](#recommended-installation-with-conda-or-mamba)
 
-[Workaround for Dfam 3.8](#dfam-workaround-for-latest-release)
-
-[Alternative Installation Methods](#alternative-installation-methods)
+[Docker Container](#docker-container)
 
 <!-- toc -->
 
@@ -48,6 +46,10 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
+
+Earl Grey v7.0.2 adds RepeatLandscapes for _Penelope_-like elements and SINEs. Importantly, the `-norna` option in RepeatMasker is no longer invoked as default behaviour, which will improver the detection and masking of small tRNA-derived SINEs.
+
+### Previous Changes
 
 Earl Grey v7.0.1 patches the summary table generation, where LINEs and Penelopes were being counted in both categories for nested repeats only.
 
@@ -110,8 +112,6 @@ NC_045808.1	Earl_Grey	Simple_repeat	51840	51871	14	+	.	ID=(CGCA)N_33;Name=(CGCA)
 As always, thank you to the TE community for your enthusiasm in using Earl Grey, and for your invaluable feedback and bug reports. I’ll continue to incorporate improvements and fixes as quickly—and carefully—as possible.
 
 Happy New Year! 🎉
-
-### Previous Changes
 
 Earl Grey v6.3.6 patches a RepeatCraft bug that arises extremely rarely in specific genomes, linked to dictionary initialisation. 
 
@@ -771,14 +771,18 @@ echo "export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')" >>
 
 You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
 
-# A Docker container has been generated with all of Dfam v3.9  (or with none of Dfam 3.9, but with script generation to source required partitions)
+# Docker Container 
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there are two images ready for use: an image with all partitions of Dfam 3.9 and v6.0.1 and an image with Dfam 3.7 curated elements only and v5.1.1. If you use the `-nodfam` version, install required partitions using instructions in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running. You can use these images by pulling the container. I recommend using `-nodfam` and choosing your own partitions.
+A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
+
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running.
 
 ```
 # Interactive mode
-# Version 7.0.1 with no preconfigured partitions (RECOMMENDED!)
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v7.0.1-nodfam
+# Version 7.0.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
+# run earlGrey to make the configuration script
+earlGrey
 # then, move to famdb directory, alter script with required partitions, and run the configuration script
 cd /usr/local/share/RepeatMasker/Libraries/famdb/
 
@@ -793,89 +797,5 @@ bash configure_dfam39.sh
 
 # return to your data directory
 cd /data/
-
-# Version 6.0.1 with Dfam 3.9 (BIG - requires at least 1TB free, not recommended)
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest
-
-# Version 5.1.1 with Dfam 3.7 curated elements only
-docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
-
-# Non interactive mode example:
-# Version 6.0.1 with Dfam 3.9 preconfigured (BIG - requires at least 1TB free, not recommended)
-docker run -v 'pwd':/data/ tobybaril/earlgrey:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
-
-# Version 5.1.1 with Dfam 3.7 curated elements only
-docker run -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
 ``` 
-
-# Dfam Workaround For DFAM 3.8 (DEPRECATED AS OF EARL GREY VERSION 6)
-
-With the latest release of RepeatMasker (v4.1.7), Dfam 3.8 has been reorganised into partitions containing both curated and uncurated sequences for specific taxonomic groups (see https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt). Consequently, it is challenging to provide a stable conda release for RepeatMasker 4.1.7. 
-
-I have built a container for Earl Grey with RepeatMasker 4.1.7 and the root partition (partition 0) of Dfam version 3.8 preconfigured. This is particularly useful for those who require working with docker containers on their HPC infrastructure.
-
-```
-# to run in interactive mode with bound directories
-docker run -it -v `pwd`/host_data/:/data/ tobybaril/earlgrey_dfam3.8:latest
-
-# to run the container passing the required input file
-docker run -w /data/ -v /path/to/system/directory/inputGenome.fasta:/data/inputGenome.fasta --name=earlGreyContainer tobybaril/earlgrey_dfam3.8:latest earlGrey -g /data/inputGenome.fasta -s input -o /data/ -t $threads
-
-# to get the output files from the stopped container
-docker cp earlGreyContainer:/data/input_EarlGrey /path/to/system/directory
-```
-
-If you require Dfam 3.8 for your studies, I have devised a workaround that remains functional. HOWEVER, I do not recommend attempting this unless you are comfortable with altering files within conda environments, and have a good level of experience in configuring tools. Undertake the below at your own risk!
-
-
-First, locate your conda environment installation. It should be something like the below:
-```
-/home/user/anaconda3/envs/earlgrey/
-```
-
-Next, find the directory containing RepeatMasker and associated files. It will be inside the share directory
-```
-cd /home/user/anaconda3/envs/earlgrey/share/
-```
-
-Compress and back up RepeatMasker in case anything goes wrong, then delete the RepeatMasker Directory
-```
-tar -czvf RepeatMasker.bak.tar.gz RepeatMasker/ && rm -r ./RepeatMasker/
-```
-
-Download and unpack RepeatMasker 4.1.7
-```
-wget https://repeatmasker.org/RepeatMasker/RepeatMasker-4.1.7-p1.tar.gz
-tar -zxvf RepeatMasker-4.1.7-p1.tar.gz
-```
-
-Go to the famdb directory and fetch at least the root partition. check the [README](https://dfam.org/releases/Dfam_3.8/families/FamDB/README.txt) for which partition contains which species, and download all the ones you want.
-```
-cd ./RepeatMasker/Libraries/famdb/
-wget https://dfam.org/releases/Dfam_3.8/families/FamDB/dfam38_full.0.h5.gz
-gunzip *.gz
-```
-
-Move back to the RepeatMasker directory and reconfigure RepeatMasker
-```
-cd ../../
-perl ./configure
-
-# when prompted, you will need the full path to trf. This is in the conda environment bin directory:
-## e.g in this example it would be:
-/home/user/anaconda3/envs/earlgrey/bin/trf
-
-# NOTE: In some cases I ran into an issue where the configuration file needed modifying. Check the following:
-nano ./RepeatMaskerConfig.pm
-
-# Check that the DEFAULT_SEARCH_ENGINE block looks like this:
-'DEFAULT_SEARCH_ENGINE' => {
-                                       'command_line_override' => 'default_search_engine',
-                                       'description' => 'The default search engine to use',
-                                       'param_type' => 'value',
-                                       'required' => 1,
-                                       'value' => 'rmblast'
-                                     },
-```
-
 
