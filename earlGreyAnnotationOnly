@@ -76,14 +76,14 @@ novoMask()
 	if [ -z "$RepSpec" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		rmthreads=$(expr $ProcNum / 4)
-		RepeatMasker -lib $latestFile -norna -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
 		rmthreads=$(expr $ProcNum / 4)
-		RepeatMasker -lib $latestFile -norna -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
+		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
 
