@@ -49,6 +49,10 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 # Changes in Latest Release
 
+Earl Grey v7.0.2 adds RepeatLandscapes for _Penelope_-like elements and SINEs. Importantly, the `-norna` option in RepeatMasker is no longer invoked as default behaviour, which will improver the detection and masking of small tRNA-derived SINEs.
+
+### Previous Changes
+
 Earl Grey v7.0.1 patches the summary table generation, where LINEs and Penelopes were being counted in both categories for nested repeats only.
 
 ☕ Earl Grey v7.0.0 is here!
@@ -110,8 +114,6 @@ NC_045808.1	Earl_Grey	Simple_repeat	51840	51871	14	+	.	ID=(CGCA)N_33;Name=(CGCA)
 As always, thank you to the TE community for your enthusiasm in using Earl Grey, and for your invaluable feedback and bug reports. I’ll continue to incorporate improvements and fixes as quickly—and carefully—as possible.
 
 Happy New Year! 🎉
-
-### Previous Changes
 
 Earl Grey v6.3.6 patches a RepeatCraft bug that arises extremely rarely in specific genomes, linked to dictionary initialisation. 
 
