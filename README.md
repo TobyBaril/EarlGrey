@@ -781,11 +781,12 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 # Interactive mode
 # Version 7.0.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
+# change to bound directory, which allows easy script modification
+cd /data/
 # run earlGrey to make the configuration script
 earlGrey
-# then, move to famdb directory, alter script with required partitions, and run the configuration script
-cd /usr/local/share/RepeatMasker/Libraries/famdb/
 
+# then alter script with required partitions and run the configuration script
 # change 0-16 to whichever you require, but at least 0. This relates to the partitions of Dfam 3.9 (https://www.dfam.org/releases/Dfam_3.9/families/FamDB/)
 ##### e.g. for 0-5:
 sed -i '/^curl/ s/0-16/0-5/g' configure_dfam39.sh
