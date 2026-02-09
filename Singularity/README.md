@@ -7,10 +7,12 @@ Wherever you start this is where your /work directory will point to. Make sure y
 To start:
 ```
 # Build the image from the Docker image
-singularity build earlgrey.sif docker://tobybaril/earlgrey_dfam3.7
+singularity build earlgrey.sif docker://tobybaril/earlgrey:latest-nodfam
 
 # Run the sandbox
 singularity shell -C -H $(pwd):/work --writable-tmpfs -u earlgrey.sif
+
+# Don't forget the first time you run earlGrey, it will guide you through getting the Dfam partitions! See main README Docker section for more info!
 ```
 
 You are now ready to run Earl Grey!
