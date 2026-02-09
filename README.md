@@ -781,8 +781,8 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 # Interactive mode
 # Version 7.0.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
-# change to bound directory, which allows easy script modification
-cd /data/
+# change to library directory
+cd /usr/local/share/RepeatMasker/Libraries/famdb/
 # run earlGrey to make the configuration script
 earlGrey
 
