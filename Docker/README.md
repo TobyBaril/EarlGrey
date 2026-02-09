@@ -1,31 +1,29 @@
-# Get Earl Grey to run in Docker
+# Docker Container 
 
-## A [biocontainer](https://biocontainers.pro/tools/earlgrey) has been generated from the Earl Grey Bioconda package.
+A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
 
-## Get the preconfigured docker container from biocontainers
-## This image will be configured with Dfam curated elements only
-In this case, we need to bind a system directory to the docker container. In the line below, we are binding a directory call `host_data` that is found on our current path to `/data/` in the docker container. Please replace the file path before `:` to the directory you wish to bind to `/data/` in the container. This container must be run in interactive mode the first time you use it.
-
-```
-docker run -it -v `pwd`/host_data/:/data/ quay.io/biocontainers/earlgrey:5.1.1--h9948957_0
-```
-
-## If you are running the container for the first time, you need to enable Earl Grey to configure the Dfam libraries correctly in interactive mode.
-This is done by running Earl Grey for the first time. You will be prompted if Dfam libraries have not been configured properly. Answer `y` to configure Dfam.
-Ensure the genome you wish to annotate is found in the directory you want to bind to the container. It will then be found in `/data` in the container. Alternatively, if you source a genome assembly from a database, download it to `/data/`. Always output results to the bound directory. In our case `/data/`. The results will then be found in your system directory after exiting the container.
-
-```
-earlGrey -g /data/genome.fasta -s test_genome -t 8 -o /data/
-```
-
-## If you need the container to run offline and/or without interactive mode
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, there is an image with Dfam 3.7 curated elements only, and this is version 5.1.1. You can use this image by pulling the container:
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running.
 
 ```
 # Interactive mode
-docker run -it -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest
+# Version 7.0.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
+# change to library directory
+cd /data/
+# run earlGrey to make the configuration script
+earlGrey
 
-# Non interactive mode example:
-docker run -v `pwd`:/data/ tobybaril/earlgrey_dfam3.7:latest earlGrey -g /data/NC_045808_EarlWorkshop.fasta -s nonInteractiveTest -o /data/ -t 8
+# then alter script with required partitions and run the configuration script
+# change 0-16 to whichever you require, but at least 0. This relates to the partitions of Dfam 3.9 (https://www.dfam.org/releases/Dfam_3.9/families/FamDB/)
+##### e.g. for 0-5:
+sed -i '/^curl/ s/0-16/0-5/g' configure_dfam39.sh
+##### e.g for 1,3,5:
+sed -i '/^curl/ s/0-16/1,3,5/g' configure_dfam39.sh
+
+# run the configuration script
+bash configure_dfam39.sh
+
+# return to your data directory
+cd /data/
 ```
 
