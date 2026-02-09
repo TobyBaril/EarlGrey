@@ -780,7 +780,7 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 ```
 # Interactive mode
 # Version 7.0.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
-docker run -it -v 'pwd':/data/ tobybaril/earlgrey:v7.0.1-nodfam
+docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # run earlGrey to make the configuration script
 earlGrey
 # then, move to famdb directory, alter script with required partitions, and run the configuration script
