@@ -343,12 +343,13 @@ earlGrey
 # a script will be output to stdout and generated in the current directory to aid in setup
 ```
 
-# Recommended Installation with Conda or Mamba on ARM-based Mac Systems (M chips)
-## NOTE: This is currently experimental and requires altering several scripts and parameters. Not recommended unless you are confident with the terminal environment.
+# Recommended Installation on ARM-based Mac Systems (M chips) Using Docker
 
-It is possible to install x86-based conda environments on M-chip Mac systems using Rosetta. The below form a guide that should work, but please reach out if you have any trouble!
+It is possible to install x86-based Docker environments on M-chip Mac systems using Rosetta. The below form a guide that should work, but please reach out if you have any trouble!
 
-First, we will run separate installations of conda for ARM and x86 architectures.
+Please first follow the Docker on Mac installation [instructions here](https://docs.docker.com/desktop/setup/install/mac-install/). Ensure you have installed Rosetta2, as this is required to get Earl Grey to behave as expected.
+
+Next, we will create aliases to switch between arm and rosetta:
 
 We want a simple way to activate the x86 architecture. We can do this by adding the following to `~/.zshrc`:
 ```
@@ -358,424 +359,20 @@ alias intel="env /usr/bin/arch -x86_64 /bin/zsh --login"
 
 Then close the terminal and open a new one.
 
-To activate the intel environment, run the following in a new terminal:
+To activate the intel/rosetta environment, run the following in a new terminal:
 ```
 intel
 ```
 
-Next, we need to install the separate conda environments. This guide is based on [this article:](https://taylorreiter.github.io/2022-04-05-Managing-multiple-architecture-specific-installations-of-conda-on-apple-M1/)
+Next, get the Docker installation and run in an interactive terminal following the instructions in the next section below. You will only need to pull the container once, then can use it for all your Earl Grey needs.
 
-First, check you are using the arm64 processor:
-```
-uname -m
-```
-
-If this returns `arm64`, all good. If not, run:
-```
-arm
-```
-
-Then, install miniforge for arm64:
-```
-curl -L https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-MacOSX-arm64.sh > miniforge_arm64.sh
-sh miniforge_arm64.sh
-```
-
-Follow the prompts to accept the license, install, and initialise conda. The initialisation script, `conda init` will add something like the following block to your `~/.zshrc` file:
-```
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/toby/mambaforge/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/toby/mambaforge/etc/profile.d/conda.sh" ]; then
-        . "/Users/toby/mambaforge/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/toby/mambaforge/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-
-if [ -f "/Users/toby/mambaforge/etc/profile.d/mamba.sh" ]; then
-    . "/Users/toby/mambaforge/etc/profile.d/mamba.sh"
-fi
-# <<< conda initialize <<<
-```
-
-We want to _cut_ this from the `~/.zshrc` file and place it in a new file:
-```
-# open a new file called ~/.start_miniforge3.sh and paste the text you cut from ~/.zshrc
-nano ~/.start_miniforge3.sh
-```
-
-Next, we will install miniconda in the Rosetta, or _intel_, terminal.
-
-First, check you are using the x86_64 processor:
-```
-uname -m
-```
-
-If this doesn't return `x86_64`, run:
-```
-intel
-```
-
-Then, install miniconda for x86_64:
-```
-curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > miniconda_x86_64.sh
-sh miniconda_x86_64.sh
-```
-
-Again, you should follow the prompts to accept the license, install, and initialise conda. The initialisation script, `conda init` will add something like the following block to your `~/.zshrc` file:
-```
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/toby/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/toby/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/toby/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/toby/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-```
-
-Again, we want to cut this from the `~/.zshrc` file and place it in a new file:
-```
-# open a new file called ~/.start_miniconda3.sh and paste the text you cut from ~/.zshrc
-nano ~/.start_miniconda3.sh
-```
-
-Now we want to edit `~/.zshrc` to automatically initialise the correct conda for each architecture. To do this, add the following to your `~/.zshrc file`:
-```
-arch_name="$(uname -m)"
-
-if [ "$arch_name" = "arm64" ]; then
-    echo "Running on ARM64 using miniforge3"
-    source ~/.start_miniforge3.sh
-elif [ "$arch_name" = "x86_64" ]; then
-    echo "Running on Rosetta using miniconda3"
-    source ~/.start_miniconda3.sh
-else
-    echo "Unknown architecture: $arch_name"
-fi
-```
-
-Exit all terminals. When you reopen them, it should all be ready.
-
-Now, open a new terminal and get Earl Grey running.
-
-First, activate the intel environment:
-```
-intel
-```
-
-Then, create an environment for Earl Grey
-```
-# I like mamba. This is optional but good
-conda install -c conda-forge mamba
-
-# create the environment with correct subdirectory
-CONDA_SUBDIR=osx-64 conda create -n earlgrey
-
-# activate conda environment
-conda activate earlgrey
-
-# install the packages - CHECK THIS IS USING THE MINICONDA3 MAMBA EXECUTABLE
-mamba install -c bioconda earlgrey
-```
-
-Now we need to change some files to get them to behave with zsh!
-
-Make sure you are in your intel environment!
-
-Install a couple of utilities using homebrew.
-```
-# Make sure you are in the intel environemt and that the earlgrey conda environment is active
-
-# install homebrew for the intel environment (if you don't already have it, it must be separate to the ARM installation!
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# add the following to your ~/.zshrc
-alias brewIntel="/usr/local/bin/brew"
-
-# source ~/.zshrc
-source ~/.zshrc
-intel
-
-brewIntel install gnu-sed
-brewIntel install coreutils
-```
-
-Change TEstrainer_for_earlGrey.sh for the macOS version:
-```
-nano $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
-
-# delete everything in this file.
-```
-
-Then paste ALL of the following:
-```
-#!/bin/bash
-
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Ammount of memory TEstrainer needs to keep free]" 1>&2; exit 1; }
-
-
-# default values
-
-STRAIN_SCRIPTS=INSERT_FILENAME_HERE
-FLANK=1000
-THREADS=4
-RUNS=10
-NO_SEQ=20
-# for potential folder name
-TIME=$(date +"%s")
-TIME=${TIME: -4}
-MEM_FREE="200M"
-MIN_SEQ=3
-
-# parsing
-while getopts l:g:t:f:m:r:d:h:n:M flag; do
-  case "${flag}" in
-    l) RM_LIBRARY_PATH=${OPTARG};;
-    g) GENOME=${OPTARG};;
-    t) THREADS=${OPTARG};;
-    f) FLANK=${OPTARG};;
-    m) MIN_SEQ=${OPTARG};;
-    r) RUNS=${OPTARG};;
-    d) DATA_DIR=${OPTARG};;
-    n) NO_SEQ=${OPTARG};;
-    M) MEM_FREE=${OPTARG};;
-    h | *)
-      print_usage
-      exit_script
-  esac
-done
-
-# determine further variables and check files exist
-if [ ! -f ${RM_LIBRARY_PATH} ]; then echo "Library not found"; usage; fi
-if [ -z ${RM_LIBRARY_PATH} ]; then echo "Library must be supplied"; usage; else RM_LIBRARY=$(echo $RM_LIBRARY_PATH | sed 's/.*\///'); fi
-if [[ $RUNS -gt 0 ]]; then 
-  if [ -z ${GENOME} ]; then echo "If refining genome must be supplied"; usage; fi
-  if [ ! -f ${GENOME} ]; then echo "Refining genome not found"; usage; fi
-fi
-if [ -z "$DATA_DIR" ]; then DATA_DIR=$(echo "TS_"${RM_LIBRARY}"_"${TIME}); fi
-
-# create data dir if missing
-if [ ! -d ${DATA_DIR} ] 
-then
-    mkdir ${DATA_DIR}
-fi
-
-
-if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
-
-# make directories
-mkdir -p ${DATA_DIR}/run_0/
-
-# initial copy
-cp ${RM_LIBRARY_PATH} ${DATA_DIR}/${RM_LIBRARY}
-
-# cp starting seq to starting directory
-mkdir -p ${DATA_DIR}/run_0/og
-cp ${RM_LIBRARY_PATH} ${DATA_DIR}/run_0/further_${RM_LIBRARY}
-# create reference of original sequences
-python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/run_0/further_${RM_LIBRARY} -o ${DATA_DIR}/run_0/og
-
-# runs
-python ${STRAIN_SCRIPTS}/indexer.py -g ${GENOME}
-if [ ! -f "${GENOME}".nsq ]; then
-  makeblastdb -in ${GENOME} -dbtype nucl -out ${GENOME} # makeblastb if needed
-fi
-
-# curation
-RUN_NO=1
-while  [ $RUN_NO -le $RUNS ]
-do
-
-  # make directories
-  mkdir -p ${DATA_DIR}/run_${RUN_NO}/raw \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete \
-           ${DATA_DIR}/run_${RUN_NO}/initial_blast \
-           ${DATA_DIR}/run_${RUN_NO}/self_search \
-           ${DATA_DIR}/run_${RUN_NO}/to_align \
-           ${DATA_DIR}/run_${RUN_NO}/mafft \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_con \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_unaln \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_blast \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_mafft \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_further \
-           ${DATA_DIR}/run_${RUN_NO}/TEtrim_bp
-  
-  # split
-  cp ${DATA_DIR}/run_$(expr $RUN_NO - 1)/further_${RM_LIBRARY} ${DATA_DIR}/run_${RUN_NO}/${RM_LIBRARY}
-  echo "Splitting run "${RUN_NO}
-  python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/run_${RUN_NO}/${RM_LIBRARY} -o ${DATA_DIR}/run_${RUN_NO}/raw
-
-  # run trf to determine if sequence is tandem repeat
-  echo "Initial trf check for "${RUN_NO}
-  parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/run_${RUN_NO}/raw/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/run_${RUN_NO}/raw/{}.trf
-  echo "Initial blast and preparation for MSA "${RUN_NO}
-  # initial blast and extention
-  parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt python ${STRAIN_SCRIPTS}/initial_mafft_setup.py -d ${DATA_DIR} -r ${RUN_NO} -s {} -g ${GENOME} -f ${FLANK} -D -n ${NO_SEQ}
-  
-  ## first mafft alignment
-  find ${DATA_DIR}/run_${RUN_NO}/to_align -type f | sed 's/.*\///' > ${DATA_DIR}/run_${RUN_NO}/to_align.txt
-  echo "Primary alignment run "${RUN_NO}
-  parallel --bar --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
-
-  # trim
-  echo "Trimming run "${RUN_NO}
-  parallel --bar --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
-  
-  # compile completed curations
-  if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/ 2>/dev/null)" ]; then
-     cat ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/*fasta > ${DATA_DIR}/run_${RUN_NO}/complete_${RM_LIBRARY}
-  fi
-  
-  # Either compile consensuses for further curation
-  if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_further/ 2>/dev/null)" ]; then
-    cat ${DATA_DIR}/run_${RUN_NO}/TEtrim_further/*fasta > ${DATA_DIR}/run_${RUN_NO}/further_${RM_LIBRARY}
-    echo "Ready for " $(( RUN_NO++ ))
-  else
-  # or exit loop if no more curation needed
-    echo "Finished extension"
-    break
-  fi
-
-done
-
-# Compile all completed
-cat ${DATA_DIR}/run_*/complete_${RM_LIBRARY} > ${DATA_DIR}/${RM_LIBRARY}
-# if more could have been extended append to compilation
-if [ -s ${DATA_DIR}/run_${RUNS}/further_${RM_LIBRARY} ]; then
-  cat ${DATA_DIR}/run_${RUNS}/further_${RM_LIBRARY} >> ${DATA_DIR}/${RM_LIBRARY}
-fi
-
-# add any families which went missing along the way due to alignment issues
-find ${DATA_DIR}/run_*/mafft/ -empty -type f | sed 's/mafft/raw/' > ${DATA_DIR}/missing_consensi.txt
-if [[ -s ${DATA_DIR}/missing_consensi.txt ]]; then
-  while read file_name; do
-    cat $file_name >> ${DATA_DIR}/${RM_LIBRARY}
-  done < ${DATA_DIR}/missing_consensi.txt
-fi
-  
-gsed -i 's/ .*//' ${DATA_DIR}/${RM_LIBRARY}
-
-# Identify simple repeats and satellites, trim ends of LINEs/SINEs
-echo "Splitting for simple/satellite packages"
-mkdir -p ${DATA_DIR}/trf/split
-python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/${RM_LIBRARY} -o ${DATA_DIR}/trf/split
-cp ${DATA_DIR}/${RM_LIBRARY} ${DATA_DIR}/trf/
-# Run and parse TRF
-echo "Running TRF"
-parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/trf/split/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/trf/split/{}.trf
-parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/trf_parser.py --trf ${DATA_DIR}/trf/split/{}.trf --out ${DATA_DIR}/trf/split/{}.trf.tsv
-find ${DATA_DIR}/trf/split/ -type f -name "*trf.tsv" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.trf
-# Run SA-SSR
-echo "Running SA-SSR"
-sa-ssr -e -l 20 -L 50000 -m 1 -M 5000 -t ${THREADS} ${DATA_DIR}/${RM_LIBRARY} ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
-# Run and compile mreps
-echo "Running mreps"
-parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt bash ${STRAIN_SCRIPTS}/mreps_parser.sh -i ${DATA_DIR}/trf/split/{} "2>"/dev/null
-find ${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
-# Interpret mreps, TRF and SA-SSR
-echo "Trimming and sorting based on mreps, TRF, SA-SSR"
-if [ ! -f ${DATA_DIR}/trf/${RM_LIBRARY}.sassr ]; then
-   touch ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
-fi
-
-$(which earlGrey | gsed 's/earlGrey/Rscript/g') ${STRAIN_SCRIPTS}/simple_repeat_filter_trim.R -i ${DATA_DIR}/${RM_LIBRARY} -d ${DATA_DIR}
-
-# Delete temp files
-echo "Removing temporary files"
-rm -r ${DATA_DIR}/*/split/
-find ${DATA_DIR}/ -mindepth 1 -name "run_*" -exec rm -r {} +
-if [[ $RUNS -gt 0 ]]; then rm ${GENOME}.n*; fi
-
-# Classify improved consensi using RepeatModeler's RepeatClassifier
-echo "Reclassifying repeats"
-mkdir -p ${DATA_DIR}/classify/
-cp ${DATA_DIR}/trf/${RM_LIBRARY}.nonsatellite ${DATA_DIR}/classify/
-cd ${DATA_DIR}/classify/
-if [ -s ${RM_LIBRARY}.nonsatellite ]; then
-    RepeatClassifier -threads ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
-fi
-# legacy command for older installations - DEPRECATED
-# RepeatClassifier -pa ${THREADS} -consensi ${RM_LIBRARY}.nonsatellite
-cd -
-# Compile classified files
-if [ -f ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ]; then
-    cp ${DATA_DIR}/classify/${RM_LIBRARY}.nonsatellite.classified ${DATA_DIR}/${RM_LIBRARY}.strained
-else
-    touch ${DATA_DIR}/${RM_LIBRARY}.strained
-fi
-echo "Compiling library"
-if [ -f ${DATA_DIR}/trf/${RM_LIBRARY}.satellites ]; then
-    cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
-fi
-```
-
-Save the file with `CTRL+X` then press `Y` when asked to overwrite the file.
-
-Make sure the updated file is executable:
-```
-chmod a+x $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
-```
-
-Edit the script directory path in this file by running the following:
-```
-gsed -i "s|INSERT_FILENAME_HERE|$(which earlGrey | gsed 's:bin.*:share/earlgrey-7.0.1-0/scripts/TEstrainer/scripts/:g')|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/TEstrainer/TEstrainer_for_earlGrey.sh|g')
-```
-
-Edit famdb.py for use with our environment:
-```
-gsed -i 's/python3/python/g' $(which earlGrey | gsed 's|bin.*|share/RepeatMasker/famdb.py|g')
-```
-
-Edit LTR_FINDER_PARALLEL to be compatible with zsh
-```
-gsed -i "s|\`timeout $timeout|\`gtimeout $timeout|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/LTR_FINDER_parallel|g')
-```
-
-Install LTR_Finder from source
-```
-cd $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/bin|g')
-git clone https://github.com/xzhub/LTR_Finder
-cd ./LTR_Finder/source
-make
-cp * ../../LTR_FINDER.x86_64-1.0.7/
-```
-
-Edit rcMergeRepeatsLoose:
-```
-gsed -i 's|sed|gsed|g' $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/rcMergeRepeatsLoose|g')
-var=$(which earlGrey | gsed "s/earlGrey/Rscript/g")
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/scripts/rcMergeRepeatsLoose|g')
-```
-
-Edit main earlGrey script:
-```
-gsed -i "s|Rscript|${var}|g" $(which earlGrey | gsed 's|bin.*|share/earlgrey-7.0.1-0/earlGrey|g')
-```
-
-Add an important directory to PERL5LIB (for RepeatMasker)
-```
-echo "export PERL5LIB=$(which earlGrey | sed 's:bin.*:share/RepeatMasker:g')" >> ~/.start_miniconda3.sh
-```
-
-You are ready to go! Just remember to activate the _intel_ terminal, then the conda environment before running Earl Grey.
+After this, you are ready to go! Just remember to activate the _intel_ terminal before starting the interactive container and running Earl Grey. 
 
 # Docker Container 
 
 A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running.
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in your current working directory. After an initial setup and configuration in an interative version of the container, you can commit the changes (i.e. the Dfam configuration) using `docker commit [container_ID] yourdockerusername/earlgrey:version7.0.1-configured`. Then, you can run this container interactively, or non-interatively, to annotate focal genomes.
 
 ```
 # Interactive mode
@@ -798,5 +395,20 @@ bash configure_dfam39.sh
 
 # return to your data directory
 cd /data/
+
+# to quit the container and leave it running so you can commit the configured changes
+# ctrl + p; ctrl + q
+
+# get container ID to commit (not necessarily required if you leave the container running. If you kill the container and start again, you would need to reconfigure the DFAM libraries, so this is recommended. However, the container will be BIG depending on which parts of DFAM you pull.
+docker ps -a
+
+# commit the modified container so you can use at will (replace yourdockerusername with your docker username)
+docker commit [container_ID] yourdockerusername/earlgrey:version7.0.1-configured
+
+# you can then run non-interatively if required:
+docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.0.1-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
+
+# alternatively you can still run interactive sessions
+docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.0.1-configured
 ``` 
 
