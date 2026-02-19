@@ -516,6 +516,7 @@ dfamCheck()
 
 # Main #
 
+OPTIND=1
 while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:h option
 do
 	case "${option}" 
