@@ -376,7 +376,7 @@ Checks()
 	elif [ "$cluster" == "yes" ]; then
 		cluster=yes; echo "TE library consensus sequences will be clustered, be aware of the impact this can have on subfamilies and chimeric TEs!"
 	else
-		clustering=no; echo "Clustering not specified using (yes/no). Using default parameter (no)."
+		cluster=no; echo "Clustering not specified using (yes/no). Using default parameter (no)."
 	fi
 
 	if [ -z "$softMask" ] || [ "$softMask" == "no" ] ; then
