@@ -260,28 +260,6 @@ Checks()
 	echo "Please cite the following paper when using this software:"
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 
-	# biocontainer checks
-	if [ -d "/usr/local/share/RepeatMasker/Libraries/" ]; then
-		if grep -q Placeholder /usr/local/share/RepeatMasker/Libraries/Dfam.h5 ; then
-			while true; do
-				read -p "Are you using the biocontainer installation? If yes, we can configure RepeatMasker to work for you:[YyNn]" yn
-				case $yn in
-					[Yy]* ) cd /usr/local/share/RepeatMasker/Libraries/
-						curl -O https://dfam.org/releases/Dfam_3.7/families/Dfam_curatedonly.h5.gz
-						gunzip Dfam_curatedonly.h5.gz && mv Dfam.h5 Dfam.h5.bak
-						mv Dfam_curatedonly.h5 Dfam.h5
-						cd /usr/local/share/RepeatMasker/
-						perl configure -rmblast_dir=/usr/local/bin -libdir=/usr/local/share/RepeatMasker/Libraries -trf_prgm=/usr/local/bin/trf -default_search_engine=rmblast
-						sed -i 's|${SCRIPT_DIR}/LTR_FINDER_parallel|perl ${SCRIPT_DIR}/LTR_FINDER_parallel|g' /usr/local/share/earlgrey*/scripts/rcMergeRepeatsLoose
-						sed -i 's|${SCRIPT_DIR}/LTR_FINDER_parallel|perl ${SCRIPT_DIR}/LTR_FINDER_parallel|g' /usr/local/share/earlgrey*/scripts/rcMergeRepeats
-						break;;
-					[Nn]* ) exit;;
-					* ) echo "Please answer yes or no.";;
-				esac
-			done
-		fi
-	fi
-
 	# Dfam 3.9 checks
 	library_path=$(which RepeatMasker | sed 's|/bin/RepeatMasker|/share/RepeatMasker/Libraries/famdb|g')
 	expected_file="${library_path}/dfam39_full.0.h5"
