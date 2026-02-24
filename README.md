@@ -46,10 +46,10 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
-
-Earl Grey v7.0.2 adds RepeatLandscapes for _Penelope_-like elements and SINEs. Importantly, the `-norna` option in RepeatMasker is no longer invoked as default behaviour, which will improver the detection and masking of small tRNA-derived SINEs.
+Earl Grey v7.0.3 fixes an issue with final calculation tables which did not count _other_ repeats towards total repeat content.
 
 ### Previous Changes
+Earl Grey v7.0.2 adds RepeatLandscapes for _Penelope_-like elements and SINEs. Importantly, the `-norna` option in RepeatMasker is no longer invoked as default behaviour, which will improver the detection and masking of small tRNA-derived SINEs.
 
 Earl Grey v7.0.1 patches the summary table generation, where LINEs and Penelopes were being counted in both categories for nested repeats only.
 
@@ -329,13 +329,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome.
 
-Earl Grey version 7.0.1 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
+Earl Grey version 7.0.3 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.0.1
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.0.3
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.0.1
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.0.3
 
 # Then run
 earlGrey
@@ -372,11 +372,11 @@ After this, you are ready to go! Just remember to activate the _intel_ terminal 
 
 A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in your current working directory. After an initial setup and configuration in an interative version of the container, you can commit the changes (i.e. the Dfam configuration) using `docker commit [container_ID] yourdockerusername/earlgrey:version7.0.1-configured`. Then, you can run this container interactively, or non-interatively, to annotate focal genomes.
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in your current working directory. After an initial setup and configuration in an interative version of the container, you can commit the changes (i.e. the Dfam configuration) using `docker commit [container_ID] yourdockerusername/earlgrey:version7.0.3-configured`. Then, you can run this container interactively, or non-interatively, to annotate focal genomes.
 
 ```
 # Interactive mode
-# Version 7.0.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.0.3 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/
@@ -403,12 +403,12 @@ cd /data/
 docker ps -a
 
 # commit the modified container so you can use at will (replace yourdockerusername with your docker username)
-docker commit [container_ID] yourdockerusername/earlgrey:version7.0.1-configured
+docker commit [container_ID] yourdockerusername/earlgrey:version7.0.3-configured
 
 # you can then run non-interatively if required:
-docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.0.1-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
+docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.0.3-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # alternatively you can still run interactive sessions
-docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.0.1-configured
+docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.0.3-configured
 ``` 
 
