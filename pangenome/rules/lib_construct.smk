@@ -12,19 +12,41 @@ ITER = config["iterations"]
 FLANK = config["flank"]
 MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
+HELI = config.get("run_heliano", False)
+SCRIPT_DIR = config["script_dir"]
 
-# rule all:
-#     input:
-#         "results/combined_all_species.fa"
-        # expand(
-        #     "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}-families.fa.strained",
-        #     outdir=OUTDIR,
-        #     species=SPECIES_LIST
-        # )
+rule check_and_configure_env:
+    params:
+        outdir = OUTDIR,
+        species = SPECIES_LIST,
+        repspec = REPSPEC,
+        startCust = CUSTOM_LIB,
+        heli = HELI,
+        script_dir = SCRIPT_DIR
+    output:
+        envchecked = touch("{outdir}/.envchecked")
+    run:
+        # Validate parameters
+        validated_config = validate_parameters(config)
+        
+        # Check directories
+        check_script_directories(script_dir)
+
+        # Check biocontainer
+        check_biocontainer()
+        
+        # Check Dfam 3.9
+        check_dfam39()
+        
+        print("All startup checks completed successfully!")
+
+        print("Making output directories...")
+        make_directories(outdir, species, RepSpec=repspec, startCust=startCust, heli=heli)
 
 rule prep_genome:
     input:
-        genome=lambda wildcards: GENOME[wildcards.species]
+        genome=lambda wildcards: GENOME[wildcards.species],
+        dfam_ready = r"{outdir}/.envchecked" 
     params:
         outdir = OUTDIR
     output:

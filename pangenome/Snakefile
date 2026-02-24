@@ -26,15 +26,8 @@ SCRIPT_DIR = config["script_dir"]
 onstart:
     # Display tea art
     running_tea("Earl Grey Pipeline Starting")
-    
-    # Validate parameters
-    validated_config = validate_parameters(config)
-    
-    # Check directories
-    check_script_directories(SCRIPT_DIR)
 
     
-
 rule all:
     input:
         expand(
@@ -61,21 +54,3 @@ rule all:
         #     species=SPECIES_LIST
         # )
 
-# rule all:
-#     input:
-#         expand(
-#             "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.highLevelCount.txt",
-#             outdir=OUTDIR,
-#             species=SPECIES_LIST
-#         ),
-#         expand(
-#             "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.summaryPie.pdf",
-#             outdir=OUTDIR,
-#             species=SPECIES_LIST
-#         ),
-#         # Optional softmasked genome
-#         expand(
-#             "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.softmasked.fasta",
-#             outdir=OUTDIR,
-#             species=SPECIES_LIST
-#         ) if SOFTMASK == "yes" else []
