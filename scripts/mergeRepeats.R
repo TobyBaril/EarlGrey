@@ -64,7 +64,7 @@ rcCov <- sum(as.numeric(as.character(rc$size)))
 pleCov <- sum(as.numeric(as.character(ple$size)))
 unknownCov <- sum(as.numeric(as.character(unknown$size)))
 otherCov <- sum(as.numeric(as.character(other$size)))
-totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + pleCov + unknownCov) 
+totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + pleCov + unknownCov + otherCov) 
 unmaskCov <- (as.numeric(genomeSize) - as.numeric(totalCov))
 
 sineCov.nest <- sum(as.numeric(as.character(sine.nest$size)))
@@ -85,7 +85,7 @@ rcTal <- as.numeric(tally(rc))
 pleTal <- as.numeric(tally(ple))
 unknownTal <- as.numeric(tally(unknown))
 otherTal <- as.numeric(tally(other))
-totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + pleTal + unknownTal)
+totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + pleTal + unknownTal + otherTal)
 
 sineTal.nest <- as.numeric(tally(sine.nest))
 lineTal.nest <- as.numeric(tally(line.nest))
@@ -106,7 +106,7 @@ rcPer <- (rcCov / genomeSize) * 100
 plePer <- (pleCov / genomeSize) * 100
 unknownPer <- (unknownCov / genomeSize) * 100
 otherPer <- (otherCov / genomeSize) * 100
-totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + plePer + unknownPer)
+totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + plePer + unknownPer + otherPer)
 unmaskPer <- (100 - totalPer)
 
 sinePer.nest <- (sineCov.nest / genomeSize) * 100
@@ -183,7 +183,7 @@ rcCov <- sum(as.numeric(as.character(rc$size)))
 pleCov <- sum(as.numeric(as.character(ple$size)))
 unknownCov <- sum(as.numeric(as.character(unknown$size)))
 otherCov <- sum(as.numeric(as.character(other$size)))
-totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + pleCov + unknownCov) 
+totalCov <- (sineCov + lineCov + ltrCov + dnaCov + rcCov + pleCov + unknownCov + otherCov) 
 unmaskCov <- (as.numeric(genomeSize) - as.numeric(totalCov))
 
 sineCov.nest <- sum(as.numeric(as.character(sine.nest$size)))
@@ -204,7 +204,7 @@ rcTal <- as.numeric(tally(rc))
 pleTal <- as.numeric(tally(ple))
 unknownTal <- as.numeric(tally(unknown))
 otherTal <- as.numeric(tally(other))
-totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + pleTal + unknownTal)
+totalTal <- (sineTal + lineTal + ltrTal + dnaTal + rcTal + pleTal + unknownTal + otherTal)
 
 sineTal.nest <- as.numeric(tally(sine.nest))
 lineTal.nest <- as.numeric(tally(line.nest))
@@ -225,7 +225,7 @@ rcPer <- (rcCov / genomeSize) * 100
 plePer <- (pleCov / genomeSize) * 100
 unknownPer <- (unknownCov / genomeSize) * 100
 otherPer <- (otherCov / genomeSize) * 100
-totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + plePer + unknownPer)
+totalPer <- (sinePer + linePer + ltrPer + dnaPer + rcPer + plePer + unknownPer + otherPer)
 unmaskPer <- (100 - totalPer)
 
 sinePer.nest <- (sineCov.nest / genomeSize) * 100
