@@ -3,7 +3,7 @@
 usage()
 {
         echo "  #############################
-        earlGrey version 7.0.2 (Library Construction Only)
+        earlGrey version 7.0.3 (Library Construction Only)
         Required Parameters:
                 -g == genome.fasta
                 -s == species name
