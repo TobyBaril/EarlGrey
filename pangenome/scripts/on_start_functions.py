@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -28,10 +27,7 @@ def convert_seconds(seconds):
     m = seconds % 3600 // 60
     s = seconds % 60
     return f"{h:02d}:{m:02d}:{s:05.2f}"
-import sys
-import os
-from pathlib import Path
-import yaml
+
 
 # --------------------------------------------------
 # Message helpers (consistent style)
@@ -67,7 +63,7 @@ def validate_parameters(config, defaults=None, outfile = None):
 
     # ---- Defaults + messages ----
     defaults = {
-        'ProcNum': (1, "cores will be used"),
+        'threads': (1, "{} cores will be used"),
         'num': (10, "De Novo Sequences will be extended through a maximum of {} iterations"),
         'no_seq': (20, "{} sequences will be used in BEAT consensus generation"),
         'cluster': ('no', None),
@@ -75,7 +71,7 @@ def validate_parameters(config, defaults=None, outfile = None):
         'margin': ('no', None),
         'Flank': (1000, "Blast, extend, align, trim process will add {}bp to each end in each iteration"),
         'min_seq': (3, "Blast, extend, align, trim process will require {} sequences to generate a new consensus sequence"),
-        'heli': ('no', None)
+        'run_heliano': ('FALSE', None)
     }
 
     msg_header("Parameter values")
@@ -119,7 +115,7 @@ def validate_parameters(config, defaults=None, outfile = None):
         msg_info("Short TE sequences (<100bp) will not be removed")
 
     # Helitrons
-    if config['heli'] == 'yes':
+    if config['run_heliano'] == 'yes':
         msg_info("HELITRON detection will be run using HELIANO")
     else:
         msg_info("HELITRON detection will not be run")
@@ -175,13 +171,13 @@ def validate_parameters(config, defaults=None, outfile = None):
     msg_info("All checks passed. Workflow ready to start.\n")
     
     print("\nPlease cite the following paper when using this software:")
-    print("Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068.")
+    print("Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068. \n")
     
 
     return config
 
 
-def make_directories(directory, species, RepSpec=None, startCust=None, heli=None):
+def make_directories(directory, species, RepSpec=None, startCust=None, run_heliano=None):
     outdir = os.path.join(directory, f"{species}_EarlGrey")
     os.makedirs(outdir, exist_ok=True)
 
@@ -194,7 +190,7 @@ def make_directories(directory, species, RepSpec=None, startCust=None, heli=None
     os.makedirs(os.path.join(outdir, f"{species}_RepeatLandscape"), exist_ok=True)
     os.makedirs(os.path.join(outdir, f"{species}_mergedRepeats"), exist_ok=True)
     os.makedirs(os.path.join(outdir, f"{species}_summaryFiles"), exist_ok=True)
-    if heli:
+    if run_heliano:
         os.makedirs(os.path.join(outdir, f"{species}_heliano"), exist_ok=True)
     return outdir
 
