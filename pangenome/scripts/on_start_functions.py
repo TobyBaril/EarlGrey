@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
+import yaml
 
 def running_tea(stage="Starting Earl Grey"):
     """Display ASCII art tea cup with stage name"""
@@ -27,73 +28,151 @@ def convert_seconds(seconds):
     m = seconds % 3600 // 60
     s = seconds % 60
     return f"{h:02d}:{m:02d}:{s:05.2f}"
+import sys
+import os
+from pathlib import Path
+import yaml
 
-def validate_parameters(config):
-    """Validate and set default parameters"""
-    required_params = ['genome', 'species', 'output_dir']
-    
-    # Check required parameters
-    for param in required_params:
+# --------------------------------------------------
+# Message helpers (consistent style)
+# --------------------------------------------------
+def msg_header(title):
+    print("\n" + "=" * 60)
+    print(f"{title}")
+    print("=" * 60)
+
+def msg_info(text):
+    print(f"[INFO] {text}")
+
+def msg_warn(text):
+    print(f"[WARNING] {text}")
+
+def msg_error(text):
+    sys.exit(f"\n[ERROR] {text}\n")
+
+# --------------------------------------------------
+# Validation + defaults with custom messages
+# --------------------------------------------------
+def validate_config(config, defaults=None, outfile = None):
+
+    msg_header("Earl Grey configuration check")
+
+    # ---- Required parameters ----
+    required = ['genome', 'species', 'output_dir']
+    for param in required:
         if not config.get(param):
-            print(f"ERROR: Required parameter '{param}' not specified")
-            sys.exit(1)
-    
-    # Set defaults and display messages
+            msg_error(f"Required parameter '{param}' not specified in config file")
+
+    msg_info("Required parameters detected")
+
+    # ---- Defaults + messages ----
     defaults = {
-        'ProcNum': (1, "Cores Will Be Used"),
-        'num': (10, "De Novo Sequences Will Be Extended Through a Maximum of {} Iterations"),
+        'ProcNum': (1, "cores will be used"),
+        'num': (10, "De Novo Sequences will be extended through a maximum of {} iterations"),
         'no_seq': (20, "{} sequences will be used in BEAT consensus generation"),
         'cluster': ('no', None),
         'softMask': ('no', None),
         'margin': ('no', None),
-        'Flank': (1000, "Blast, Extend, Align, Trim Process Will Add {}bp to Each End in Each Iteration"),
-        'min_seq': (3, "Blast, Extend, Align, Trim Process Will Require {} Sequences to Generate a New Consensus Sequence"),
+        'Flank': (1000, "Blast, extend, align, trim process will add {}bp to each end in each iteration"),
+        'min_seq': (3, "Blast, extend, align, trim process will require {} sequences to generate a new consensus sequence"),
         'heli': ('no', None)
     }
-    
+
+    msg_header("Parameter values")
+
     for param, (default_val, message_template) in defaults.items():
         if not config.get(param):
             config[param] = default_val
             if message_template:
-                print(message_template.format(default_val))
+                msg_info(message_template.format(default_val))
         else:
             if message_template:
-                print(message_template.format(config[param]))
-    
-    # Handle special cases with custom messages
+                msg_info(message_template.format(config[param]))
+
+    # --------------------------------------------------
+    # Verbose user messages 
+    # --------------------------------------------------
+    msg_header("Pipeline behaviour")
+
+    # RepeatMasker
     if not config.get('RepSpec') and not config.get('startCust'):
-        print("RepeatMasker species not specified, running Earl Grey without an initial mask with known repeats")
+        msg_info("RepeatMasker species not specified, running Earl Grey without an initial mask with known repeats")
     else:
-        print("Running Earl Grey with an initial mask with known repeats")
-    
-    # Clustering validation
+        msg_info("Running with an initial mask using known repeats")
+
+    # Clustering
     if config['cluster'] == 'yes':
-        print("TE library consensus sequences will be clustered, be aware of the impact this can have on subfamilies and chimeric TEs!")
+        msg_warn("TE consensus sequences will be clustered (may affect subfamilies and create chimeras)")
     else:
-        print("TE library consensus sequences will not be clustered")
-    
-    # SoftMask validation
+        msg_info("TE consensus sequences will not be clustered")
+
+    # SoftMask
     if config['softMask'] == 'yes':
-        print("Softmasked genome will be generated")
+        msg_info("Softmasked genome will be generated")
     else:
-        print("Softmasked genome will not be generated")
-    
-    # Margin validation
+        msg_info("Softmasked genome will not be generated")
+
+    # Margin
     if config['margin'] == 'yes':
-        print("Short TE sequences <100bp will be removed from annotation")
+        msg_info("Short TE sequences (<100bp) will be removed")
     else:
-        print("Short TE sequences <100bp will not be removed from annotation")
-    
-    # Helitron validation
+        msg_info("Short TE sequences (<100bp) will not be removed")
+
+    # Helitrons
     if config['heli'] == 'yes':
-        print("HELITRON detection will be run using HELIANO")
+        msg_info("HELITRON detection will be run using HELIANO")
     else:
-        print("HELITRON detection will not be run")
+        msg_info("HELITRON detection will not be run")
+
+    # --------------------------------------------------
+    # Structural validation 
+    # --------------------------------------------------
+    msg_header("Input validation")
+
+    if not isinstance(config['genome'], dict):
+        msg_error("'genome' must be a dictionary: species → fasta")
+
+    for sp, path in config['genome'].items():
+        if not Path(path).exists():
+            msg_error(f"Genome file for species '{sp}' not found: {path}")
+
+    if not isinstance(config['species'], list):
+        msg_error("'species' must be a list")
+
+    for sp in config['species']:
+        if sp not in config['genome']:
+            msg_error(f"Species '{sp}' listed but no genome provided")
+
+    # --------------------------------------------------
+    # Output setup
+    # --------------------------------------------------
+    msg_header("Output setup")
+
+    outdir = Path(config['output_dir'])
+    outdir.mkdir(parents=True, exist_ok=True)
+    msg_info(f"Output directory: {outdir}")
+
+    for sp in config['species']:
+        sp_dir = outdir / f"{sp}_EarlGrey"
+        sp_dir.mkdir(parents=True, exist_ok=True)
+        msg_info(f"Created directory: {sp_dir}")
+
+    # Save validated config (optional but recommended)
+    if outfile:
+        with open(outfile, "w") as f:
+            yaml.safe_dump(config, f, sort_keys=False)
+            msg_info(f"Validated configuration saved to: {outfile}")
+
+
+    msg_header("Configuration complete")
+    msg_info("All checks passed. Workflow ready to start.\n")
     
     print("\nPlease cite the following paper when using this software:")
     print("Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068.")
     
+
     return config
+
 
 def check_script_directories(script_dir):
     """Check if required script directories exist"""
@@ -106,6 +185,25 @@ def check_script_directories(script_dir):
         print("ERROR: teStrainer module not found, please check all modules are present and run the configure script in the Earl Grey directory before attempting to run Earl Grey")
         sys.exit(1)
 
+def make_directories(directory, species, RepSpec=None, startCust=None, heli=None):
+    outdir = os.path.join(directory, f"{species}_EarlGrey")
+    os.makedirs(outdir, exist_ok=True)
+
+    if RepSpec or startCust:
+        os.makedirs(os.path.join(outdir, f"{species}_RepeatMasker"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_Database"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_RepeatModeler"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_strainer"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_RepeatMasker_Against_Custom_Library"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_RepeatLandscape"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_mergedRepeats"), exist_ok=True)
+    os.makedirs(os.path.join(outdir, f"{species}_summaryFiles"), exist_ok=True)
+    if heli:
+        os.makedirs(os.path.join(outdir, f"{species}_heliano"), exist_ok=True)
+    return outdir
+
+#CHECK WITH TOBY: Should this be in the pangenome pipeline? 
+# Or is this part of what gets set up by first running EarlGrey normally?
 def check_biocontainer():
     """Check and configure biocontainer installation if needed"""
     repeatmasker_lib = "/usr/local/share/RepeatMasker/Libraries/"
@@ -159,6 +257,8 @@ def configure_biocontainer(lib_path):
         sys.exit(1)
 
 
+#CHECK WITH TOBY: Should this be in the pangenome pipeline? 
+# Or is this part of what gets set up by first running EarlGrey normally?
 def check_dfam39():
     """Check for Dfam 3.9 configuration requirements"""
     try:
@@ -191,6 +291,8 @@ def check_dfam39():
     except Exception as e:
         print(f"Warning: Error checking Dfam 3.9 configuration: {e}")
 
+#CHECK WITH TOBY: Should this be in the pangenome pipeline? 
+# Or is this part of what gets set up by first running EarlGrey normally?
 def generate_dfam39_config_script(library_path, rm_path):
     """Generate configuration script for Dfam 3.9"""
     script_path = os.path.join(os.getcwd(), "configure_dfam39.sh")
@@ -237,20 +339,3 @@ def generate_dfam39_config_script(library_path, rm_path):
     #os.chmod(script_path, 0o755)
     print(f"Make the script executable and run: chmod +x {script_path} && ./{script_path}")
 
-
-def make_directories(directory, species, RepSpec=None, startCust=None, heli=None):
-    outdir = os.path.join(directory, f"{species}_EarlGrey")
-    os.makedirs(outdir, exist_ok=True)
-
-    if RepSpec or startCust:
-        os.makedirs(os.path.join(outdir, f"{species}_RepeatMasker"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_Database"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_RepeatModeler"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_strainer"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_RepeatMasker_Against_Custom_Library"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_RepeatLandscape"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_mergedRepeats"), exist_ok=True)
-    os.makedirs(os.path.join(outdir, f"{species}_summaryFiles"), exist_ok=True)
-    if heli:
-        os.makedirs(os.path.join(outdir, f"{species}_heliano"), exist_ok=True)
-    return outdir

@@ -22,11 +22,43 @@ MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
 SCRIPT_DIR = config["script_dir"]
 
+# ---- Default values ----
+DEFAULTS = {
+    "threads": 1,
+    "iterations": 10,
+    "max_consensus_seqs": 20,
+    "min_consensus_seqs": 3,
+    "flank": 1000,
+    "run_heliano": False,
+    "cluster": "no",
+    "softMask": "no",
+    "margin": "no"
+}
+
+# ---- Required parameters ----
+# Apply at parse time
+config = validate_config_verbose(
+    config, 
+    defaults = DEFAULTS,
+    outfile = os.path.join(config["output_dir"], "validated_config.yaml")
+    )
+
 
 onstart:
     # Display tea art
     running_tea("Earl Grey Pipeline Starting")
 
+    # Check directories
+    check_script_directories(script_dir)
+
+    # Check biocontainer
+    check_biocontainer()
+    
+    # Check Dfam 3.9
+    check_dfam39()
+
+    # Make output directories
+    make_directories(OUTDIR, SPECIES_LIST, RepSpec=REPSPEC, startCust=CUSTOM_LIB, heli=HELI)    
     
 rule all:
     input:

@@ -1,7 +1,5 @@
 import os
 
-configfile: "config/config.yaml"
-
 GENOME = config["genome"]
 SPECIES_LIST = config["species"]
 OUTDIR = config["output_dir"] #os.path.join(config["output_dir"], f"{SPECIES}_EarlGrey")
@@ -15,43 +13,12 @@ MIN_SEQ = config["min_consensus_seqs"]
 HELI = config.get("run_heliano", False)
 SCRIPT_DIR = config["script_dir"]
 
-rule check_and_configure_env:
-    params:
-        outdir = OUTDIR,
-        species = SPECIES_LIST,
-        repspec = REPSPEC,
-        startCust = CUSTOM_LIB,
-        heli = HELI,
-        script_dir = SCRIPT_DIR
-    output:
-        envchecked = touch("{outdir}/.envchecked")
-    run:
-        # Validate parameters
-        validated_config = validate_parameters(config)
-        
-        # Check directories
-        check_script_directories(script_dir)
-
-        # Check biocontainer
-        check_biocontainer()
-        
-        # Check Dfam 3.9
-        check_dfam39()
-        
-        print("All startup checks completed successfully!")
-
-        print("Making output directories...")
-        make_directories(outdir, species, RepSpec=repspec, startCust=startCust, heli=heli)
-
 rule prep_genome:
     input:
-        genome=lambda wildcards: GENOME[wildcards.species],
-        dfam_ready = r"{outdir}/.envchecked" 
-    params:
-        outdir = OUTDIR
+        genome=lambda wildcards: GENOME[wildcards.species]
     output:
-        gen_prep="{outdir}/{species}_EarlGrey/{species}.prep",
-        gen_dict="{outdir}/{species}_EarlGrey/{species}.dict"
+        gen_prep="{OUTDIR}/{species}_EarlGrey/{species}.prep",
+        gen_dict="{OUTDIR}/{species}_EarlGrey/{species}.dict"
     shell:
         """
         cp {input.genome} {input.genome}.bak && gzip -f {input.genome}.bak
