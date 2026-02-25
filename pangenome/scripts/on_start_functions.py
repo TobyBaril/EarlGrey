@@ -53,7 +53,7 @@ def msg_error(text):
 # --------------------------------------------------
 # Validation + defaults with custom messages
 # --------------------------------------------------
-def validate_config(config, defaults=None, outfile = None):
+def validate_parameters(config, defaults=None, outfile = None):
 
     msg_header("Earl Grey configuration check")
 
@@ -143,6 +143,13 @@ def validate_config(config, defaults=None, outfile = None):
         if sp not in config['genome']:
             msg_error(f"Species '{sp}' listed but no genome provided")
 
+    if not os.path.isdir(config["script_dir"]):
+        msg_error("ERROR: Script directory variable not set, please run the configure script in the Earl Grey directory before attempting to run Earl Grey")
+    
+    testrainer_dir = os.path.join(config["script_dir"], "TEstrainer")
+    if not os.path.isdir(testrainer_dir):
+        msg_error("ERROR: teStrainer module not found, please check all modules are present and run the configure script in the Earl Grey directory before attempting to run Earl Grey")
+
     # --------------------------------------------------
     # Output setup
     # --------------------------------------------------
@@ -173,17 +180,6 @@ def validate_config(config, defaults=None, outfile = None):
 
     return config
 
-
-def check_script_directories(script_dir):
-    """Check if required script directories exist"""
-    if not os.path.isdir(script_dir):
-        print("ERROR: Script directory variable not set, please run the configure script in the Earl Grey directory before attempting to run Earl Grey")
-        sys.exit(1)
-    
-    testrainer_dir = os.path.join(script_dir, "TEstrainer")
-    if not os.path.isdir(testrainer_dir):
-        print("ERROR: teStrainer module not found, please check all modules are present and run the configure script in the Earl Grey directory before attempting to run Earl Grey")
-        sys.exit(1)
 
 def make_directories(directory, species, RepSpec=None, startCust=None, heli=None):
     outdir = os.path.join(directory, f"{species}_EarlGrey")

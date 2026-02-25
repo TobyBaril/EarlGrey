@@ -1,8 +1,10 @@
 sys.path.append(os.path.dirname(workflow.snakefile))
 from scripts.on_start_functions import (
     running_tea, 
-    validate_parameters, 
-    check_script_directories
+    validate_parameters,
+    make_directories,
+    check_biocontainer,
+    check_dfam39,
 )
 
 configfile: "config/config.yaml"
@@ -37,7 +39,7 @@ DEFAULTS = {
 
 # ---- Required parameters ----
 # Apply at parse time
-config = validate_config_verbose(
+config = validate_parameters(
     config, 
     defaults = DEFAULTS,
     outfile = os.path.join(config["output_dir"], "validated_config.yaml")
@@ -48,14 +50,12 @@ onstart:
     # Display tea art
     running_tea("Earl Grey Pipeline Starting")
 
-    # Check directories
-    check_script_directories(script_dir)
-
-    # Check biocontainer
-    check_biocontainer()
+    # check with Toby if needed.
+    # # Check biocontainer
+    # check_biocontainer()
     
-    # Check Dfam 3.9
-    check_dfam39()
+    # # Check Dfam 3.9
+    # check_dfam39()
 
     # Make output directories
     make_directories(OUTDIR, SPECIES_LIST, RepSpec=REPSPEC, startCust=CUSTOM_LIB, heli=HELI)    
