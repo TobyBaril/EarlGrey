@@ -49,7 +49,7 @@ def msg_error(text):
 # --------------------------------------------------
 # Validation + defaults with custom messages
 # --------------------------------------------------
-def validate_parameters(config, defaults=None, outfile = None):
+def validate_parameters(config, outfile = None):
 
     msg_header("Earl Grey configuration check")
 

@@ -143,10 +143,10 @@
 <!-- 9 -->
 <g id="node10" class="node">
 <title>9</title>
-<path fill="none" stroke="#afd856" stroke-width="2" d="M302.12,-545.75C302.12,-545.75 235.88,-545.75 235.88,-545.75 229.88,-545.75 223.88,-539.75 223.88,-533.75 223.88,-533.75 223.88,-516 223.88,-516 223.88,-510 229.88,-504 235.88,-504 235.88,-504 302.12,-504 302.12,-504 308.12,-504 314.12,-510 314.12,-516 314.12,-516 314.12,-533.75 314.12,-533.75 314.12,-539.75 308.12,-545.75 302.12,-545.75"/>
+<path fill="none" stroke="#afd856" stroke-width="2" d="M316.38,-545.75C316.38,-545.75 221.62,-545.75 221.62,-545.75 215.62,-545.75 209.62,-539.75 209.62,-533.75 209.62,-533.75 209.62,-516 209.62,-516 209.62,-510 215.62,-504 221.62,-504 221.62,-504 316.38,-504 316.38,-504 322.38,-504 328.38,-510 328.38,-516 328.38,-516 328.38,-533.75 328.38,-533.75 328.38,-539.75 322.38,-545.75 316.38,-545.75"/>
 <text xml:space="preserve" text-anchor="middle" x="269" y="-532.25" font-family="sans" font-size="10.00">prep_genome</text>
 <text xml:space="preserve" text-anchor="middle" x="269" y="-521" font-family="sans" font-size="10.00">OUTDIR: results</text>
-<text xml:space="preserve" text-anchor="middle" x="269" y="-509.75" font-family="sans" font-size="10.00">species: dummy</text>
+<text xml:space="preserve" text-anchor="middle" x="269" y="-509.75" font-family="sans" font-size="10.00">species: Other_species</text>
 </g>
 <!-- 9&#45;&gt;8 -->
 <g id="edge12" class="edge">

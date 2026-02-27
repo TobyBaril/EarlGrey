@@ -1,7 +1,7 @@
 genome: 
   Danaus_plexippus: "data/NC_045808_EarlWorkshop.fasta"
-  dummy: "data/dummy.fasta"
-species: ["Danaus_plexippus", "dummy"]
+  Other_species: "data/dummy.fasta"
+species: ["Danaus_plexippus", "Other_species"]
 output_dir: "results"
 threads: 8
 repeatmasker_species: ""  # e.g. "arthropoda" or "" for none

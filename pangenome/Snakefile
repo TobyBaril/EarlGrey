@@ -12,6 +12,13 @@ include: "rules/lib_construct.smk"
 include: "rules/clustering.smk"
 include: "rules/annotate_simple.smk"
 
+
+# Apply at parse time
+config = validate_parameters(
+    config, 
+    outfile = os.path.join(config["output_dir"], "validated_config.yaml")
+    )
+
 GENOME = config["genome"]
 SPECIES_LIST = config["species"]
 OUTDIR = config["output_dir"] #os.path.join(config["output_dir"], f"{SPECIES}_EarlGrey")
@@ -23,28 +30,6 @@ FLANK = config["flank"]
 MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
 SCRIPT_DIR = config["script_dir"]
-
-# ---- Default values ----
-DEFAULTS = {
-    "threads": 1,
-    "iterations": 10,
-    "max_consensus_seqs": 20,
-    "min_consensus_seqs": 3,
-    "flank": 1000,
-    "run_heliano": False,
-    "cluster": "no",
-    "softMask": "no",
-    "margin": "no"
-}
-
-# ---- Required parameters ----
-# Apply at parse time
-config = validate_parameters(
-    config, 
-    defaults = DEFAULTS,
-    outfile = os.path.join(config["output_dir"], "validated_config.yaml")
-    )
-
 
 onstart:
     # Display tea art
@@ -58,7 +43,10 @@ onstart:
     # check_dfam39()
 
     # Make output directories
-    make_directories(OUTDIR, SPECIES_LIST, RepSpec=REPSPEC, startCust=CUSTOM_LIB, heli=HELI)    
+    make_directories(
+        OUTDIR, SPECIES_LIST, 
+        RepSpec=REPSPEC, 
+        startCust=CUSTOM_LIB, run_heliano=HELI)    
     
 rule all:
     input:
