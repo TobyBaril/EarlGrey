@@ -23,7 +23,7 @@ rule prep_genome:
         """
         cp {input.genome} {input.genome}.bak && gzip -f {input.genome}.bak
         sed '/>/ s/[[:space:]].*//g; /^$/d' {input.genome} > {input.genome}.tmp
-        scripts/headSwap.sh -i {input.genome}.tmp -o {output.gen_prep} && rm {input.genome}.tmp
+        ../scripts/headSwap.sh -i {input.genome}.tmp -o {output.gen_prep} && rm {input.genome}.tmp
         mv {input.genome}.tmp.dict {output.gen_dict}
         sed -i.bak '/^>/! s/[DVHBPE]/N/g' {output.gen_prep}
 
@@ -43,7 +43,7 @@ rule repeatmasker:
         RepeatMasker \
            -species {params.rep_spec} \
            -norna -no_is -lcambig -s -a -pa {params.threads} \
-           -dir {params.outdir}/{species}_EarlGrey/{wildcards.species}_RepeatMasker \
+           -dir {params.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_RepeatMasker \
            {input.genome}
         """
 
