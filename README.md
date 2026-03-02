@@ -646,7 +646,7 @@ else
     touch ${DATA_DIR}/${RM_LIBRARY}.strained
 fi
 echo "Compiling library"
-if [ -f ${DATA_DIR}/trf/${RM_LIBRARY}.satellites ]; then
+if [ -f ${DATA_DIR}/trf/${RM_LIBRARY}.satellites ]; then 
     cat ${DATA_DIR}/trf/${RM_LIBRARY}.satellites >> ${DATA_DIR}/${RM_LIBRARY}.strained
 fi
 ```

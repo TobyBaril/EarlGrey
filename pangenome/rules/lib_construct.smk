@@ -1,7 +1,5 @@
 import os
 
-configfile: "config/config.yaml"
-
 GENOME = config["genome"]
 SPECIES_LIST = config["species"]
 OUTDIR = config["output_dir"] #os.path.join(config["output_dir"], f"{SPECIES}_EarlGrey")
@@ -12,29 +10,20 @@ ITER = config["iterations"]
 FLANK = config["flank"]
 MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
-
-# rule all:
-#     input:
-#         "results/combined_all_species.fa"
-        # expand(
-        #     "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}-families.fa.strained",
-        #     outdir=OUTDIR,
-        #     species=SPECIES_LIST
-        # )
+HELI = config.get("run_heliano", False)
+SCRIPT_DIR = config["script_dir"]
 
 rule prep_genome:
     input:
         genome=lambda wildcards: GENOME[wildcards.species]
-    params:
-        outdir = OUTDIR
     output:
-        gen_prep="{outdir}/{species}_EarlGrey/{species}.prep",
-        gen_dict="{outdir}/{species}_EarlGrey/{species}.dict"
+        gen_prep="{OUTDIR}/{species}_EarlGrey/{species}.prep",
+        gen_dict="{OUTDIR}/{species}_EarlGrey/{species}.dict"
     shell:
         """
         cp {input.genome} {input.genome}.bak && gzip -f {input.genome}.bak
         sed '/>/ s/[[:space:]].*//g; /^$/d' {input.genome} > {input.genome}.tmp
-        scripts/headSwap.sh -i {input.genome}.tmp -o {output.gen_prep} && rm {input.genome}.tmp
+        ../scripts/headSwap.sh -i {input.genome}.tmp -o {output.gen_prep} && rm {input.genome}.tmp
         mv {input.genome}.tmp.dict {output.gen_dict}
         sed -i.bak '/^>/! s/[DVHBPE]/N/g' {output.gen_prep}
 
@@ -54,7 +43,7 @@ rule repeatmasker:
         RepeatMasker \
            -species {params.rep_spec} \
            -norna -no_is -lcambig -s -a -pa {params.threads} \
-           -dir {params.outdir}/{species}_EarlGrey/{wildcards.species}_RepeatMasker \
+           -dir {params.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_RepeatMasker \
            {input.genome}
         """
 

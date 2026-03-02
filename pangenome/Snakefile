@@ -1,9 +1,23 @@
+sys.path.append(os.path.dirname(workflow.snakefile))
+from scripts.on_start_functions import (
+    running_tea, 
+    validate_parameters,
+    make_directories,
+    check_biocontainer,
+    check_dfam39,
+)
 
 configfile: "config/config.yaml"
-
 include: "rules/lib_construct.smk"
 include: "rules/clustering.smk"
 include: "rules/annotate_simple.smk"
+
+
+# Apply at parse time
+config = validate_parameters(
+    config, 
+    outfile = os.path.join(config["output_dir"], "validated_config.yaml")
+    )
 
 GENOME = config["genome"]
 SPECIES_LIST = config["species"]
@@ -15,7 +29,25 @@ ITER = config["iterations"]
 FLANK = config["flank"]
 MAX_SEQ = config["max_consensus_seqs"]
 MIN_SEQ = config["min_consensus_seqs"]
+SCRIPT_DIR = config["script_dir"]
 
+onstart:
+    # Display tea art
+    running_tea("Earl Grey Pipeline Starting")
+
+    # check with Toby if needed.
+    # # Check biocontainer
+    # check_biocontainer()
+    
+    # # Check Dfam 3.9
+    # check_dfam39()
+
+    # Make output directories
+    make_directories(
+        OUTDIR, SPECIES_LIST, 
+        RepSpec=REPSPEC, 
+        startCust=CUSTOM_LIB, run_heliano=HELI)    
+    
 rule all:
     input:
         expand(
@@ -42,21 +74,3 @@ rule all:
         #     species=SPECIES_LIST
         # )
 
-# rule all:
-#     input:
-#         expand(
-#             "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.highLevelCount.txt",
-#             outdir=OUTDIR,
-#             species=SPECIES_LIST
-#         ),
-#         expand(
-#             "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.summaryPie.pdf",
-#             outdir=OUTDIR,
-#             species=SPECIES_LIST
-#         ),
-#         # Optional softmasked genome
-#         expand(
-#             "{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.softmasked.fasta",
-#             outdir=OUTDIR,
-#             species=SPECIES_LIST
-#         ) if SOFTMASK == "yes" else []

@@ -19,7 +19,8 @@
 <g id="node2" class="node">
 <title>1</title>
 <path fill="none" stroke="#56d873" stroke-width="2" d="M142.75,-108C142.75,-108 41.25,-108 41.25,-108 35.25,-108 29.25,-102 29.25,-96 29.25,-96 29.25,-84 29.25,-84 29.25,-78 35.25,-72 41.25,-72 41.25,-72 142.75,-72 142.75,-72 148.75,-72 154.75,-78 154.75,-84 154.75,-84 154.75,-96 154.75,-96 154.75,-102 148.75,-108 142.75,-108"/>
-<text xml:space="preserve" text-anchor="middle" x="92" y="-86.12" font-family="sans" font-size="10.00">repeatmasker_annotation</text>
+<text xml:space="preserve" text-anchor="middle" x="92" y="-91.75" font-family="sans" font-size="10.00">repeatmasker_annotation</text>
+<text xml:space="preserve" text-anchor="middle" x="92" y="-80.5" font-family="sans" font-size="10.00">outdir: results</text>
 </g>
 <!-- 1&#45;&gt;0 -->
 <g id="edge1" class="edge">
@@ -32,7 +33,7 @@
 <title>2</title>
 <path fill="none" stroke="#afd856" stroke-width="2" d="M124,-545.75C124,-545.75 12,-545.75 12,-545.75 6,-545.75 0,-539.75 0,-533.75 0,-533.75 0,-516 0,-516 0,-510 6,-504 12,-504 12,-504 124,-504 124,-504 130,-504 136,-510 136,-516 136,-516 136,-533.75 136,-533.75 136,-539.75 130,-545.75 124,-545.75"/>
 <text xml:space="preserve" text-anchor="middle" x="68" y="-532.25" font-family="sans" font-size="10.00">prep_genome</text>
-<text xml:space="preserve" text-anchor="middle" x="68" y="-521" font-family="sans" font-size="10.00">outdir: results</text>
+<text xml:space="preserve" text-anchor="middle" x="68" y="-521" font-family="sans" font-size="10.00">OUTDIR: results</text>
 <text xml:space="preserve" text-anchor="middle" x="68" y="-509.75" font-family="sans" font-size="10.00">species: Danaus_plexippus</text>
 </g>
 <!-- 2&#45;&gt;1 -->
@@ -57,7 +58,8 @@
 <g id="node8" class="node">
 <title>7</title>
 <path fill="none" stroke="#70d856" stroke-width="2" d="M160.62,-468C160.62,-468 109.38,-468 109.38,-468 103.38,-468 97.38,-462 97.38,-456 97.38,-456 97.38,-444 97.38,-444 97.38,-438 103.38,-432 109.38,-432 109.38,-432 160.62,-432 160.62,-432 166.62,-432 172.62,-438 172.62,-444 172.62,-444 172.62,-456 172.62,-456 172.62,-462 166.62,-468 160.62,-468"/>
-<text xml:space="preserve" text-anchor="middle" x="135" y="-446.12" font-family="sans" font-size="10.00">repeatmasker</text>
+<text xml:space="preserve" text-anchor="middle" x="135" y="-451.75" font-family="sans" font-size="10.00">repeatmasker</text>
+<text xml:space="preserve" text-anchor="middle" x="135" y="-440.5" font-family="sans" font-size="10.00">outdir: results</text>
 </g>
 <!-- 2&#45;&gt;7 -->
 <g id="edge11" class="edge">
@@ -81,7 +83,8 @@
 <g id="node14" class="node">
 <title>13</title>
 <path fill="none" stroke="#56d873" stroke-width="2" d="M286.75,-108C286.75,-108 185.25,-108 185.25,-108 179.25,-108 173.25,-102 173.25,-96 173.25,-96 173.25,-84 173.25,-84 173.25,-78 179.25,-72 185.25,-72 185.25,-72 286.75,-72 286.75,-72 292.75,-72 298.75,-78 298.75,-84 298.75,-84 298.75,-96 298.75,-96 298.75,-102 292.75,-108 286.75,-108"/>
-<text xml:space="preserve" text-anchor="middle" x="236" y="-86.12" font-family="sans" font-size="10.00">repeatmasker_annotation</text>
+<text xml:space="preserve" text-anchor="middle" x="236" y="-91.75" font-family="sans" font-size="10.00">repeatmasker_annotation</text>
+<text xml:space="preserve" text-anchor="middle" x="236" y="-80.5" font-family="sans" font-size="10.00">outdir: results</text>
 </g>
 <!-- 3&#45;&gt;13 -->
 <g id="edge18" class="edge">
@@ -140,10 +143,10 @@
 <!-- 9 -->
 <g id="node10" class="node">
 <title>9</title>
-<path fill="none" stroke="#afd856" stroke-width="2" d="M301,-545.75C301,-545.75 237,-545.75 237,-545.75 231,-545.75 225,-539.75 225,-533.75 225,-533.75 225,-516 225,-516 225,-510 231,-504 237,-504 237,-504 301,-504 301,-504 307,-504 313,-510 313,-516 313,-516 313,-533.75 313,-533.75 313,-539.75 307,-545.75 301,-545.75"/>
+<path fill="none" stroke="#afd856" stroke-width="2" d="M316.38,-545.75C316.38,-545.75 221.62,-545.75 221.62,-545.75 215.62,-545.75 209.62,-539.75 209.62,-533.75 209.62,-533.75 209.62,-516 209.62,-516 209.62,-510 215.62,-504 221.62,-504 221.62,-504 316.38,-504 316.38,-504 322.38,-504 328.38,-510 328.38,-516 328.38,-516 328.38,-533.75 328.38,-533.75 328.38,-539.75 322.38,-545.75 316.38,-545.75"/>
 <text xml:space="preserve" text-anchor="middle" x="269" y="-532.25" font-family="sans" font-size="10.00">prep_genome</text>
-<text xml:space="preserve" text-anchor="middle" x="269" y="-521" font-family="sans" font-size="10.00">outdir: results</text>
-<text xml:space="preserve" text-anchor="middle" x="269" y="-509.75" font-family="sans" font-size="10.00">species: dummy</text>
+<text xml:space="preserve" text-anchor="middle" x="269" y="-521" font-family="sans" font-size="10.00">OUTDIR: results</text>
+<text xml:space="preserve" text-anchor="middle" x="269" y="-509.75" font-family="sans" font-size="10.00">species: Other_species</text>
 </g>
 <!-- 9&#45;&gt;8 -->
 <g id="edge12" class="edge">
@@ -155,7 +158,8 @@
 <g id="node13" class="node">
 <title>12</title>
 <path fill="none" stroke="#70d856" stroke-width="2" d="M294.62,-468C294.62,-468 243.38,-468 243.38,-468 237.38,-468 231.38,-462 231.38,-456 231.38,-456 231.38,-444 231.38,-444 231.38,-438 237.38,-432 243.38,-432 243.38,-432 294.62,-432 294.62,-432 300.62,-432 306.62,-438 306.62,-444 306.62,-444 306.62,-456 306.62,-456 306.62,-462 300.62,-468 294.62,-468"/>
-<text xml:space="preserve" text-anchor="middle" x="269" y="-446.12" font-family="sans" font-size="10.00">repeatmasker</text>
+<text xml:space="preserve" text-anchor="middle" x="269" y="-451.75" font-family="sans" font-size="10.00">repeatmasker</text>
+<text xml:space="preserve" text-anchor="middle" x="269" y="-440.5" font-family="sans" font-size="10.00">outdir: results</text>
 </g>
 <!-- 9&#45;&gt;12 -->
 <g id="edge16" class="edge">
