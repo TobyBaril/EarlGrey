@@ -1,8 +1,8 @@
 genome: 
-  Danaus_plexippus: "data/NC_045808_EarlWorkshop.fasta"
-  Other_species: "data/dummy.fasta"
-species: ["Danaus_plexippus", "Other_species"]
-output_dir: "results"
+  genome1: "/data/toby/EarlGrey_pangenome/test/genome1.fasta"
+  genome2: "/data/toby/EarlGrey_pangenome/test/genome2.fasta"
+species: ["genome1", "genome2"]
+output_dir: "/data/toby/EarlGrey_pangenome/test/results"
 threads: 8
 repeatmasker_species: ""  # e.g. "arthropoda" or "" for none
 custom_library: ""        # path to custom library or "" for none
@@ -11,5 +11,5 @@ flank: 1000
 max_consensus_seqs: 20
 min_consensus_seqs: 3
 consensus_library : "results/combined_all_species.fa"
-script_dir: "/Users/feurtey/Local_documents/Projects/EarlGrey_pangenome/pangenome/scripts"
+script_dir: "/data/toby/miniforge3/envs/earlgrey-pan-dev/share/earlgrey-7.0.3-0/scripts"
 run_heliano: False

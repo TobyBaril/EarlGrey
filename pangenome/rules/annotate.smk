@@ -10,8 +10,10 @@ THREADS = config["threads"]
 REPSPEC = config.get("repeatmasker_species", None)
 CONSENSUS_LIB = config["consensus_library"]
 MARGIN = config.get("margin", "no")
-SOFTMASK = config.get("softmask", "no") 
-HELIANO = config.get("heliano", "no")
+SOFTMASK = config.get("softmask", "no")
+# Handle both heliano and run_heliano config keys, convert boolean to yes/no
+_heliano_val = config.get("heliano", config.get("run_heliano", False))
+HELIANO = "yes" if (_heliano_val is True or _heliano_val == "yes") else "no"
 SCRIPT_DIR = config["script_dir"]  # Path to EarlGrey scripts directory
 
 # rule all:
@@ -64,45 +66,46 @@ SCRIPT_DIR = config["script_dir"]  # Path to EarlGrey scripts directory
 #         sed -i '/^>/! s/[DVHBPE]/N/g' {output.prep}
 #         """
 
-rule create_repeatmasker_library:
-    output:
-        replib="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{repspec}.RepeatMasker.lib"
-    params:
-        script_dir=SCRIPT_DIR,
-        libpath=lambda wildcards: "$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/famdb/|')" if REPSPEC else ""
-    shell:
-        """
-        if [[ $(which RepeatMasker) == *"bin"* ]]; then
-            libpath="$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/famdb/|')"
-            export PATH=$PATH:"$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/|g')"
-        else
-            libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/famdb/"
-        fi
-        
-        mkdir -p {wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library
-        famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d --curated {wildcards.repspec} > {output.replib}
-        """
+# These rules are commented out for pangenome pipeline - library creation handled by clustering.smk
+# rule create_repeatmasker_library:
+#     output:
+#         replib="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{repspec}.RepeatMasker.lib"
+#     params:
+#         script_dir=SCRIPT_DIR,
+#         libpath=lambda wildcards: "$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/famdb/|')" if REPSPEC else ""
+#     shell:
+#         """
+#         if [[ $(which RepeatMasker) == *"bin"* ]]; then
+#             libpath="$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/Libraries/famdb/|')"
+#             export PATH=$PATH:"$(which RepeatMasker | sed 's|bin/RepeatMasker|share/RepeatMasker/|g')"
+#         else
+#             libpath="$(which RepeatMasker | sed 's|/[^/]*$||g')/Libraries/famdb/"
+#         fi
+#         
+#         mkdir -p {wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library
+#         famdb.py -i $libpath families -f fasta_name --include-class-in-name -a -d --curated {wildcards.repspec} > {output.replib}
+#         """
 
-rule combine_libraries:
-    input:
-        consensus=CONSENSUS_LIB,
-        replib=lambda wildcards: f"{wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library/{REPSPEC}.RepeatMasker.lib" if REPSPEC else []
-    output:
-        combined="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta"
-    shell:
-        """
-        mkdir -p {wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library
-        if [ -f "{input.replib}" ]; then
-            cat {input.consensus} {input.replib} > {output.combined}
-        else
-            cp {input.consensus} {output.combined}
-        fi
-        """
+# rule combine_libraries:
+#     input:
+#         consensus=CONSENSUS_LIB,
+#         replib=lambda wildcards: f"{wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library/{REPSPEC}.RepeatMasker.lib" if REPSPEC else []
+#     output:
+#         combined="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta"
+#     shell:
+#         """
+#         mkdir -p {wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library
+#         if [ -f "{input.replib}" ]; then
+#             cat {input.consensus} {input.replib} > {output.combined}
+#         else
+#             cp {input.consensus} {output.combined}
+#         fi
+#         """
 
 rule repeatmasker_annotation:
     input:
         genome="{outdir}/{species}_EarlGrey/{species}.prep",
-        library="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta"
+        library=f"{OUTDIR}/combinedLibraries/combined_all_species.clstrd.fa"
     output:
         masked="{outdir}/{species}_EarlGrey/{species}_RepeatMasker_Against_Custom_Library/{species}.prep.masked",
         out="{outdir}/{species}_EarlGrey/{species}_RepeatMasker_Against_Custom_Library/{species}.prep.out",
@@ -114,8 +117,8 @@ rule repeatmasker_annotation:
         """
         mkdir -p {params.outdir}
         cd {params.outdir}
-        RepeatMasker -lib {input.library} -norna -no_is -lcambig -s -a -pa {params.threads} \
-                     -dir {params.outdir} {input.genome}
+        RepeatMasker -lib $(realpath {input.library}) -norna -no_is -lcambig -s -a -pa {params.threads} \
+                     -dir {params.outdir} $(realpath {input.genome})
         """
 
 rule heliano_detection:
@@ -151,7 +154,8 @@ rule merge_repeats:
         helitron_gff="{outdir}/{species}_EarlGrey/{species}_heliano/RC.representative.gff" if HELIANO == "yes" else []
     output:
         bed="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.bed",
-        gff="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.gff"
+        gff="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.gff",
+        summary="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.summary"
     params:
         script_dir=SCRIPT_DIR,
         outdir="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge",
@@ -191,7 +195,7 @@ rule merge_repeats:
 
 rule generate_summary_charts:
     input:
-        bed="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.bed",
+        summary="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.summary",
         tbl="{outdir}/{species}_EarlGrey/{species}_RepeatMasker_Against_Custom_Library/{species}.prep.tbl"
     output:
         pie="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.summaryPie.pdf",
@@ -203,13 +207,13 @@ rule generate_summary_charts:
         """
         mkdir -p {params.outdir}
         cd {params.outdir}
-        {params.script_dir}/autoPie.sh -i {input.bed} -t {input.tbl} \
-                                       -p {output.pie} -o {output.count}
+        {params.script_dir}/autoPie.sh -i {input.summary} -t {input.tbl} \
+                                       -p {output.pie} -o {output.highLevelCount}
         """
 
 rule calculate_divergence:
     input:
-        library="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta",
+        library=f"{OUTDIR}/combinedLibraries/combined_all_species.clstrd.fa",
         genome_orig=lambda wildcards: GENOME[wildcards.species],
         gff="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.gff"
     output:
@@ -239,8 +243,8 @@ rule calculate_divergence:
         cp {params.landscape_dir}/*.pdf {params.summary_dir}/ || true
         cp {params.landscape_dir}/*_summary_table.tsv {output.div_summary} || true
         
-        # Update main GFF with divergence info
-        mv {output.div_gff} {input.gff}
+        # Update main GFF with divergence info (copy instead of move to keep output file)
+        cp {output.div_gff} {input.gff}
         
         # Cleanup
         rm -rf {params.landscape_dir}/tmp/ || true
@@ -250,13 +254,12 @@ rule sweep_up_files:
     input:
         bed="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.bed",
         gff="{outdir}/{species}_EarlGrey/{species}_mergedRepeats/looseMerge/{species}.filteredRepeats.gff",
-        library="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta",
         highLevelCount="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.highLevelCount.txt",
-        pie="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.summaryPie.pdf"
+        pie="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.summaryPie.pdf",
+        div_summary="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}_divergence_summary_table.tsv"
     output:
         summary_bed="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.filteredRepeats.bed",
-        summary_gff="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.filteredRepeats.gff",
-        summary_lib="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}_combined_library.fasta"
+        summary_gff="{outdir}/{species}_EarlGrey/{species}_summaryFiles/{species}.filteredRepeats.gff"
     params:
         summary_dir="{outdir}/{species}_EarlGrey/{species}_summaryFiles"
     shell:
@@ -264,7 +267,6 @@ rule sweep_up_files:
         # Copy final results to summary directory
         cp {input.bed} {output.summary_bed}
         cp {input.gff} {output.summary_gff}
-        cp {input.library} {output.summary_lib}
         """
 
 rule generate_softmasked_genome:
@@ -285,19 +287,20 @@ rule generate_softmasked_genome:
         fi
         """
 
-# Handle optional rules based on configuration
-if REPSPEC:
-    # If RepeatMasker species is specified, create the library first
-    ruleorder: create_repeatmasker_library > combine_libraries
-else:
-    # If no RepeatMasker species, just use consensus library
-    rule combine_libraries_no_repspec:
-        input:
-            consensus=CONSENSUS_LIB
-        output:
-            combined="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta"
-        shell:
-            """
-            mkdir -p {wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library
-            cp {input.consensus} {output.combined}
-            """
+# Commented out for pangenome pipeline
+# # Handle optional rules based on configuration
+# if REPSPEC:
+#     # If RepeatMasker species is specified, create the library first
+#     ruleorder: create_repeatmasker_library > combine_libraries
+# else:
+#     # If no RepeatMasker species, just use consensus library
+#     rule combine_libraries_no_repspec:
+#         input:
+#             consensus=CONSENSUS_LIB
+#         output:
+#             combined="{outdir}/{species}_EarlGrey/{species}_Curated_Library/{species}_combined_library.fasta"
+#         shell:
+#             """
+#             mkdir -p {wildcards.outdir}/{wildcards.species}_EarlGrey/{wildcards.species}_Curated_Library
+#             cp {input.consensus} {output.combined}
+#             """
