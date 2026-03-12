@@ -46,9 +46,11 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
-Earl Grey v7.0.3 fixes an issue with final calculation tables which did not count _other_ repeats towards total repeat content.
+Earl Grey v7.1.0 removes the dependency on Python 3.9, which is no longer supported. Earl Grey can now be built and run with Python 3.10 and above. This change was made to ensure that Earl Grey remains compatible with newer versions of Python and to remove the reliance on an unsupported version.
 
 ### Previous Changes
+Earl Grey v7.0.3 fixes an issue with final calculation tables which did not count _other_ repeats towards total repeat content.
+
 Earl Grey v7.0.2 adds RepeatLandscapes for _Penelope_-like elements and SINEs. Importantly, the `-norna` option in RepeatMasker is no longer invoked as default behaviour, which will improver the detection and masking of small tRNA-derived SINEs.
 
 Earl Grey v7.0.1 patches the summary table generation, where LINEs and Penelopes were being counted in both categories for nested repeats only.
