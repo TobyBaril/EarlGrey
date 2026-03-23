@@ -125,7 +125,7 @@ elif (trf_pr.length/te_len > 0.5) & (len(start_seq.seq) > 500):
   non_trf_longest_df=trf_inverse_df[trf_inverse_df.Width==max(trf_inverse_df.Width)].head(n=1)
   non_trf_longest_pr=pr.PyRanges(df=non_trf_longest_df)
   # get sequence of non TR section, write to file
-  non_trf_seq=SeqRecord(seq=Seq(str(start_seq.seq)[int(non_trf_longest_df['Start']):int(non_trf_longest_df['End'])]), id=start_seq.id, name=start_seq.name)
+  non_trf_seq=SeqRecord(seq=Seq(str(start_seq.seq)[int(non_trf_longest_df['Start'].iloc[0]):int(non_trf_longest_df['End'].iloc[0])]), id=start_seq.id, name=start_seq.name)
   with open((args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+args.seq_name), "w") as o:
     SeqIO.write(non_trf_seq, o, "fasta-2line")
   exit()
