@@ -105,7 +105,7 @@ Previously the chunk DataFrames were passed to `pool.map()` directly — they we
 chunk_files = []
 for i, chunk in enumerate(chunks):
     chunk_path = os.path.join(args.temp_dir, f"chunk_{i}.tsv")
-    chunk.to_csv(chunk_path, sep="\t", index=False)
+    chunk.to_csv(chunk_path, sep="\t", index=True)
     chunk_files.append(chunk_path)
 
 del chunks
