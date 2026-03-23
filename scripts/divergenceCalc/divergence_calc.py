@@ -104,10 +104,19 @@ def Kimura80(qseq, sseq):
     
     return(Kimura_dist)
 
-def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
+def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
+    # Set pybedtools temp directory within this worker (required when using forkserver).
+    pybedtools.set_tempdir(temp_dir+'/pybedtools')
+    # Load the chunk from its temp file and delete it immediately to reclaim disk space.
+    # index_col=0 restores the original GFF row indices, which are used as unique
+    # per-row filenames in qseqs/. Without this, every chunk restarts at 0 and
+    # concurrent workers collide on the same paths.
+    gff = pd.read_csv(chunk_path, sep="\t", index_col=0)
+    os.remove(chunk_path)
     generated_name = file_name_generator()
     holder_file_name = temp_dir+generated_name
     failed_file_name = temp_dir+"failed_"+generated_name
+    row_counter = 0
     with open(holder_file_name, 'w') as tmp_out:
         header = list(gff.columns.values)[1:] + ["Kimura"]
         header = "\t".join(header)+"\n"
@@ -115,6 +124,10 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
         for row in gff.iterrows():
             # Set index
             idx = row[0]
+            row_counter += 1
+            # Periodically release pybedtools temp files to prevent gradual memory growth.
+            if row_counter % 500 == 0:
+                pybedtools.cleanup(remove_all=False)
             # Set scaffold, coordinates, strand, repeat family
             seqnames, start, end, strand, repeat_family = row[1]['seqnames'], str(row[1]['start'] - 1), str(row[1]['end']), row[1]['strand'], row[1]['repeat_family']
             # Create BED string for BEDtools
@@ -146,7 +159,8 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
             if exists(query_path+".matcher") is False or getsize(query_path+".matcher") == 0:
                 # If no alignment is possible, set distances to NA and alignment length to 0
                 Kdist = "NA"
-                os.remove(query_path)
+                if exists(query_path):
+                    os.remove(query_path)
                 if exists(query_path+".matcher") is True:
                     os.remove(query_path+".matcher")
             else:
@@ -164,7 +178,8 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, gff):
                     Kdist = "NA"
                 # Delete temporary files
                 os.remove(query_path+".matcher")
-                os.remove(query_path)
+                if exists(query_path):
+                    os.remove(query_path)
             # Make line for temporary file and write to file
             tmp_holder = row[1].to_list()[1:]
             tmp_holder = "\t".join(str(x) for x in tmp_holder)+"\t"+Kdist+"\n"
@@ -195,7 +210,17 @@ def tmp_out_parser(file_list, simple_gff, other_gff):
     return(gff)
 
 if __name__ == "__main__":
-    
+    # Use forkserver so workers start from a clean process rather than inheriting
+    # a fork-copy of the parent address space (which holds the full GFF DataFrame).
+    # This is the primary mechanism for reducing peak RAM at high thread counts.
+    if multiprocessing.get_start_method(allow_none=True) is None:
+        try:
+            multiprocessing.set_start_method('forkserver')
+        except (RuntimeError, ValueError):
+            # Fall back to the existing/default start method if forkserver is unavailable
+            # or if a start method has already been set by the environment.
+            pass
+
     start_time = time()
 
     # check files exist
@@ -218,7 +243,22 @@ if __name__ == "__main__":
     # break into chunks
     chunks = [in_gff.iloc[in_gff.index[i:i + chunk_size]] for i in range(0, in_gff.shape[0], chunk_size)]
 
-    # set pybedtools temp path
+    # Write chunks to temp TSV files so the parent DataFrame can be freed before workers
+    # are created. Workers read from disk rather than receiving pickled DataFrames via IPC.
+    print("Writing chunks to disk")
+    chunk_files = []
+    for i, chunk in enumerate(chunks):
+        chunk_path = os.path.join(args.temp_dir, f"chunk_{i}.tsv")
+        chunk.to_csv(chunk_path, sep="\t", index=True)
+        chunk_files.append(chunk_path)
+
+    # Free the main GFF DataFrame and chunk list from the parent process before the pool
+    # is created. With forkserver this is already avoided, but freeing here also reduces
+    # parent RSS during the pool run, which matters on memory-constrained machines.
+    del chunks
+    del in_gff
+
+    # set pybedtools temp path (also set per-worker inside outer_func for forkserver)
     try:
         os.mkdir(args.temp_dir+"/pybedtools/")
     except FileExistsError:
@@ -226,18 +266,15 @@ if __name__ == "__main__":
     pybedtools.set_tempdir(args.temp_dir+'/pybedtools')
 
     print("Starting calculations") 
-    # Peform calulations in parallel
+    # Perform calculations in parallel. maxtasksperchild=1 restarts each worker after
+    # processing one chunk, releasing any lingering pybedtools handles or cached objects.
     func = partial(outer_func, args.genome, args.temp_dir, args.timeout)
-    pool = multiprocessing.Pool(processes=num_processes)
-    results = pool.map(func, chunks)
+    pool = multiprocessing.Pool(processes=num_processes, maxtasksperchild=1)
+    results = list(pool.imap_unordered(func, chunk_files))
     pool.close()
     pool.join()
     print("Finished calculations") 
 
-    # Free up memory (necessary with very large gffs and low memory machines)
-    del chunks
-    del in_gff
-  
     # Read in temp files, fix metadata, add simple repeats back, and sort
     calc_gff = tmp_out_parser(results, simple_gff, other_gff)
         

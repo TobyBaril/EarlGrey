@@ -11,7 +11,7 @@ NO_SEQ=20
 # for potential folder name
 TIME=$(date +"%s")
 TIME=${TIME: -4}
-MEM_FREE="200M"
+MEM_FREE="1G"
 MIN_SEQ=3
 
 # parsing
@@ -42,6 +42,16 @@ if [[ $RUNS -gt 0 ]]; then
 fi
 
 if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
+
+# Cap threads based on available RAM to prevent OOM errors
+AVAIL_MEM_MB=$(free -m | awk '/^Mem:/{print $7}')
+MEM_PER_JOB_MB=800
+MAX_SAFE_THREADS=$(( AVAIL_MEM_MB / MEM_PER_JOB_MB ))
+if [[ $MAX_SAFE_THREADS -gt 0 && $THREADS -gt $MAX_SAFE_THREADS ]]; then
+  echo "Warning: capping threads from ${THREADS} to ${MAX_SAFE_THREADS} based on available RAM (${AVAIL_MEM_MB} MB free)"
+  THREADS=$MAX_SAFE_THREADS
+  if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
+fi
 
 if [ -n "$RESUME" ]
 then
@@ -130,11 +140,11 @@ do
   ## first mafft alignment
   find ${DATA_DIR}/run_${RUN_NO}/to_align -type f | sed 's/.*\///' > ${DATA_DIR}/run_${RUN_NO}/to_align.txt
   echo "Primary alignment run "${RUN_NO}
-  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
+  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
 
   # trim
   echo "Trimming run "${RUN_NO}
-  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
+  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
   
   # compile completed curations
   if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/ 2>/dev/null)" ]; then

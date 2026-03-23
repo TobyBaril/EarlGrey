@@ -46,9 +46,26 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
-Earl Grey v7.1.1 patches a small bug in TEstrainer where consensus sequences comprised of tandem repeats were triggering a warning due to the change to `pandas >2.0`. The output results were not affected. The codebase has now been updated to handle these cases without throwing warnings, with the same expected behaviour and handling of tandem repeats as before.
+Earl Grey v7.2.0 significantly reduces peak RAM usage in two RAM-intensive components: TEstrainer and divergence_calc.py. These changes prevent OOM kills when running with large thread counts on memory-constrained compute nodes, with no change to output.
+
+**TEstrainer / TEstrainer_for_earlGrey.sh:**
+- The default `MEM_FREE` threshold raised from `200M` to `1G`. The previous value was lower than the startup cost of a single Python interpreter with heavy scientific libraries, making the guard ineffective.
+- All GNU `parallel` calls in the BEAT curation loop (trf, initial_mafft_setup, mafft, TEtrim) now carry `--memfree ${MEM_FREE}`, throttling job dispatch when free RAM drops below the threshold.
+- A RAM-cap guard is applied at startup: the requested thread count is capped based on available RAM (`free -m`) at an estimate of 800 MB per concurrent job, with a warning printed if a cap is applied.
+
+**divergence_calc.py:**
+- Switched from the default `fork` multiprocessing start method to `forkserver`. On Linux, `fork` duplicates the full parent address space (including the GFF DataFrame) into every worker; `forkserver` workers start clean and receive only a file path, eliminating N-fold GFF copies in RAM.
+- GFF chunks are now serialised to temp TSV files on disk before the pool is created. The parent DataFrame is freed before any workers are launched, reducing parent RSS during the pool run.
+- `pool.imap_unordered` replaces `pool.map`, allowing workers to be retired as they finish rather than all buffering results simultaneously.
+- `maxtasksperchild=1` forces worker process restart after each chunk, releasing accumulated pybedtools handles and BioPython caches between chunks.
+- Periodic `pybedtools.cleanup()` every 500 rows prevents temp-file accumulation in long-running workers.
+- A pre-existing bug was fixed: `os.remove(query_path)` was called unconditionally in both cleanup branches even when the file was never created (e.g. when `pybedtools.sequence()` raised a samtools exception). Both removal calls are now guarded with `if exists(query_path)`.
+
+Benchmarked results confirm peak RSS for `divergence_calc.py` is flat at ~76 MB across 1–16 threads (previously scaling linearly), and TEstrainer peak RSS is ~877 MB at both 4 and 32 threads (previously unbounded with thread count).
 
 ### Previous Changes
+Earl Grey v7.1.1 patches a small bug in TEstrainer where consensus sequences comprised of tandem repeats were triggering a warning due to the change to `pandas >2.0`. The output results were not affected. The codebase has now been updated to handle these cases without throwing warnings, with the same expected behaviour and handling of tandem repeats as before.
+
 Earl Grey v7.1.0 removes the dependency on Python 3.9, which is no longer supported. Earl Grey can now be built and run with Python 3.10 and above. This change was made to ensure that Earl Grey remains compatible with newer versions of Python and to remove the reliance on an unsupported version.
 
 Earl Grey v7.0.3 fixes an issue with final calculation tables which did not count _other_ repeats towards total repeat content.
