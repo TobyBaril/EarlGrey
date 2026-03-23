@@ -1,6 +1,6 @@
 {% set name = "EarlGrey" %}
 {% set version = "7.2.0" %}
-{% set sha256 = "1f949aa0ab4d8b3a1351b1a560b5d82190053403d5652025c682d29f140af076" %}
+{% set sha256 = "REPLACE_WITH_SHA256_OF_V7_2_0_TARBALL" %}
 
 package:
   name: {{ name|lower }}
