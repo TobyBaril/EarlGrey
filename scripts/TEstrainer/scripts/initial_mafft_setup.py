@@ -123,9 +123,16 @@ elif (trf_pr.length/te_len > 0.5) & (len(start_seq.seq) > 500):
   trf_inverse_df['Width']=trf_inverse_df.End-trf_inverse_df.Start+1
   # select longest non TR section and convert to ranges
   non_trf_longest_df=trf_inverse_df[trf_inverse_df.Width==max(trf_inverse_df.Width)].head(n=1)
+  # handle potential empty DataFrame to avoid IndexError on iloc[0]
+  if non_trf_longest_df.empty:
+    if args.debug is True:
+      print('No non-tandem repeat section found for '+start_seq.name+'; writing original sequence.')
+    with open((args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+args.seq_name), "w") as o:
+      SeqIO.write(start_seq, o, "fasta-2line")
+    exit()
   non_trf_longest_pr=pr.PyRanges(df=non_trf_longest_df)
   # get sequence of non TR section, write to file
-  non_trf_seq=SeqRecord(seq=Seq(str(start_seq.seq)[int(non_trf_longest_df['Start']):int(non_trf_longest_df['End'])]), id=start_seq.id, name=start_seq.name)
+  non_trf_seq=SeqRecord(seq=Seq(str(start_seq.seq)[int(non_trf_longest_df['Start'].iloc[0]):int(non_trf_longest_df['End'].iloc[0])]), id=start_seq.id, name=start_seq.name)
   with open((args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+args.seq_name), "w") as o:
     SeqIO.write(non_trf_seq, o, "fasta-2line")
   exit()
