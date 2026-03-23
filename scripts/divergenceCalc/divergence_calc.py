@@ -213,7 +213,13 @@ if __name__ == "__main__":
     # Use forkserver so workers start from a clean process rather than inheriting
     # a fork-copy of the parent address space (which holds the full GFF DataFrame).
     # This is the primary mechanism for reducing peak RAM at high thread counts.
-    multiprocessing.set_start_method('forkserver')
+    if multiprocessing.get_start_method(allow_none=True) is None:
+        try:
+            multiprocessing.set_start_method('forkserver')
+        except (RuntimeError, ValueError):
+            # Fall back to the existing/default start method if forkserver is unavailable
+            # or if a start method has already been set by the environment.
+            pass
 
     start_time = time()
 
