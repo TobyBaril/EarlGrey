@@ -13,7 +13,7 @@ DEBUG=FALSE
 # for potential folder name
 TIME=$(date +"%s")
 TIME=${TIME: -4}
-MEM_FREE="200M"
+MEM_FREE="1G"
 
 # parsing
 while getopts l:g:t:f:r:d:M:CsDh flag; do
@@ -50,6 +50,16 @@ then
 fi
 
 if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
+
+# Cap threads based on available RAM to prevent OOM errors
+AVAIL_MEM_MB=$(free -m | awk '/^Mem:/{print $7}')
+MEM_PER_JOB_MB=800
+MAX_SAFE_THREADS=$(( AVAIL_MEM_MB / MEM_PER_JOB_MB ))
+if [[ $MAX_SAFE_THREADS -gt 0 && $THREADS -gt $MAX_SAFE_THREADS ]]; then
+  echo "Warning: capping threads from ${THREADS} to ${MAX_SAFE_THREADS} based on available RAM (${AVAIL_MEM_MB} MB free)"
+  THREADS=$MAX_SAFE_THREADS
+  if [[ $THREADS -gt 4 ]]; then MAFFT_THREADS=$(($(($THREADS / 4)))); else MAFFT_THREADS=1; fi
+fi
 
 # make directories
 mkdir -p ${DATA_DIR}/run_0/
@@ -100,19 +110,19 @@ if [[ $RUNS -gt 0 ]]; then
 
     # run trf to determine if sequence is tandem repeat
     echo "Initial trf check for "${RUN_NO}
-    parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/run_${RUN_NO}/raw/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/run_${RUN_NO}/raw/{}.trf
+    parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/run_${RUN_NO}/raw/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/run_${RUN_NO}/raw/{}.trf
     echo "Initial blast and preparation for MSA "${RUN_NO}
     # initial blast and extention
-    parallel --bar --jobs ${THREADS} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt python3 scripts/initial_mafft_setup.py -d ${DATA_DIR} -r ${RUN_NO} -s {} -g ${GENOME} -f ${FLANK} -D
+    parallel --bar --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt python3 scripts/initial_mafft_setup.py -d ${DATA_DIR} -r ${RUN_NO} -s {} -g ${GENOME} -f ${FLANK} -D
     
     ## first mafft alignment
     find ${DATA_DIR}/run_${RUN_NO}/to_align -type f | sed 's/.*\///' > ${DATA_DIR}/run_${RUN_NO}/to_align.txt
     echo "Primary alignment run "${RUN_NO}
-    parallel --bar --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
+    parallel --bar --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
 
     # trim
     echo "Trimming run "${RUN_NO}
-    parallel --bar --jobs $MAFFT_THREADS -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python scripts/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR}
+    parallel --bar --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python scripts/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR}
     
     # compile completed curations
     if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/ 2>/dev/null)" ]; then
