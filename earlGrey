@@ -212,6 +212,7 @@ novoMask()
 		rmthreads=$(expr $ProcNum / 4)
 		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
+		mkdir -p $OUTDIR/${species}_Curated_Library/
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
