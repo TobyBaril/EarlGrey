@@ -254,31 +254,44 @@ Directories created by earl grey:
 ```
 [speciesName]EarlGrey/
     |
-    |---[speciesName]_RepeatMasker/
-    |		+ Results of the optional initial RepeatMasker run used to mask previously characterised TEs
+    |---[speciesName]_RepeatMasker/                          [OPTIONAL: only created with -r or -l flags]
+    |		+ Results of the initial RepeatMasker run used to pre-mask previously characterised TEs
     |---[speciesName]_Database/
-    |		+ Database created from the masked genome output of the initial RepeatMasker run. Required for RepeatModeler.
+    |		+ BLAST database built from the (optionally pre-masked) genome, used by RepeatModeler
+    |		+ RepeatModeler2 consensus output ([speciesName]-families.fa, [speciesName]-families.stk, [speciesName]-rmod.log)
     |---[speciesName]_RepeatModeler/
-    |		 + Results of the RepeatModeler2 _de novo_ TE identification step
+    |		+ RepeatModeler2 working directory (RM_* subdirectory with per-round outputs and intermediate consensi)
     |---[speciesName]_strainer/
-    |		+ Results of the "BLAST, Extract, Align, Trim" process
-    |---[speciesName]_Curated_Library/
-    |		+ Contains the _de novo_ repeat library generated with the "BLAST, Extract, Align, Trim" process, the library of known repeats used by RepeatMasker (OPTIONAL), and a combined library containing both sets of repeats (OPTIONAL)
+    |		+ TEstrainer working directory (TS_* subdirectory) containing BEAT curation intermediate files
+    |		+ Strained consensus library ([speciesName]-families.fa.strained)
+    |---[speciesName]_Curated_Library/                       [OPTIONAL: only created with -r or -l flags]
+    |		+ Known repeat library extracted from the configured database ([speciesName].RepeatMasker.lib)
+    |		+ Combined _de novo_ and known repeat library ([speciesName]_combined_library.fasta)
+    |---[speciesName]_heliano/                               [OPTIONAL: only created with -e yes flag]
+    |		+ HELIANO Helitron detection results (HEL_* subdirectory)
     |---[speciesName]_RepeatMasker_Against_Custom_Library/
-    |		+ Results of the RepeatMasker run using the final curated library
+    |		+ Results of RepeatMasker run against the final curated repeat library (.out, .tbl, .cat.gz, .masked)
     |---[speciesName]_RepeatLandscape/
-    |		+ Intermediate files for the generation of RepeatLandscapes (RepeatMasker .divsum files)
+    |		+ Divergence-annotated GFF ([speciesName].filteredRepeats.withDivergence.gff)
+    |		+ Repeat landscape PDFs (classification landscape, split-class landscape, superfamily divergence plot)
+    |		+ Divergence summary table ([speciesName]_summary_table.tsv)
     |---[speciesName]_mergedRepeats/
-    |		+ Intermediate files and results of TE defragmentation step using RepeatCraft.
+    |		+ looseMerge/ subdirectory containing:
+    |		  - LTR_FINDER full-length LTR results (ltrfinder GFF and working subdirectory)
+    |		  - RepeatCraft TE defragmentation output (RepeatCraft working subdirectory, merged GFFs and BEDs)
+    |		  - Final filtered and merged repeat annotations (filteredRepeats.bed, filteredRepeats.gff, filteredRepeats.summary)
     |---[speciesName]_summaryFiles/
-    		+ Results and plots from Earl Grey:
-    		+ TE annotations in GFF3 and BED format
-    		+ High-level TE quantification table (tab delimited)
-    		+ Family-level TE quantification table (tab delimited)
-    		+ Repeat Landscapes showing TE activity (PDF)
-    		+ Pie chart of genome repeat content (PDF)
-    		+ _de novo_ repeat library in FASTA format
-    		+ Combined repeat library in FASTA format (OPTIONAL)
+    		+ Final TE annotations in GFF3 format ([speciesName].filteredRepeats.gff)
+    		  (fully nested TEs labelled with 'nested=FULLY_NESTED' attribute in column 9)
+    		+ Final TE annotations in BED format ([speciesName].filteredRepeats.bed)
+    		+ High-level TE quantification table (tab-delimited .txt and markdown-formatted .kable)
+    		+ Family-level TE quantification table (tab-delimited .txt and markdown-formatted .kable)
+    		+ Divergence summary table ([speciesName]_divergence_summary_table.tsv)
+    		+ Pie chart of genome repeat content ([speciesName].summaryPie.pdf)
+    		+ Repeat landscape PDFs (classification landscape, split-class landscape, superfamily divergence plot)
+    		+ _de novo_ strained TE library ([speciesName]-families.fa.strained)
+    		+ Combined repeat library ([speciesName]_combined_library.fasta) [OPTIONAL: only with -r or -l flags]
+    		+ Soft-masked genome FASTA ([speciesName].softmasked.fasta) [OPTIONAL: only with --softMask yes]
 ```
 
 As of `v4.4.5`, there is an option to generate _de novo_ TE libraries without running subsequent annotation. To run this option, use `earlGreyLibConstruct` with the same command-line options as `earlGrey`. This will run everything up to the end of TEstrainer, and leave you a `families-fa.strained` library file in the `summaryFiles` directory, which you can then use for manual curation, or for pangenome studies.
