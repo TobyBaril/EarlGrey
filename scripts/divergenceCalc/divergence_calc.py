@@ -129,7 +129,7 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
             if row_counter % 500 == 0:
                 pybedtools.cleanup(remove_all=False)
             # Set scaffold, coordinates, strand, repeat family
-            seqnames, start, end, strand, repeat_family = row[1]['seqnames'], str(row[1]['start'] - 1), str(row[1]['end']), row[1]['strand'], row[1]['repeat_family']
+            seqnames, start, end, strand, repeat_family = str(row[1]['seqnames']), str(row[1]['start'] - 1), str(row[1]['end']), str(row[1]['strand']), str(row[1]['repeat_family'])
             # Create BED string for BEDtools
             bed_str = " ".join([seqnames, start, end, ".", ".", strand])
             # Set path for query sequence
