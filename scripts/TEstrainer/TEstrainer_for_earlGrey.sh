@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Amount of memory TEstrainer needs to keep free] [-R Resume interrupted run in directory specified by -d]" 1>&2; exit 1; }
+usage() { echo "Usage: [-l Repeat library] [-g Genome ] [-t Threads (default 4) ] [-f Flank (default 1000) ] [-m Minimum number of sequences required in multiple sequence alignments during BEAT] [-r Number of iterations of BEAT to run (deafult 10)] [-d Out directory, if not specified wil be created ] [-h Print this help] [-M Amount of memory TEstrainer needs to keep free] [-R Resume interrupted run in directory specified by -d] [-q Suppress parallel progress bar (useful for batch/sbatch jobs)]" 1>&2; exit 1; }
 
 # default values
 STRAIN_SCRIPTS=/data/toby/EarlGrey/scripts/TEstrainer/scripts/
@@ -13,9 +13,10 @@ TIME=$(date +"%s")
 TIME=${TIME: -4}
 MEM_FREE="1G"
 MIN_SEQ=3
+BAR_FLAG="--bar"
 
 # parsing
-while getopts l:g:t:f:m:r:d:h:n:M:R flag; do
+while getopts l:g:t:f:m:r:d:h:n:M:Rq flag; do
   case "${flag}" in
     l) RM_LIBRARY_PATH=${OPTARG};;
     g) GENOME=${OPTARG};;
@@ -27,6 +28,7 @@ while getopts l:g:t:f:m:r:d:h:n:M:R flag; do
     n) NO_SEQ=${OPTARG};;
     M) MEM_FREE=${OPTARG};;
     R) RESUME=true;;
+    q) BAR_FLAG="";;
     h | *)
       print_usage
       exit_script
@@ -132,19 +134,19 @@ do
 
   # run trf to determine if sequence is tandem repeat
   echo "Initial trf check for "${RUN_NO}
-  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/run_${RUN_NO}/raw/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/run_${RUN_NO}/raw/{}.trf
+  parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/run_${RUN_NO}/raw/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/run_${RUN_NO}/raw/{}.trf
   echo "Initial blast and preparation for MSA "${RUN_NO}
   # initial blast and extention
-  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/initial_mafft_setup.py -d ${DATA_DIR} -r ${RUN_NO} -s {} -g ${GENOME} -f ${FLANK} -D -n ${NO_SEQ}
+  parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/raw/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/initial_mafft_setup.py -d ${DATA_DIR} -r ${RUN_NO} -s {} -g ${GENOME} -f ${FLANK} -D -n ${NO_SEQ}
   
   ## first mafft alignment
   find ${DATA_DIR}/run_${RUN_NO}/to_align -type f | sed 's/.*\///' > ${DATA_DIR}/run_${RUN_NO}/to_align.txt
   echo "Primary alignment run "${RUN_NO}
-  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
+  parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt mafft --thread 4 --quiet --localpair --adjustdirectionaccurately ${DATA_DIR}/run_${RUN_NO}/to_align/{} ">" ${DATA_DIR}/run_${RUN_NO}/mafft/{}
 
   # trim
   echo "Trimming run "${RUN_NO}
-  parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
+  parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs $MAFFT_THREADS --memfree ${MEM_FREE} -a ${DATA_DIR}/run_${RUN_NO}/to_align.txt python ${STRAIN_SCRIPTS}/TEtrim.py -i ${DATA_DIR}/run_${RUN_NO}/mafft/{} -t 4 -f ${FLANK} -n ${RUN_NO} -d ${DATA_DIR} -m ${MIN_SEQ}
   
   # compile completed curations
   if [ -n "$(ls -A ${DATA_DIR}/run_${RUN_NO}/TEtrim_complete/ 2>/dev/null)" ]; then
@@ -187,15 +189,15 @@ python ${STRAIN_SCRIPTS}/splitter.py -i ${DATA_DIR}/${RM_LIBRARY} -o ${DATA_DIR}
 cp ${DATA_DIR}/${RM_LIBRARY} ${DATA_DIR}/trf/
 # Run and parse TRF
 echo "Running TRF"
-parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/trf/split/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/trf/split/{}.trf
-parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/trf_parser.py --trf ${DATA_DIR}/trf/split/{}.trf --out ${DATA_DIR}/trf/split/{}.trf.tsv
+parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt trf ${DATA_DIR}/trf/split/{} 2 7 7 80 10 50 500 -d -h -ngs ">" ${DATA_DIR}/trf/split/{}.trf
+parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt python3 ${STRAIN_SCRIPTS}/trf_parser.py --trf ${DATA_DIR}/trf/split/{}.trf --out ${DATA_DIR}/trf/split/{}.trf.tsv
 find ${DATA_DIR}/trf/split/ -type f -name "*trf.tsv" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.trf
 # Run SA-SSR
 echo "Running SA-SSR"
 sa-ssr -e -l 20 -L 50000 -m 1 -M 5000 -t ${THREADS} ${DATA_DIR}/${RM_LIBRARY} ${DATA_DIR}/trf/${RM_LIBRARY}.sassr
 # Run and compile mreps
 echo "Running mreps"
-parallel --bar --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt bash ${STRAIN_SCRIPTS}/mreps_parser.sh -i ${DATA_DIR}/trf/split/{} "2>"/dev/null
+parallel ${BAR_FLAG} --tmpdir ${DATA_DIR}/tmp/ --jobs ${THREADS} --memfree ${MEM_FREE} -a ${DATA_DIR}/trf/split/${RM_LIBRARY}_split.txt bash ${STRAIN_SCRIPTS}/mreps_parser.sh -i ${DATA_DIR}/trf/split/{} "2>"/dev/null
 find ${DATA_DIR}/trf/split/ -type f -name "*mreps" -exec cat {} + | cat > ${DATA_DIR}/trf/${RM_LIBRARY}.mreps
 # Interpret mreps, TRF and SA-SSR
 echo "Trimming and sorting based on mreps, TRF, SA-SSR"

@@ -6,7 +6,7 @@ I try to keep an up-to-date container in docker hub, but this might not always b
 
 ```
 # Interactive mode
-# Version 7.2.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.2.2 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/

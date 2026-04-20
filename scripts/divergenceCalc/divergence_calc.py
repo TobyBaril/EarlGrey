@@ -2,6 +2,7 @@ import os
 from os.path import exists, getsize
 import sys
 import argparse
+import numpy as np
 import pandas as pd
 import multiprocessing
 import pybedtools
@@ -237,11 +238,8 @@ if __name__ == "__main__":
     # create as many processes as instructed cores
     num_processes = args.cores
 
-    # calculate the chunk size as an integer
-    chunk_size = int(in_gff.shape[0]/num_processes)
-
-    # break into chunks
-    chunks = [in_gff.iloc[in_gff.index[i:i + chunk_size]] for i in range(0, in_gff.shape[0], chunk_size)]
+    # break into exactly num_processes chunks, distributing any remainder evenly
+    chunks = [in_gff.iloc[idx] for idx in np.array_split(range(len(in_gff)), num_processes)]
 
     # Write chunks to temp TSV files so the parent DataFrame can be freed before workers
     # are created. Workers read from disk rather than receiving pickled DataFrames via IPC.
