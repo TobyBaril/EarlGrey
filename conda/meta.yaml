@@ -24,6 +24,7 @@ requirements:
     - trf
     - cd-hit
     - genometools-genometools
+    - numpy
     - pandas
     - ncls
     - pyfaidx
