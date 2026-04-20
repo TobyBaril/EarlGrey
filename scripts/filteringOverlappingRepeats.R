@@ -76,12 +76,17 @@ nested_only <- bind_rows(all_nested)
 unnested_only <- current
 
 # recombine to make GFF
-nested_only <- nested_only %>%
-  mutate(attributes = paste0(attributes, ";nested=", nested, "-round", nesting_round)) %>%
-  select(-c(nested, nesting_round))
-
-output.gff <- bind_rows(nested_only, unnested_only) %>%
-  arrange(seqid, start)
+if (nrow(nested_only) > 0) {
+  nested_only <- nested_only %>%
+    mutate(attributes = paste0(attributes, ";nested=", nested, "-round", nesting_round)) %>%
+    select(-c(nested, nesting_round))
+  output.gff <- bind_rows(nested_only, unnested_only) %>%
+    arrange(seqid, start)
+} else {
+  # No nested TEs found — write unnested output directly
+  output.gff <- unnested_only %>%
+    arrange(seqid, start)
+}
 
 # Write Table
 write.table(output.gff, gff.out, sep = "\t", quote = F, row.names = F, col.names = F)

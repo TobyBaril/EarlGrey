@@ -3,7 +3,7 @@
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.2.1
+	earlGrey version 7.2.2
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -21,6 +21,7 @@ usage()
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
+		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
 		-h == Show help
 
 	Example Usage:
@@ -169,7 +170,7 @@ strainer()
 	else
 		strainthreads=$ProcNum
 	fi
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${strainthreads} -f $Flank -r $num -n $no_seq -m $min_seq
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${strainthreads} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q")
 	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
@@ -188,7 +189,7 @@ strainerResume() {
 	else
 		strainthreads=$ProcNum
 	fi
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${strainthreads} -f $Flank -r $num -n $no_seq -m $min_seq -d ${strainDataDir} -R
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${strainthreads} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q") -d ${strainDataDir} -R
 	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1))/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
@@ -281,18 +282,24 @@ charts()
 calcDivRL()
 {
 	cd ${OUTDIR}/${species}_RepeatLandscape
+	# divergence_calc.py calls pybedtools.set_tempdir() which sets tempfile.tempdir
+	# globally. forkserver creates its AF_UNIX socket under tempfile.tempdir, so a
+	# long output path can exceed the 108-char socket limit (OSError: AF_UNIX path
+	# too long). Pass a short per-species path in /tmp to avoid this.
+	divcalc_tmp="/tmp/egdiv_${species}"
+	mkdir -p "${divcalc_tmp}"
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
-		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		rm -rf "${divcalc_tmp}"
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	else
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
-		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		rm -rf "${divcalc_tmp}"
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	fi
@@ -424,6 +431,14 @@ Checks()
 		heli=no; echo "HELITRON detection not specified using (yes/no). Using default parameter (no)."
 	fi
 
+	if [ "$quietBar" == "yes" ] ; then
+		quietBar=yes; echo "TEstrainer parallel progress bar will be suppressed"
+	elif [ -z "$quietBar" ] || [ "$quietBar" == "no" ]; then
+		quietBar=no; echo "TEstrainer parallel progress bar will be shown"
+	else
+		quietBar=no; echo "quietBar not specified using (yes/no). Using default parameter (no)."
+	fi
+
 	echo "Please cite the following paper when using this software:"
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
@@ -495,7 +510,7 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:h option
 do
 	case "${option}" 
 		in
@@ -513,6 +528,7 @@ do
 		n) no_seq=${OPTARG};;
 		a) min_seq=${OPTARG};;
 		e) heli=${OPTARG};;
+		q) quietBar=${OPTARG};;
 		h) usage; exit 0;; 
 	esac
 done

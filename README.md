@@ -46,9 +46,18 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
-Earl Grey v7.2.1 patches a bug where the curated library directory was not created when an existing library was supplied via `-l` (without `-r`). In this case, `earlGreyAnnotationOnly` could fail when attempting to change into the directory during the final masking step. The directory is now created with `mkdir -p` before use, matching the fix already applied to the main `earlGrey` script.
+Earl Grey v7.2.2 fixes three bugs reported by users:
+
+- **Off-by-one chunking in divergence_calc.py** ([#290](https://github.com/TobyBaril/EarlGrey/issues/290)): The previous floor-division chunking could produce one extra chunk when the row count was not evenly divisible by the thread count, causing the final chunk to run serially after all parallel workers had finished (effectively doubling wall-clock time in the worst case). Chunking now uses `np.array_split`, which always produces exactly `num_processes` chunks and distributes any remainder one row at a time.
+- **OSError: AF_UNIX path too long in divergence_calc.py** ([#294](https://github.com/TobyBaril/EarlGrey/issues/294)): `pybedtools.set_tempdir()` sets Python's `tempfile.tempdir` globally. The `forkserver` start method creates its Unix domain socket under `tempfile.tempdir`, so deeply-nested output paths could exceed the 108-character AF_UNIX socket limit. The divergence calculator is now passed a short per-species path in `/tmp` via `-tmp`, keeping the socket path well within the limit regardless of output directory depth.
+- **Crash when no nested TEs are found** ([#292](https://github.com/TobyBaril/EarlGrey/issues/292)): `filteringOverlappingRepeats.R` crashed with `object 'nested' not found` on genomes with low TE content where no fully-nested elements were detected. When the nesting-detection loop exits without finding any nesting, `bind_rows()` produces a zero-row data frame that lacks the `nested` and `nesting_round` columns, causing the downstream `mutate()` to fail. The fix guards the mutate block with an `nrow()` check — if no nested TEs are found the unnested output is written directly.
+- **Temp file path errors in divergence_calc.py under Singularity and other environments** ([#289](https://github.com/TobyBaril/EarlGrey/issues/289)): All path constructions in `divergence_calc.py` used string concatenation (e.g. `temp_dir + "/qseqs"`), which produces double slashes when `temp_dir` already has a trailing slash. This is particularly common in Singularity where bound paths are often passed with trailing slashes. All 13 affected path constructions have been replaced with `os.path.join()`, which correctly handles trailing slashes and redundant separators in all environments.
+- **TEstrainer parallel progress bar cluttering batch job logs** ([#293](https://github.com/TobyBaril/EarlGrey/issues/293)): A new `-q yes` flag on `earlGrey` (and `-q` on `TEstrainer_for_earlGrey.sh` directly) suppresses the GNU `parallel --bar` progress bar. This is particularly useful for `sbatch`/HPC log files where the animated bar produces thousands of redundant lines.
 
 ### Previous Changes
+Earl Grey v7.2.1 patches a bug where the curated library directory was not created when an existing library was supplied via `-l` (without `-r`). In this case, `earlGreyAnnotationOnly` could fail when attempting to change into the directory during the final masking step. The directory is now created with `mkdir -p` before use, matching the fix already applied to the main `earlGrey` script.
+
+### Older Changes
 Earl Grey v7.2.0 significantly reduces peak RAM usage in two RAM-intensive components: TEstrainer and divergence_calc.py. These changes prevent OOM kills when running with large thread counts on memory-constrained compute nodes, with no change to output.
 
 **TEstrainer / TEstrainer_for_earlGrey.sh:**
@@ -365,13 +374,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome.
 
-Earl Grey version 7.2.1 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
+Earl Grey version 7.2.2 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.2.1
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.2.2
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.2.1
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.2.2
 
 # Then run
 earlGrey
@@ -408,11 +417,11 @@ After this, you are ready to go! Just remember to activate the _intel_ terminal 
 
 A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in your current working directory. After an initial setup and configuration in an interative version of the container, you can commit the changes (i.e. the Dfam configuration) using `docker commit [container_ID] yourdockerusername/earlgrey:version7.2.1-configured`. Then, you can run this container interactively, or non-interatively, to annotate focal genomes.
+I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in your current working directory. After an initial setup and configuration in an interative version of the container, you can commit the changes (i.e. the Dfam configuration) using `docker commit [container_ID] yourdockerusername/earlgrey:version7.2.2-configured`. Then, you can run this container interactively, or non-interatively, to annotate focal genomes.
 
 ```
 # Interactive mode
-# Version 7.2.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.2.2 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/
@@ -439,12 +448,12 @@ cd /data/
 docker ps -a
 
 # commit the modified container so you can use at will (replace yourdockerusername with your docker username)
-docker commit [container_ID] yourdockerusername/earlgrey:version7.2.1-configured
+docker commit [container_ID] yourdockerusername/earlgrey:version7.2.2-configured
 
 # you can then run non-interatively if required:
-docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.2.1-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
+docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.2.2-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # alternatively you can still run interactive sessions
-docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.2.1-configured
+docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.2.2-configured
 ``` 
 

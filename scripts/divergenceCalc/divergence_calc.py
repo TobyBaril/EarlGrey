@@ -2,6 +2,7 @@ import os
 from os.path import exists, getsize
 import sys
 import argparse
+import numpy as np
 import pandas as pd
 import multiprocessing
 import pybedtools
@@ -40,10 +41,10 @@ def file_check(repeat_library, in_gff, genome, out_gff, temp_dir):
         subprocess.run(["samtools","faidx",genome], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     if(exists(temp_dir) == False):
         os.mkdir(temp_dir)
-    if(exists(temp_dir+"/qseqs") == False):
-        os.mkdir(temp_dir+"/qseqs")
-    if(exists(temp_dir+"/split_library/") == False):
-        os.mkdir(temp_dir+"/split_library/")
+    if(exists(os.path.join(temp_dir, "qseqs")) == False):
+        os.mkdir(os.path.join(temp_dir, "qseqs"))
+    if(exists(os.path.join(temp_dir, "split_library")) == False):
+        os.mkdir(os.path.join(temp_dir, "split_library"))
         
 
 def splitter(in_seq, temp_dir):
@@ -51,7 +52,7 @@ def splitter(in_seq, temp_dir):
         for record in SeqIO.parse(handle, "fasta"):
             repeat_name = record.name.split(sep="#")[0]
             repeat_name = repeat_name.lower()
-            file_name = (temp_dir+"/split_library/"+repeat_name+".fasta")
+            file_name = os.path.join(temp_dir, "split_library", repeat_name + ".fasta")
             SeqIO.write(record, file_name, "fasta-2line")
 
 def parse_gff(in_gff):
@@ -106,7 +107,7 @@ def Kimura80(qseq, sseq):
 
 def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
     # Set pybedtools temp directory within this worker (required when using forkserver).
-    pybedtools.set_tempdir(temp_dir+'/pybedtools')
+    pybedtools.set_tempdir(os.path.join(temp_dir, 'pybedtools'))
     # Load the chunk from its temp file and delete it immediately to reclaim disk space.
     # index_col=0 restores the original GFF row indices, which are used as unique
     # per-row filenames in qseqs/. Without this, every chunk restarts at 0 and
@@ -114,8 +115,8 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
     gff = pd.read_csv(chunk_path, sep="\t", index_col=0)
     os.remove(chunk_path)
     generated_name = file_name_generator()
-    holder_file_name = temp_dir+generated_name
-    failed_file_name = temp_dir+"failed_"+generated_name
+    holder_file_name = os.path.join(temp_dir, generated_name)
+    failed_file_name = os.path.join(temp_dir, "failed_" + generated_name)
     row_counter = 0
     with open(holder_file_name, 'w') as tmp_out:
         header = list(gff.columns.values)[1:] + ["Kimura"]
@@ -133,7 +134,7 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
             # Create BED string for BEDtools
             bed_str = " ".join([seqnames, start, end, ".", ".", strand])
             # Set path for query sequence
-            query_path = temp_dir+"/qseqs/"+str(idx)
+            query_path = os.path.join(temp_dir, "qseqs", str(idx))
             # Create bedtools command and getfasta
             a=pybedtools.BedTool(bed_str, from_string=True)
             try:
@@ -143,7 +144,7 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
                     failed_file.write(seqnames+":"+start+"-"+end+"_"+strand+"_"+repeat_family+"\n")
             if exists(query_path) is True and getsize(query_path) > 0:
                 # Set path to subject sequence
-                subject_path=temp_dir+"/split_library/"+repeat_family+".fasta"
+                subject_path = os.path.join(temp_dir, "split_library", repeat_family + ".fasta")
                 # Run matcher, with timeout exception
                 test_command = shlex.split("matcher "+query_path+" "+subject_path+" -outfile "+query_path+".matcher -aformat fasta")
                 # Run test and kill if it takes more than 10 seconds
@@ -237,11 +238,8 @@ if __name__ == "__main__":
     # create as many processes as instructed cores
     num_processes = args.cores
 
-    # calculate the chunk size as an integer
-    chunk_size = int(in_gff.shape[0]/num_processes)
-
-    # break into chunks
-    chunks = [in_gff.iloc[in_gff.index[i:i + chunk_size]] for i in range(0, in_gff.shape[0], chunk_size)]
+    # break into exactly num_processes chunks, distributing any remainder evenly
+    chunks = [in_gff.iloc[idx] for idx in np.array_split(range(len(in_gff)), num_processes)]
 
     # Write chunks to temp TSV files so the parent DataFrame can be freed before workers
     # are created. Workers read from disk rather than receiving pickled DataFrames via IPC.
@@ -260,10 +258,10 @@ if __name__ == "__main__":
 
     # set pybedtools temp path (also set per-worker inside outer_func for forkserver)
     try:
-        os.mkdir(args.temp_dir+"/pybedtools/")
+        os.mkdir(os.path.join(args.temp_dir, "pybedtools"))
     except FileExistsError:
         pass
-    pybedtools.set_tempdir(args.temp_dir+'/pybedtools')
+    pybedtools.set_tempdir(os.path.join(args.temp_dir, 'pybedtools'))
 
     print("Starting calculations") 
     # Perform calculations in parallel. maxtasksperchild=1 restarts each worker after
@@ -286,4 +284,4 @@ if __name__ == "__main__":
     print("Total run time for ", len(calc_gff), " rows was ", run_time, " seconds")
 
     # Delete folder of split library
-    shutil.rmtree(args.temp_dir+"/split_library/", ignore_errors=True)
+    shutil.rmtree(os.path.join(args.temp_dir, "split_library"), ignore_errors=True)
