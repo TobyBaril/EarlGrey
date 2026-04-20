@@ -46,7 +46,7 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
-Earl Grey v7.2.2 fixes three bugs reported by users:
+Earl Grey v7.2.2 fixes five bugs reported by users:
 
 - **Off-by-one chunking in divergence_calc.py** ([#290](https://github.com/TobyBaril/EarlGrey/issues/290)): The previous floor-division chunking could produce one extra chunk when the row count was not evenly divisible by the thread count, causing the final chunk to run serially after all parallel workers had finished (effectively doubling wall-clock time in the worst case). Chunking now uses `np.array_split`, which always produces exactly `num_processes` chunks and distributes any remainder one row at a time.
 - **OSError: AF_UNIX path too long in divergence_calc.py** ([#294](https://github.com/TobyBaril/EarlGrey/issues/294)): `pybedtools.set_tempdir()` sets Python's `tempfile.tempdir` globally. The `forkserver` start method creates its Unix domain socket under `tempfile.tempdir`, so deeply-nested output paths could exceed the 108-character AF_UNIX socket limit. The divergence calculator is now passed a short per-species path in `/tmp` via `-tmp`, keeping the socket path well within the limit regardless of output directory depth.
