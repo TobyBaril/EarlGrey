@@ -1,14 +1,12 @@
 {% set name = "EarlGrey" %}
-{% set version = "7.2.0" %}
-{% set sha256 = "REPLACE_WITH_SHA256_OF_V7_2_0_TARBALL" %}
+{% set version = "7.2.2" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://github.com/TobyBaril/EarlGrey/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  path: ..
 
 build:
   number: 0
