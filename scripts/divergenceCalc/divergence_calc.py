@@ -74,22 +74,27 @@ def file_name_generator():
     file_name = ''.join(random.sample(string.ascii_letters, 12))+'.tmp'
     return(file_name)
 
+# Map each ordered base pair to its category once, at import time, so Kimura80
+# does a single O(1) dict lookup per aligned base instead of three list scans.
+_BASE_PAIR_CATEGORY = {pair: "MATCH" for pair in ("AA", "GG", "CC", "TT")}
+_BASE_PAIR_CATEGORY.update({pair: "TRANSITION" for pair in ("AG", "GA", "CT", "TC")})
+_BASE_PAIR_CATEGORY.update({pair: "TRANSVERSION" for pair in (
+    "AC", "CA", "AT", "TA", "GC", "CG", "GT", "TG")})
+
+
 def Kimura80(qseq, sseq):
     """
     Calculations adapted from https://github.com/kgori/python_tools_on_github/blob/master/pairwise_distances.py
     """
-    # define transitions, transversions, matches
-    transitions = [ "AG", "GA", "CT", "TC"]
-    transversions = [ "AC", "CA", "AT", "TA",
-                    "GC", "CG", "GT", "TG" ]
-    matches = [ "AA", "GG", "CC", "TT"]
     # set counters to 0
     m,ts,tv=0,0,0
-    # count transitions, transversions, matches
+    # count transitions, transversions, matches via a single dict lookup per base
+    # (pairs not in the table -- gaps, Ns, mismatching ambiguity codes -- score 0)
     for i, j in zip(qseq, sseq):
-        if i+j in matches: m+=1
-        if i+j in transitions: ts+=1
-        if i+j in transversions: tv+=1
+        category = _BASE_PAIR_CATEGORY.get(i+j)
+        if category == "MATCH": m+=1
+        elif category == "TRANSITION": ts+=1
+        elif category == "TRANSVERSION": tv+=1
     # count number of bp which align (excludes gaps, Ns)
     aln_len = m + ts + tv
     
