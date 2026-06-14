@@ -243,13 +243,12 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
     return(holder_file_name)
 
 def tmp_out_parser(file_list, simple_gff, other_gff):
-    # Loop through results 
-    gff=pd.DataFrame()
-    for file in file_list:
-        # read in gff
-        in_gff = pd.read_csv(file, sep = "\t")
-        # concatenate gff
-        gff = pd.concat([gff, in_gff], ignore_index=True)
+    # Read every per-worker result file, then concatenate once. The previous
+    # version concatenated onto a growing frame inside the loop, reallocating it on
+    # each iteration (O(n^2)); collecting into a list and doing a single concat is
+    # linear and also avoids concatenating onto an empty DataFrame.
+    frames = [pd.read_csv(file, sep="\t") for file in file_list]
+    gff = pd.concat(frames, ignore_index=True)
     # Convert numbers to strings for concatenation
     gff['Kimura'] = gff['Kimura'].astype(str)
     # Convert new data onto metadata
