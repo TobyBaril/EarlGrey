@@ -51,7 +51,7 @@ def trumergeLTR(rmgff,outfile):
 				print(line, file=sys.stderr)
 				skip_line = input("Skip this line? (Y/N)")
 				# user can skip the line (with format error)
-				if skip_line.upper() == N:
+				if skip_line.upper() == "N":
 					sys.exit("Error in merging fragment.")
 				else:
 					continue
