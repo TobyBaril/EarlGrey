@@ -36,25 +36,29 @@ def trumergeLTR(rmgff,outfile):
 	#		if not line.startswith("#"):
 	#			cnt -= 1
 	#			break
-
-
 	print("##gff-version 3")
 	with open(gff, "r") as f:
 		for line in f:
-			if line.startswith("#"):
+			if line.startswith("#") or not line.strip():
 				continue
 			col = line.rstrip().split("\t")
-			try:
-				ltrgroup = re.findall(r"LTRgroup=(.*)$", col[8])
-			except IndexError as index_err:
-				print("Error parsing intermediate file " + gff, file=sys.stderr)
+			if len(col) < 9:
+				print(
+					f"Error parsing intermediate file {gff} — too few columns:",
+					file=sys.stderr,
+				)
 				print(line, file=sys.stderr)
-				skip_line = input("Skip this line? (Y/N)")
-				# user can skip the line (with format error)
+				skip_line = input("Skip this line? (Y/N) ")
 				if skip_line.upper() == "N":
 					sys.exit("Error in merging fragment.")
 				else:
 					continue
+			try:
+				ltrgroup = re.findall(r"LTRgroup=(.*)$", col[8])
+			except Exception as e:
+				print(f"Error parsing col[8] in {gff}: {e}", file=sys.stderr)
+				print(line, file=sys.stderr)
+				continue
 
 			if len(ltrgroup) > 0:
 				ltrgroup = ltrgroup[0]  # to string
