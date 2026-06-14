@@ -1,0 +1,9 @@
+# Python compiled artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Linter / tool caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
