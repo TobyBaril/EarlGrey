@@ -85,6 +85,11 @@ to produce **byte-identical output** versus the previous implementation.
   unalignable case), so a single bad pair can no longer abort a chunk. Verified on
   100,000 random pairs: all 504 previously-crashing inputs now return `NA`, and all
   99,496 in-domain results are bit-for-bit unchanged.
+- **Linear result aggregation.** `tmp_out_parser` concatenated each per-worker
+  result file onto a growing DataFrame inside the loop, reallocating it every
+  iteration (O(n²) in the number of chunks/rows). It now reads all files into a
+  list and concatenates once (O(n)), which also avoids concatenating onto an empty
+  DataFrame.
 - **Removed a bare `except:`** in the extraction path (now `except Exception`),
   and dropped the now-redundant per-row pybedtools cleanup counter.
 
@@ -123,6 +128,18 @@ The benefit appears only when per-repeat alignment times are uneven (which is
 common — satellite-rich loci and hard-to-align families cluster in coordinate
 order and dominate the `matcher` timeout budget). When work is uniform the change
 is neutral.
+
+**Result aggregation (`tmp_out_parser`).** Concat-in-a-loop vs single concat,
+scaling the number of per-worker result files (2000 rows each):
+
+| Result files | Total rows | Old (O(n²)) | New (O(n)) | Speedup |
+|--------------|-----------|-------------|------------|---------|
+| 64 | 128,000 | 0.170 s | 0.102 s | 1.7× |
+| 256 | 512,000 | 1.594 s | 0.371 s | 4.3× |
+| 512 | 1,024,000 | 5.820 s | 0.758 s | **7.7×** |
+
+The old timings grow ~4× per doubling (quadratic); the new ones ~2× (linear), so
+the gap widens with genome size and thread count (both increase the chunk count).
 
 ## Tooling / repository hygiene
 
