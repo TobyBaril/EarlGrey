@@ -6,7 +6,17 @@ version = "7.2.6"
 
 [tasks]
 # Build SA-SSR from source (no conda package / no upstream releases), as done in conda/build.sh
-build-sassr = "git clone --depth 1 https://github.com/TobyBaril/SA-SSR && cd SA-SSR && make -j${PIXI_BUILD_NCPUS:-4} && install -v -m 0755 bin/sa-ssr $CONDA_PREFIX/bin && cd .. && rm -rf SA-SSR"
+build-sassr = "git clone --depth 1 https://github.com/TobyBaril/SA-SSR && cd SA-SSR && make -j4 && install -v -m 0755 bin/sa-ssr $CONDA_PREFIX/bin && cd .. && rm -rf SA-SSR"
+
+# TRF source selection:
+#   Default is the conda `trf` package (see [dependencies]).
+#   To instead use the 64-bit fork https://github.com/hyphaltip/TRF-64bit (carries
+#   fixes over upstream), run `pixi run build-trf`. trf is a required transitive
+#   dependency of repeatmodeler so it cannot be removed from the env; this task
+#   overwrites $CONDA_PREFIX/bin/trf with the fork's binary. Re-run it after any
+#   `pixi install`/env reinstall, which restores the conda trf.
+build-trf = "git clone --depth 1 https://github.com/hyphaltip/TRF-64bit && cd TRF-64bit && ./build.sh && install -v -m 0755 trf $CONDA_PREFIX/bin && cd .. && rm -rf TRF-64bit"
+
 earlgrey = "earlGrey"
 
 [dependencies]
@@ -15,7 +25,7 @@ python = ">=3.10"
 
 # TE annotation / repeat tooling
 hmmer = "*"
-trf = "*"
+trf = "*"          # default trf; can be overridden by the fork via `pixi run build-trf` (see below)
 cd-hit = "*"
 genometools-genometools = "*"
 repeatmasker = ">=4.2.3"
