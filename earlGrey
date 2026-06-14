@@ -107,7 +107,7 @@ getRepeatMaskerFasta()
 firstMask()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
-	rmthreads=$(( ProcNum / 4 ))
+	rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 	RepeatMasker -species $RepSpec -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid species search term, if issue persists please use NCBI Taxids (E.G Drosophila is replaced with 7125)"; exit 2
@@ -119,7 +119,7 @@ firstMask()
 firstMaskCustomLib()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
-	rmthreads=$(( ProcNum / 4 ))
+	rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 	RepeatMasker -lib ${startCust} -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	RepSub=${startCust}
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
@@ -228,7 +228,7 @@ novoMask()
 {
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
+		rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
 		mkdir -p $OUTDIR/${species}_Curated_Library/
@@ -236,7 +236,7 @@ novoMask()
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
+		rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
