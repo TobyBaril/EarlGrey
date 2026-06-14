@@ -1,0 +1,59 @@
+[workspace]
+channels = ["conda-forge", "bioconda"]
+name = "earlgrey"
+platforms = ["linux-64"]
+version = "7.2.6"
+
+[tasks]
+# Build SA-SSR from source (no conda package / no upstream releases), as done in conda/build.sh
+build-sassr = "git clone --depth 1 https://github.com/TobyBaril/SA-SSR && cd SA-SSR && make -j${PIXI_BUILD_NCPUS:-4} && install -v -m 0755 bin/sa-ssr $CONDA_PREFIX/bin && cd .. && rm -rf SA-SSR"
+earlgrey = "earlGrey"
+
+[dependencies]
+# Core language runtimes
+python = ">=3.10"
+
+# TE annotation / repeat tooling
+hmmer = "*"
+trf = "*"
+cd-hit = "*"
+genometools-genometools = "*"
+repeatmasker = ">=4.2.3"
+ltr_retriever = "*"
+mafft = "*"
+mreps = "*"
+ninja-nj = "*"
+repeatscout = "*"
+recon = "*"
+repeatmodeler = ">=2.0.4"
+heliano = "*"
+
+# Sequence utilities
+bedtools = "*"
+samtools = "*"
+emboss = "*"
+pybedtools = "*"
+parallel = "*"
+
+# Python libraries
+numpy = "*"
+pandas = "*"
+ncls = "*"
+pyfaidx = "*"
+pyranges = "*"
+
+# R / Bioconductor stack for plotting and genome handling
+bioconductor-genomeinfodb = "*"
+bioconductor-genomeinfodbdata = "*"
+bioconductor-bsgenome = "*"
+bioconductor-plyranges = "*"
+r-ape = "*"
+r-optparse = "*"
+r-tidyverse = "*"
+r-plyr = "*"
+r-viridis = "*"
+r-cowplot = "*"
+r-ggtext = "*"
+"r-data.table" = "*"
+r-magrittr = "*"
+r-kableextra = "*"
