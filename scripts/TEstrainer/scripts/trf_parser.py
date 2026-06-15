@@ -26,7 +26,7 @@ def main():
             for line in trf:
                 splitline = line.split()
                 if line.startswith("@"):
-                    chrom = line.split()[0]
+                    chrom = splitline[0]
                 else:
                     start = splitline[0]
                     end = splitline[1]

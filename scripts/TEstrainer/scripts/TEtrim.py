@@ -10,6 +10,7 @@ from Bio.Align import AlignInfo, MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import pandas as pd
+import numpy as np
 
 # Biopython >= 1.79 replaced Seq.ungap("-") with Seq.replace("-", "")
 _bio_version = tuple(int(x) for x in re.findall(r'\d+', Bio.__version__)[:2])
@@ -35,31 +36,34 @@ parser.add_argument('-m', '--minimum_seq', type=int,
 args = parser.parse_args()
 
 # function for removing single base pair insertions
+# Keeps columns with more than one non-gap base. Vectorised over a (rows x cols)
+# char array so the whole alignment is built once instead of concatenating a new
+# MultipleSeqAlignment per kept column (the old approach was O(length^2)).
 def single_trim(aln_in):
-  # make empty alignment
-  good=aln_in[:,0:0]
-  for x in range(aln_in.get_alignment_length()):
-    # extract columns with more than 1 base pair
-    if len(aln_in) - aln_in[:, x].count("-") > 1:
-      good=good+aln_in[:,x:x+1]
-  return(good)
+  if len(aln_in) == 0:
+    return aln_in
+  arr = np.array([list(str(rec.seq)) for rec in aln_in], dtype='<U1')
+  keep = (arr != '-').sum(axis=0) > 1
+  records = [SeqRecord(Seq(''.join(arr[i, keep])),
+                       id=r.id, name=r.name, description=r.description)
+             for i, r in enumerate(aln_in)]
+  return MultipleSeqAlignment(records)
 # function for making first consensus from alignment
+# Emits a base only for columns with more than two non-gap characters; ties
+# between A/T/C/G (including all-zero columns) become 'n', otherwise the most
+# frequent base (A,T,C,G order) is used. Vectorised equivalent of the per-column
+# loop.
 def con_maker(aln_in):
-  con_seq=str()
-  for x in range(aln_in.get_alignment_length()):
-    a = aln_in[:, x].count("a") + aln_in[:, x].count("A")
-    t = aln_in[:, x].count("t") + aln_in[:, x].count("T")
-    c = aln_in[:, x].count("c") + aln_in[:, x].count("C")
-    g = aln_in[:, x].count("g") + aln_in[:, x].count("G")
-    gap = aln_in[:, x].count("-")
-    if (len(aln_in) - gap) > 2:
-      pos_count = {'A': a, 'T': t, 'C': c, 'G': g}
-      if len([k for k, v in pos_count.items() if v == max(pos_count.values())])>1:
-        con_seq+='n'
-      else:
-        con_seq+=max(pos_count, key=pos_count.get)
-  con_seq=Seq(con_seq)
-  return(con_seq)
+  if len(aln_in) == 0:
+    return Seq("")
+  arru = np.char.upper(np.array([list(str(rec.seq)) for rec in aln_in], dtype='<U1'))
+  bases = np.array(['A', 'T', 'C', 'G'])
+  counts = np.stack([(arru == b).sum(axis=0) for b in bases])
+  nongap = len(aln_in) - (arru == '-').sum(axis=0)
+  keep = nongap > 2
+  maxc = counts.max(axis=0)
+  chosen = np.where((counts == maxc).sum(axis=0) > 1, 'n', bases[counts.argmax(axis=0)])
+  return Seq(''.join(chosen[keep]))
 # set names
 seq_name=re.sub('.*/', '', args.in_seq)
 run_dir=args.directory+'/run_'+args.iteration

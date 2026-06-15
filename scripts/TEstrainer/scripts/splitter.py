@@ -22,8 +22,9 @@ file_list=[]
 # split fasta file
 with open(args.in_seq, 'r') as handle:
     for record in SeqIO.parse(handle, "fasta"):
-        file_name = (args.out_dir+"/"+record.name.split(sep="#")[0]+".fasta")
-        file_list.append(record.name.split(sep="#")[0]+".fasta")
+        base_name = record.name.split(sep="#")[0]+".fasta"
+        file_name = (args.out_dir+"/"+base_name)
+        file_list.append(base_name)
         SeqIO.write(record, file_name, "fasta-2line")
 # write file list
 with open((args.out_dir+"/"+re.sub('.*/', '', args.in_seq)+"_split.txt"), 'w') as fp:

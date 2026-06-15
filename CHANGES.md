@@ -161,6 +161,47 @@ scripts (`earlGreyAnnotationOnly` has neither subprocess).
   `repeatcraftHelper.py` never emitted a final newline, so the next message was
   appended to the progress line. Each loop now writes a closing `\n`.
 
+## Performance — TEstrainer per-family scripts (`scripts/TEstrainer/scripts/`)
+
+These scripts are invoked once per TE family per iteration under GNU `parallel`
+(thousands of invocations per run), so both per-invocation overhead and any
+quadratic inner loops matter. The following are pure speed-ups with unchanged
+output:
+
+- **`initial_mafft_setup.py` — TRF parse was O(n²).** Each qualifying TRF line did
+  `trf_df = pd.concat([trf_df, pd.DataFrame({...})])`, copying the whole frame
+  every iteration. Coordinates are now collected into a Python list and the
+  DataFrame is built once after the loop. Each line is also split once into
+  `fields` instead of 2–4 times. As a side benefit the `Start`/`End` columns now
+  build as native `int64` (the old empty-frame concat produced `object` dtype and
+  a pandas FutureWarning) which is what the downstream `pr.PyRanges` call wants.
+- **`initial_mafft_setup.py` — dead imports removed.** `string`, `statistics`, and
+  `numpy as np` were imported but unused. The deliberate deferred-import block
+  (pandas/pyranges loaded *after* the `file_check` calls, so missing-file
+  invocations exit before paying the ~1 s import cost) was kept as-is.
+- **`TEtrim.py` — `single_trim`/`con_maker` vectorised with NumPy.**
+  `single_trim` rebuilt a new `MultipleSeqAlignment` by concatenating one column
+  at a time (`good = good + aln_in[:,x:x+1]`), which is **O(length²)** and was the
+  dominant cost on long TE+flank alignments. `con_maker` likewise looped per
+  column in Python, re-scanning each column multiple times. Both now build the
+  alignment into a single `(rows × cols)` char array once and do the column math
+  vectorised: `single_trim` keeps columns with >1 non-gap base (case and record
+  metadata preserved); `con_maker` emits a base only where >2 non-gap characters
+  exist, with A/T/C/G ties (including all-zero columns) → `'n'` and otherwise the
+  most frequent base in A,T,C,G order. Output is byte-identical to the previous
+  implementation — verified with a throwaway harness over 4007 cases (a 4000-case
+  random sweep plus targeted edge cases: ties, weak ≤2-non-gap columns, all-gap,
+  all-N, mixed case, 2-row), all matching, then removed.
+- **`Dfam_extractor.py` — library parsed twice.** The Dfam and non-Dfam splits
+  each re-read and re-parsed the whole input FASTA. Now a single pass computes
+  `is_dfam` once per record and writes to the matching handle (the partition is the
+  exact logical complement of the original). Also fixed an adjacent guaranteed
+  crash where the missing-directory branch called `os.mkdir(args.out_dir)` for a
+  non-existent attribute (should be `args.directory`).
+- **`splitter.py` / `trf_parser.py` — redundant `split()`.** `splitter.py` split
+  each record name twice (now once into `base_name`); `trf_parser.py` re-split the
+  header line after already computing `splitline` (now reuses `splitline[0]`).
+
 ## Performance — divergence calculation (`scripts/divergenceCalc/divergence_calc.py`)
 
 Runtime improvements to the per-copy Kimura-80 divergence step, which runs once
