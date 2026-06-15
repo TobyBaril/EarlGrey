@@ -145,6 +145,7 @@ def fusete(gffp,outfile,gapsize=150):
 
 	# Print the last row
 	print(*P["pcol"], sep="\t")
+	sys.stderr.write("\n")
 	sys.stdout.close()
 	sys.stdout = stdout
 

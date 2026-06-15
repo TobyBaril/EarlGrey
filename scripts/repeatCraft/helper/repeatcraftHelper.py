@@ -151,7 +151,7 @@ def fuseltr(rmgff,ltrgff_p,ltr_maxlength,ltr_flank,outfile):
 				lastChrom = col[0]
 				gpcnt += 1
 	ltrout.close()
-	stder1 = "Updated LTR.gff with LTRgroup attribute to:" + bname
+	stder1 = "Updated LTR.gff with LTRgroup attribute to:" + bname + "\n"
 	sys.stderr.write(stder1)
 
 	# repeatmasker gff
@@ -336,6 +336,7 @@ def fusete(gffp,outfile,gapsize=150):
 
 	# Print the last row
 	print(*P["pcol"], sep="\t")
+	sys.stderr.write("\n")
 	sys.stdout.close()
 	sys.stdout = stdout
 
@@ -542,6 +543,7 @@ def truefusete(gffp,gapsize,outfile):
 		#print("print remaining lastcol") # debug
 		for family in d[lastchrom]:
 			print(*d[lastchrom][family]["lastcol"],sep="\t")
+		sys.stderr.write("\n")
 
 	sys.stdout.close()
 	sys.stdout = stdout

@@ -178,6 +178,7 @@ def truefusete(gffp,gapsize,outfile):
 		#print("print remaining lastcol") # debug
 		for family in d[lastchrom]:
 			print(*d[lastchrom][family]["lastcol"],sep="\t")
+		sys.stderr.write("\n")
 
 	sys.stdout.close()
 	sys.stdout = stdout
