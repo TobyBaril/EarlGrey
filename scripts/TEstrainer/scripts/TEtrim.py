@@ -1,6 +1,6 @@
 import os
 import sys
-import string
+import shlex
 import statistics
 import argparse
 import re
@@ -10,13 +10,17 @@ from Bio.Align import AlignInfo, MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import pandas as pd
+
+# Biopython >= 1.79 replaced Seq.ungap("-") with Seq.replace("-", "")
+_bio_version = tuple(int(x) for x in re.findall(r'\d+', Bio.__version__)[:2])
+_bio_modern = _bio_version >= (1, 79)
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--in_seq', type=str, required=True,
                     help='Input MSA to be trimmed')
 parser.add_argument('-n', '--iteration', type=str, required=True,
                     help='iteration number')
 parser.add_argument('-d', '--directory', type=str, required=True,
-                    help='Output directory')                    
+                    help='Output directory')
 parser.add_argument('-t', '--threads', type=str,
                     help='Threads to use', default=1)
 parser.add_argument('-f', '--flank', type=int,
@@ -58,6 +62,7 @@ def con_maker(aln_in):
   return(con_seq)
 # set names
 seq_name=re.sub('.*/', '', args.in_seq)
+run_dir=args.directory+'/run_'+args.iteration
 in_seq_path=args.directory+'/run_'+args.iteration+'/mafft/'+seq_name
 out_seq_path=args.directory+'/run_'+args.iteration+'/TEtrim/'+seq_name
 # read sequence
@@ -68,12 +73,12 @@ align = AlignIO.read(in_seq_path, "fasta")
 final_id = align[0].id
 if args.debug == 'TRUE':
   print(final_id)
-if(float(Bio.__version__) >=1.79):
+if _bio_modern:
   og_con = SeqRecord(seq= align[0].seq.replace("-", ""), id=align[0].id, name=align[0].id)
 else:
   og_con = SeqRecord(seq= align[0].seq.ungap("-"), id=align[0].id, name=align[0].id)
 SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name),"fasta")
-align = align[1:len(align)]
+align = align[1:]
 
 # cancel if less than minimum_seq sequences, write to file for troubleshooting
 if args.debug == 'TRUE':
@@ -81,7 +86,7 @@ if args.debug == 'TRUE':
 if(len(align)<args.minimum_seq):
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
-    sys.exit((seq_name+" contains less than "+args.minimum_seq+" sequences"))
+    sys.exit((seq_name+" contains less than "+str(args.minimum_seq)+" sequences"))
   else:
     sys.exit()
 if args.debug == 'TRUE':
@@ -95,7 +100,7 @@ if args.debug == 'TRUE':
   print('Creating unaligned sequences')
 with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name), "w") as o:
   for record in SeqIO.parse((args.directory+'/run_'+args.iteration+'/TEtrim_bp/trimmed_'+seq_name), "fasta"):
-    if(float(Bio.__version__) >=1.79):
+    if _bio_modern:
       record.seq = record.seq.replace("-", "")
     else:
       record.seq = record.seq.ungap("-")
@@ -104,14 +109,14 @@ with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name)
 ### run blast ###
 if args.debug == 'TRUE':
   print('Determining number of sequences')
-os.system('blastn -query '+args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name+' -subject '+args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name+' -outfmt "6 qseqid sseqid qcovs" -task blastn | uniq > '+args.directory+'/run_'+args.iteration+'/TEtrim_blast/'+seq_name+'.tsv')
+os.system('blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_unaln/temp_'+seq_name)+' -outfmt "6 qseqid sseqid qcovs" -task blastn | uniq > '+shlex.quote(run_dir+'/TEtrim_blast/'+seq_name+'.tsv'))
 # read initial blast, determine acceptable passed on coverage >50% mean of coverage
 if args.debug == 'TRUE':
   print('Reading initial blast')
 df = pd.read_table((args.directory+'/run_'+args.iteration+'/TEtrim_blast/'+seq_name+'.tsv'), names=['qseqid', 'sseqid', 'qcovs'])
-if df.empty is True:
+if df.empty:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
-  if args.debug == 'TRUE': 
+  if args.debug == 'TRUE':
     sys.exit(('New consensus of '+seq_name+" has no homology to original sequence"))
   else:
     sys.exit()
@@ -122,7 +127,7 @@ acceptable=list(df.query("(qcovs>@mean_covs) or (qcovs>50)")['sseqid'])
 if len(acceptable) < args.minimum_seq:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
-    sys.exit((seq_name+" contains less than "+args.minimum_seq+" acceptable sequences"))
+    sys.exit((seq_name+" contains less than "+str(args.minimum_seq)+" acceptable sequences"))
   else:
     sys.exit()
 
@@ -136,7 +141,7 @@ with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/unaln_'+seq_name
 ### run mafft ###
 if args.debug == 'TRUE':
   print('Running initial mafft')
-os.system('mafft --quiet --thread '+args.threads+' --localpair '+args.directory+'/run_'+args.iteration+'/TEtrim_unaln/unaln_'+seq_name+' > '+args.directory+'/run_'+args.iteration+'/TEtrim_mafft/mafft_'+seq_name)
+os.system('mafft --quiet --thread '+shlex.quote(str(args.threads))+' --localpair '+shlex.quote(run_dir+'/TEtrim_unaln/unaln_'+seq_name)+' > '+shlex.quote(run_dir+'/TEtrim_mafft/mafft_'+seq_name))
 # read new alignment, make consensus
 if args.debug == 'TRUE':
   print('Reading new alignment and making consensus')
@@ -146,7 +151,7 @@ SeqIO.write(con_2, (args.directory+'/run_'+args.iteration+'/TEtrim_con/cleaned_'
 # Run final blast
 if args.debug == 'TRUE':
   print('Final blast')
-os.system('blastn -query '+args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name+' -subject '+args.directory+'/run_'+args.iteration+'/TEtrim_con/cleaned_'+seq_name+' -outfmt "6 length qlen slen qcovs" -task dc-megablast -out '+args.directory+'/run_'+args.iteration+'/TEtrim_blast/check_'+seq_name+'.tsv')
+os.system('blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_con/cleaned_'+seq_name)+' -outfmt "6 length qlen slen qcovs" -task dc-megablast -out '+shlex.quote(run_dir+'/TEtrim_blast/check_'+seq_name+'.tsv'))
 if os.path.getsize(args.directory+'/run_'+args.iteration+'/TEtrim_blast/check_'+seq_name+'.tsv') == 0:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
