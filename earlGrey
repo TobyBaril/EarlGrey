@@ -4,7 +4,7 @@ set -eo pipefail
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.2.6-hyphaltip
+	earlGrey version 7.3.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name

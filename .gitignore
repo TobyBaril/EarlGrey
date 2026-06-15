@@ -7,3 +7,6 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
+
+# development workspace
+EarlGrey.code-workspace

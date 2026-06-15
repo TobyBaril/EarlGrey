@@ -1,5 +1,5 @@
 {% set name = "EarlGrey" %}
-{% set version = "7.2.6" %}
+{% set version = "7.3.0" %}
 
 package:
   name: {{ name|lower }}
@@ -30,14 +30,14 @@ requirements:
     - pyfaidx
     - pyranges
     - parallel
-    - repeatmasker >=4.2.3
+    - repeatmasker >=4.2.4
     - ltr_retriever
     - mafft
     - mreps
     - ninja-nj
     - repeatscout
     - recon
-    - repeatmodeler >=2.0.4
+    - repeatmodeler >=2.0.9
     - bioconductor-genomeinfodb
     - bioconductor-genomeinfodbdata
     - bioconductor-bsgenome
