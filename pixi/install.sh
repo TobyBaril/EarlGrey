@@ -86,6 +86,15 @@ chmod +x "$SCRIPT_DIR"/* > /dev/null 2>&1 || true
 [ -f "$LTRDIR/ltr_finder" ] && chmod +x "$LTRDIR/ltr_finder"
 [ -d "$SCRIPT_DIR/repeatCraft/example" ] && chmod a+w "$SCRIPT_DIR/repeatCraft/example"
 
+# --- precompile Python bytecode caches --------------------------------------
+# Generate __pycache__/*.pyc now, as the install user, so the staged package
+# under $PACKAGE_HOME (often read-only for those who later *run* EarlGrey) does
+# not need to write bytecode at runtime. This benefits the helper modules that
+# repeatcraft.py imports (fuseltr, fusetem, filtershortm, ...); entry scripts
+# run as `python foo.py` never use a cache for themselves. `|| true`: some
+# vendored sources may not compile cleanly and must not abort the install.
+python -m compileall -q -j 0 "$PACKAGE_HOME" 2>/dev/null || true
+
 # --- expose executables on PATH ---------------------------------------------
 for exe in earlGrey earlGreyAnnotationOnly earlGreyLibConstruct; do
     ln -sf "$PACKAGE_HOME/$exe" "$CONDA_PREFIX/bin/$exe"
