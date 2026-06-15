@@ -420,7 +420,7 @@ stage="Making Directories" && runningTea
 makeDirectory
 
 # Start Logs - only bother starting if everything is present and correct
-exec > >(tee "${OUTDIR}/${species}EarlGrey.log") 2>&1
+exec > >(tee "${OUTDIR}/${species}_EarlGrey.log") 2>&1
 stage="Cleaning Genome" && runningTea
 prepGenome
 sleep 1
