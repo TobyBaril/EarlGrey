@@ -39,7 +39,7 @@ def fuseltr(rmgff,ltrgff_p,ltr_maxlength,ltr_flank,outfile):
 				lastChrom = col[0]
 				gpcnt += 1
 	ltrout.close()
-	stder1 = "Updated LTR.gff with LTRgroup attribute to:" + bname
+	stder1 = "Updated LTR.gff with LTRgroup attribute to:" + bname + "\n"
 	sys.stderr.write(stder1)
 
 	# repeatmasker gff

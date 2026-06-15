@@ -1,6 +1,6 @@
 import os
 import sys
-import string
+import shlex
 import statistics
 import argparse
 import re
@@ -10,13 +10,18 @@ from Bio.Align import AlignInfo, MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import pandas as pd
+import numpy as np
+
+# Biopython >= 1.79 replaced Seq.ungap("-") with Seq.replace("-", "")
+_bio_version = tuple(int(x) for x in re.findall(r'\d+', Bio.__version__)[:2])
+_bio_modern = _bio_version >= (1, 79)
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--in_seq', type=str, required=True,
                     help='Input MSA to be trimmed')
 parser.add_argument('-n', '--iteration', type=str, required=True,
                     help='iteration number')
 parser.add_argument('-d', '--directory', type=str, required=True,
-                    help='Output directory')                    
+                    help='Output directory')
 parser.add_argument('-t', '--threads', type=str,
                     help='Threads to use', default=1)
 parser.add_argument('-f', '--flank', type=int,
@@ -31,33 +36,37 @@ parser.add_argument('-m', '--minimum_seq', type=int,
 args = parser.parse_args()
 
 # function for removing single base pair insertions
+# Keeps columns with more than one non-gap base. Vectorised over a (rows x cols)
+# char array so the whole alignment is built once instead of concatenating a new
+# MultipleSeqAlignment per kept column (the old approach was O(length^2)).
 def single_trim(aln_in):
-  # make empty alignment
-  good=aln_in[:,0:0]
-  for x in range(aln_in.get_alignment_length()):
-    # extract columns with more than 1 base pair
-    if len(aln_in) - aln_in[:, x].count("-") > 1:
-      good=good+aln_in[:,x:x+1]
-  return(good)
+  if len(aln_in) == 0:
+    return aln_in
+  arr = np.array([list(str(rec.seq)) for rec in aln_in], dtype='<U1')
+  keep = (arr != '-').sum(axis=0) > 1
+  records = [SeqRecord(Seq(''.join(arr[i, keep])),
+                       id=r.id, name=r.name, description=r.description)
+             for i, r in enumerate(aln_in)]
+  return MultipleSeqAlignment(records)
 # function for making first consensus from alignment
+# Emits a base only for columns with more than two non-gap characters; ties
+# between A/T/C/G (including all-zero columns) become 'n', otherwise the most
+# frequent base (A,T,C,G order) is used. Vectorised equivalent of the per-column
+# loop.
 def con_maker(aln_in):
-  con_seq=str()
-  for x in range(aln_in.get_alignment_length()):
-    a = aln_in[:, x].count("a") + aln_in[:, x].count("A")
-    t = aln_in[:, x].count("t") + aln_in[:, x].count("T")
-    c = aln_in[:, x].count("c") + aln_in[:, x].count("C")
-    g = aln_in[:, x].count("g") + aln_in[:, x].count("G")
-    gap = aln_in[:, x].count("-")
-    if (len(aln_in) - gap) > 2:
-      pos_count = {'A': a, 'T': t, 'C': c, 'G': g}
-      if len([k for k, v in pos_count.items() if v == max(pos_count.values())])>1:
-        con_seq+='n'
-      else:
-        con_seq+=max(pos_count, key=pos_count.get)
-  con_seq=Seq(con_seq)
-  return(con_seq)
+  if len(aln_in) == 0:
+    return Seq("")
+  arru = np.char.upper(np.array([list(str(rec.seq)) for rec in aln_in], dtype='<U1'))
+  bases = np.array(['A', 'T', 'C', 'G'])
+  counts = np.stack([(arru == b).sum(axis=0) for b in bases])
+  nongap = len(aln_in) - (arru == '-').sum(axis=0)
+  keep = nongap > 2
+  maxc = counts.max(axis=0)
+  chosen = np.where((counts == maxc).sum(axis=0) > 1, 'n', bases[counts.argmax(axis=0)])
+  return Seq(''.join(chosen[keep]))
 # set names
 seq_name=re.sub('.*/', '', args.in_seq)
+run_dir=args.directory+'/run_'+args.iteration
 in_seq_path=args.directory+'/run_'+args.iteration+'/mafft/'+seq_name
 out_seq_path=args.directory+'/run_'+args.iteration+'/TEtrim/'+seq_name
 # read sequence
@@ -68,12 +77,12 @@ align = AlignIO.read(in_seq_path, "fasta")
 final_id = align[0].id
 if args.debug == 'TRUE':
   print(final_id)
-if(float(Bio.__version__) >=1.79):
+if _bio_modern:
   og_con = SeqRecord(seq= align[0].seq.replace("-", ""), id=align[0].id, name=align[0].id)
 else:
   og_con = SeqRecord(seq= align[0].seq.ungap("-"), id=align[0].id, name=align[0].id)
 SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name),"fasta")
-align = align[1:len(align)]
+align = align[1:]
 
 # cancel if less than minimum_seq sequences, write to file for troubleshooting
 if args.debug == 'TRUE':
@@ -81,7 +90,7 @@ if args.debug == 'TRUE':
 if(len(align)<args.minimum_seq):
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
-    sys.exit((seq_name+" contains less than "+args.minimum_seq+" sequences"))
+    sys.exit((seq_name+" contains less than "+str(args.minimum_seq)+" sequences"))
   else:
     sys.exit()
 if args.debug == 'TRUE':
@@ -95,7 +104,7 @@ if args.debug == 'TRUE':
   print('Creating unaligned sequences')
 with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name), "w") as o:
   for record in SeqIO.parse((args.directory+'/run_'+args.iteration+'/TEtrim_bp/trimmed_'+seq_name), "fasta"):
-    if(float(Bio.__version__) >=1.79):
+    if _bio_modern:
       record.seq = record.seq.replace("-", "")
     else:
       record.seq = record.seq.ungap("-")
@@ -104,14 +113,14 @@ with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name)
 ### run blast ###
 if args.debug == 'TRUE':
   print('Determining number of sequences')
-os.system('blastn -query '+args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name+' -subject '+args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name+' -outfmt "6 qseqid sseqid qcovs" -task blastn | uniq > '+args.directory+'/run_'+args.iteration+'/TEtrim_blast/'+seq_name+'.tsv')
+os.system('blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_unaln/temp_'+seq_name)+' -outfmt "6 qseqid sseqid qcovs" -task blastn | uniq > '+shlex.quote(run_dir+'/TEtrim_blast/'+seq_name+'.tsv'))
 # read initial blast, determine acceptable passed on coverage >50% mean of coverage
 if args.debug == 'TRUE':
   print('Reading initial blast')
 df = pd.read_table((args.directory+'/run_'+args.iteration+'/TEtrim_blast/'+seq_name+'.tsv'), names=['qseqid', 'sseqid', 'qcovs'])
-if df.empty is True:
+if df.empty:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
-  if args.debug == 'TRUE': 
+  if args.debug == 'TRUE':
     sys.exit(('New consensus of '+seq_name+" has no homology to original sequence"))
   else:
     sys.exit()
@@ -122,7 +131,7 @@ acceptable=list(df.query("(qcovs>@mean_covs) or (qcovs>50)")['sseqid'])
 if len(acceptable) < args.minimum_seq:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
-    sys.exit((seq_name+" contains less than "+args.minimum_seq+" acceptable sequences"))
+    sys.exit((seq_name+" contains less than "+str(args.minimum_seq)+" acceptable sequences"))
   else:
     sys.exit()
 
@@ -136,7 +145,7 @@ with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/unaln_'+seq_name
 ### run mafft ###
 if args.debug == 'TRUE':
   print('Running initial mafft')
-os.system('mafft --quiet --thread '+args.threads+' --localpair '+args.directory+'/run_'+args.iteration+'/TEtrim_unaln/unaln_'+seq_name+' > '+args.directory+'/run_'+args.iteration+'/TEtrim_mafft/mafft_'+seq_name)
+os.system('mafft --quiet --thread '+shlex.quote(str(args.threads))+' --localpair '+shlex.quote(run_dir+'/TEtrim_unaln/unaln_'+seq_name)+' > '+shlex.quote(run_dir+'/TEtrim_mafft/mafft_'+seq_name))
 # read new alignment, make consensus
 if args.debug == 'TRUE':
   print('Reading new alignment and making consensus')
@@ -146,7 +155,7 @@ SeqIO.write(con_2, (args.directory+'/run_'+args.iteration+'/TEtrim_con/cleaned_'
 # Run final blast
 if args.debug == 'TRUE':
   print('Final blast')
-os.system('blastn -query '+args.directory+'/run_'+args.iteration+'/TEtrim_con/og_'+seq_name+' -subject '+args.directory+'/run_'+args.iteration+'/TEtrim_con/cleaned_'+seq_name+' -outfmt "6 length qlen slen qcovs" -task dc-megablast -out '+args.directory+'/run_'+args.iteration+'/TEtrim_blast/check_'+seq_name+'.tsv')
+os.system('blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_con/cleaned_'+seq_name)+' -outfmt "6 length qlen slen qcovs" -task dc-megablast -out '+shlex.quote(run_dir+'/TEtrim_blast/check_'+seq_name+'.tsv'))
 if os.path.getsize(args.directory+'/run_'+args.iteration+'/TEtrim_blast/check_'+seq_name+'.tsv') == 0:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':

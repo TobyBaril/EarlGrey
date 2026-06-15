@@ -38,15 +38,12 @@ file_check((args.directory+'/run_'+args.iteration+'/self_search/'), args.debug) 
 file_check((args.directory+'/run_'+args.iteration+'/to_align/'), args.debug) # final output folder
 file_check((args.directory+'/run_'+args.iteration+'/TEtrim_complete/'), args.debug) # alternate final output folder
 
-import string
 from os import system
-import statistics
 import re
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import pandas as pd
-import numpy as np
 import pyranges as pr
 
 # function to output current consensus and exit if less than a certain number of sequences are found
@@ -92,13 +89,17 @@ start_seq = SeqIO.read((args.directory+"/run_"+args.iteration+"/raw/"+args.seq_n
 # check if sequence is largely tandem repeat
 # make pd.df to use as holder for trf coordinates
 te_len=len(start_seq.seq)
-trf_df = pd.DataFrame(columns=['Chromosome', 'Start', 'End'])
+# Accumulate TRF coordinates in a list and build the DataFrame once. Appending
+# rows via pd.concat inside the loop copies the whole frame each iteration (O(n^2)).
+trf_rows = []
 with open((args.directory+'/run_'+args.iteration+'/raw/'+args.seq_name+'.trf'), 'r') as trf:
   for line in trf:
+    fields = line.split()
     if line.startswith('@'):
-      seqnames = re.sub('@', '', line.split()[0])
-    elif float(line.split()[3]) > 5:
-      trf_df = pd.concat([trf_df, pd.DataFrame({'Chromosome':[seqnames], 'Start':[int(line.split()[0])], 'End':[int(line.split()[1])]})])
+      seqnames = re.sub('@', '', fields[0])
+    elif float(fields[3]) > 5:
+      trf_rows.append((seqnames, int(fields[0]), int(fields[1])))
+trf_df = pd.DataFrame(trf_rows, columns=['Chromosome', 'Start', 'End'])
 # Merge trf pr
 trf_pr=pr.PyRanges(df=trf_df).merge()
 # Calculate total length of satellite sequences

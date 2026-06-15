@@ -4,7 +4,7 @@ set -eo pipefail
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.2.6
+	earlGrey version 7.2.6-hyphaltip
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -23,6 +23,7 @@ usage()
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
+		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
 		-h == Show help
 
 	Example Usage:
@@ -107,7 +108,7 @@ getRepeatMaskerFasta()
 firstMask()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
-	rmthreads=$(( ProcNum / 4 ))
+	rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 	RepeatMasker -species $RepSpec -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
 		echo "ERROR: RepeatMasker failed, please check logs. This is likely because of an invalid species search term, if issue persists please use NCBI Taxids (E.G Drosophila is replaced with 7125)"; exit 2
@@ -119,7 +120,7 @@ firstMask()
 firstMaskCustomLib()
 {
 	cd ${OUTDIR}/${species}_RepeatMasker
-	rmthreads=$(( ProcNum / 4 ))
+	rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 	RepeatMasker -lib ${startCust} -no_is -lcambig -s -a -pa $rmthreads -dir $OUTDIR/${species}_RepeatMasker $genome
 	RepSub=${startCust}
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
@@ -194,7 +195,14 @@ strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
 	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q")
-	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1) || true)/${species}-families.fa.strained"
+	# pick the most recently modified TS_ output dir matching this library
+	latestStrainDir="$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*" -printf '%T@\t%p\n' 2>/dev/null | sort -nr | head -n 1 | cut -f2-)"
+	if [ -z "$latestStrainDir" ]; then
+		echo "ERROR: No TEstrainer output directory found in ${OUTDIR}/${species}_strainer/ - TEstrainer may have failed"
+		exit 2
+	fi
+	latestStrainDir="$(realpath "$latestStrainDir")"
+	latestFile="${latestStrainDir}/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
 
@@ -203,12 +211,19 @@ strainer()
 strainerResume() {
 	cd ${OUTDIR}/${species}_strainer/
 	strainDataDir=$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*")
-	if [ -z "$strainDataDir" ] || [ ! $(echo "$strainDataDir" | wc -l) -eq 1 ]; then
-		echo "ERROR: There are more TEstrainer directories than expected present"
+	dirCount=$(printf '%s\n' "$strainDataDir" | grep -c .)
+	if [ -z "$strainDataDir" ]; then
+		echo "ERROR: No TEstrainer TS_ directory found in ${OUTDIR}/${species}_strainer/ to resume"
+		exit 2
+	elif [ "$dirCount" -ne 1 ]; then
+		echo "ERROR: Expected exactly one TEstrainer directory, found ${dirCount} in ${OUTDIR}/${species}_strainer/"
 		exit 2
 	fi
+	# resolve to a fully-normalised absolute path while cwd is still the strainer dir
+	latestStrainDir="$(realpath "$strainDataDir")"
 	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q") -d ${strainDataDir} -R
-	latestFile="$(realpath $(ls -td -- ${OUTDIR}/${species}_strainer/*/ | head -n 1) || true)/${species}-families.fa.strained"
+	cd -
+	latestFile="${latestStrainDir}/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
 
@@ -217,7 +232,7 @@ strainerResume() {
 clust()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clstrd.fa
+	cd-hit-est -d 0 -aS 0.8 -c 0.8 -G 0 -g 1 -b 500 -r 1 -i $latestFile -o ${latestFile}.clstrd.fa -T ${ProcNum}
 	latestFile=$latestFile.clstrd.fa
 }
 
@@ -228,7 +243,7 @@ novoMask()
 {
 	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
+		rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	else
 		mkdir -p $OUTDIR/${species}_Curated_Library/
@@ -236,7 +251,7 @@ novoMask()
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
 		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
+		rmthreads=$(( ProcNum / 4 )); (( rmthreads < 1 )) && rmthreads=1
 		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
 }
@@ -256,7 +271,7 @@ heliano_optional()
 # Defragment repeat sequences to adjust for insertion times
 mergeRep()
 {
-	mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
+	mkdir -p "${OUTDIR}/${species}_mergedRepeats/looseMerge"
 	if [ -s "$helitron_gff" ]; then
 		echo "Running loose merge with HELIANO output"
 		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
@@ -366,11 +381,52 @@ convertsecs()
 	printf "%02d:%02d:%05.2f\n" $h $m $s
 }
 
+# Subprocess: checksum-based resume invalidation (OPT-IN via -v yes)
+# When checksumResume != "yes" these are no-ops, so default behaviour is byte-for-byte
+# identical to upstream EarlGrey (existence-only skipping). When enabled, each completed
+# stage records a sha256 of the *input* genome ($genOrig); on restart a stage is rerun if
+# its recorded hash is missing or no longer matches the current genome (i.e. it changed).
+genomeHash()
+{
+	if [ -z "${_GENO_SHA:-}" ]; then
+		_GENO_SHA=$(sha256sum "${genOrig}" | cut -d' ' -f1)
+	fi
+	echo "${_GENO_SHA}"
+}
+
+# stageStale <stageKey> -> exit 0 (true => "must rerun") only when checksum resume is on
+# AND the stored genome hash for this stage is missing or differs from the current genome.
+stageStale()
+{
+	[ "${checksumResume}" == "yes" ] || return 1
+	local stampFile="${OUTDIR}/.earlGrey_stamps/${1}.sha256"
+	[ -f "${stampFile}" ] || return 0
+	[ "$(cat "${stampFile}")" == "$(genomeHash)" ] && return 1 || return 0
+}
+
+# stageStamp <stageKey> -> record current genome hash for this stage (no-op when off).
+stageStamp()
+{
+	[ "${checksumResume}" == "yes" ] || return 0
+	mkdir -p "${OUTDIR}/.earlGrey_stamps"
+	genomeHash > "${OUTDIR}/.earlGrey_stamps/${1}.sha256"
+}
+
 # Subprocess Checks
 Checks()
 {
 	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] ; then
 		usage; exit 1
+	fi
+
+	if [[ "$species" = *[[:space:]]* ]]; then
+		echo "ERROR: The species name passed to -s contains whitespace (\"$species\"). This breaks directory paths and downstream commands. Please use an underscore or other separator instead, e.g. -s genus_species"
+		exit 1
+	fi
+
+	if [[ "$directory" = *[[:space:]]* ]]; then
+		echo "ERROR: The output directory passed to -o contains whitespace (\"$directory\"). This breaks directory paths and downstream commands. Please use a path without spaces."
+		exit 1
 	fi
 
 	if [ -z "$ProcNum" ] ; then
@@ -457,6 +513,14 @@ Checks()
 		quietBar=no; echo "quietBar not specified using (yes/no). Using default parameter (no)."
 	fi
 
+	if [ "$checksumResume" == "yes" ] ; then
+		checksumResume=yes; echo "Checksum resume enabled: completed stages will be rerun if the input genome has changed since they last finished"
+	elif [ -z "$checksumResume" ] || [ "$checksumResume" == "no" ]; then
+		checksumResume=no; echo "Checksum resume disabled (default): completed stages are skipped on the basis of output existence only"
+	else
+		checksumResume=no; echo "checksumResume not specified using (yes/no). Using default parameter (no)."
+	fi
+
 	echo "Please cite the following paper when using this software:"
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
@@ -528,9 +592,9 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:v:h option
 do
-	case "${option}" 
+	case "${option}"
 		in
 		g) genome=${OPTARG};;
 		s) species=${OPTARG};;
@@ -547,7 +611,8 @@ do
 		a) min_seq=${OPTARG};;
 		e) heli=${OPTARG};;
 		q) quietBar=${OPTARG};;
-		h) usage; exit 0;; 
+		v) checksumResume=${OPTARG};;
+		h) usage; exit 0;;
 	esac
 done
 
@@ -563,7 +628,7 @@ stage="Making Directories" && runningTea
 makeDirectory
 
 # Start Logs - only bother starting if everything is present and correct
-exec > >(tee "${OUTDIR}/${species}EarlGrey.log") 2>&1
+exec > >(tee "${OUTDIR}/${species}_EarlGrey.log") 2>&1
 stage="Cleaning Genome" && runningTea
 prepGenome
 sleep 1
@@ -572,11 +637,12 @@ sleep 1
 if [ -z "$RepSpec" ]; then
 	sleep 1
 else
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ] || stageStale initialMask; then
 		stage="Getting RepeatMasker Sequences for $RepSpec and Saving as Fasta" && runningTea
 		getRepeatMaskerFasta
 		stage="Running Initial Mask with Known Repeats" && runningTea
 		firstMask
+		stageStamp initialMask
 	else
 		stage="Genome has already been masked, skipping..." && runningTea
 		getRepeatMaskerFasta
@@ -586,19 +652,21 @@ fi
 if [ -z "$startCust" ]; then
 	sleep 1
 else
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ] || stageStale initialMask; then
 		stage="Running Initial Mask with Known Repeats in Custom Library" && runningTea
 		firstMaskCustomLib
+		stageStamp initialMask
 	else
 		stage="Genome has already been masked, skipping..." && runningTea
 	fi
 fi
 
 # Step 3 - make a database from the genome, and then run a de novo TE annotation using RepeatModeler2
-if [ ! -f ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
+if [ ! -f ${OUTDIR}/${species}_Database/${species}-families.fa ] || stageStale deNovo; then
 	stage="Detecting Novel Repeats" && runningTea
 	buildDB
 	deNovo1
+	stageStamp deNovo
 	sleep 1
 else
 	stage="De novo repeats have already been detected, skipping..." && runningTea
@@ -606,20 +674,25 @@ else
 fi
 
 # Step 4 - run TEstrainer, which runs a BLAST, extract, extent, trim, on the the de novo repeat library to refine consensus sequences
-if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
+if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ] || stageStale strainer; then
 	stage="Straining TEs and Refining de novo Consensus Sequences" && runningTea
 	if [ -f ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
 		strainer
-	elif [ -d ${OUTDIR}/${species}_strainer/TS_${species}-families.fa_* ]; then
-		stage="Resuming TEstrainer" && runningTea
-		strainerResume
 	else
-		strainer
+		# locate an existing TEstrainer working dir to resume (handles 0/1/many safely)
+		strainResumeDir=$(find "${OUTDIR}/${species}_strainer" -maxdepth 1 -type d -name "TS_${species}-families.fa_*" 2>/dev/null)
+		if [ -n "$strainResumeDir" ]; then
+			stage="Resuming TEstrainer" && runningTea
+			strainerResume
+		else
+			strainer
+		fi
 	fi
 	if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		echo "WARNING: TEstrainer failed to produce a strain file, please check the log file for more information. If you have run an intial mask with known repeats, this could be due RepeatModeler2 failing to identify any new repeats. Please check if this is expected."
 	fi
+	stageStamp strainer
 	sleep 1
 else
 	stage="TEs already strained, skipping..." && runningTea
@@ -636,12 +709,13 @@ if [ "$cluster" == "yes" ]; then
 fi
 
 # Stage 5 - run the final RepeatMasker annotation using the refined TE consensus library
-if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
+if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ] || stageStale novoMask; then
 	stage="Identifying Repeats Using Species-Specific Library" && runningTea
 	novoMask
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
 		echo "ERROR: RepeatMasker failed, please check logs" && exit 2
 	fi
+	stageStamp novoMask
 	sleep 1
 else
 	stage="Final masking already complete, skipping..." && runningTea
@@ -651,22 +725,29 @@ fi
 # Stage 5.5 - Run HELIANO as an optional step
 
 if [ "$heli" == "yes" ]; then
-	if [ ! -s ${OUTDIR}/${species}_heliano/*/RC.representative.gff ]; then
+	if [ ! -s ${OUTDIR}/${species}_heliano/*/RC.representative.gff ] || stageStale heliano; then
 		stage="Running HELIANO to Detect Helitrons" && runningTea
 		timestamp=$(date +"%Y%m%d_%H%M")
 		heliano_optional
+		stageStamp heliano
 	else
 		stage="HELITRON detection already complete, skipping..." && runningTea
-		helitron_gff="$(realpath $(ls -td -- ${OUTDIR}/${species}_heliano/*/ | head -n 1) || true)/RC.representative.gff"
+		latestHelDir="$(ls -td -- ${OUTDIR}/${species}_heliano/*/ 2>/dev/null | head -n 1)"
+		if [ -z "$latestHelDir" ]; then
+			echo "ERROR: No HELIANO output directory found in ${OUTDIR}/${species}_heliano/ - cannot resume HELITRON detection"
+			exit 2
+		fi
+		helitron_gff="$(realpath "$latestHelDir")/RC.representative.gff"
 		echo "HELITRON GFF: $helitron_gff"
 	fi
 	sleep 1
 fi
 
 # Stage 6
-if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ] ; then
+if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ] || stageStale mergeRep; then
 	stage="Defragmenting Repeats" && runningTea
 	mergeRep
+	stageStamp mergeRep
 	sleep 1
 else
 	stage="Repeats already defragmented, skipping..." && runningTea

@@ -15,7 +15,7 @@ def trumergeLTR(rmgff,outfile):
 		attr = attrcol.split(";")
 		attrD = {}
 		for i in attr:
-			k, v = i.split("=")
+			k, v = i.split("=", 1)
 			attrD[k] = v
 		return (attrD)
 
@@ -24,6 +24,7 @@ def trumergeLTR(rmgff,outfile):
 		"col": [],
 		"start": 0,
 		"end": 0,
+		"size": 0,
 		"strand": "",
 		"LTRgroup": ""
 	}
@@ -36,25 +37,37 @@ def trumergeLTR(rmgff,outfile):
 	#		if not line.startswith("#"):
 	#			cnt -= 1
 	#			break
-
-
 	print("##gff-version 3")
 	with open(gff, "r") as f:
 		for line in f:
-			if line.startswith("#"):
+			if line.startswith("#") or not line.strip():
 				continue
 			col = line.rstrip().split("\t")
-			try:
-				ltrgroup = re.findall(r"LTRgroup=(.*)$", col[8])
-			except IndexError as index_err:
-				print("Error parsing intermediate file " + gff, file=sys.stderr)
+			if len(col) < 9:
+				print(
+					f"Error parsing intermediate file {gff} — too few columns:",
+					file=sys.stderr,
+				)
 				print(line, file=sys.stderr)
-				skip_line = input("Skip this line? (Y/N)")
-				# user can skip the line (with format error)
-				if skip_line.upper() == "N":
+				# Prompt on the real terminal: sys.stdout is redirected to the
+				# output GFF here, so write the prompt to stderr instead. When
+				# running non-interactively (e.g. in a pipeline) stdin is closed
+				# and input() raises EOFError -- default to skipping the line.
+				print("Skip this line? (Y/N) ", end="", file=sys.stderr, flush=True)
+				try:
+					skip_line = input()
+				except EOFError:
+					skip_line = "Y"
+				if skip_line.strip().upper() == "N":
 					sys.exit("Error in merging fragment.")
 				else:
 					continue
+			try:
+				ltrgroup = re.findall(r"LTRgroup=(.*)$", col[8])
+			except Exception as e:
+				print(f"Error parsing col[8] in {gff}: {e}", file=sys.stderr)
+				print(line, file=sys.stderr)
+				continue
 
 			if len(ltrgroup) > 0:
 				ltrgroup = ltrgroup[0]  # to string
@@ -67,8 +80,10 @@ def trumergeLTR(rmgff,outfile):
 					# is it the same tag?
 					if ltrgroup == d["LTRgroup"]:
 						d["end"] = col[4]  # update the end
-						# if size larger than the previous one, update strand
-						if int(col[4]) - int(col[3]) > int(d["end"]) - int(d["start"]):
+						# adopt the strand of the largest fragment seen so far
+						fragsize = int(col[4]) - int(col[3])
+						if fragsize > d["size"]:
+							d["size"] = fragsize
 							d["strand"] = col[6]
 
 					else:
@@ -85,10 +100,11 @@ def trumergeLTR(rmgff,outfile):
 						d["col"] = col
 						d["start"] = col[3]
 						d["end"] = col[4]
+						d["size"] = int(col[4]) - int(col[3])
 						d["strand"] = col[6]
 						tmpattr = attr2dict(col[8])
 						d["LTRgroup"] = tmpattr["LTRgroup"]
-						tag = True  # useless
+						tag = True
 				else:  # new group
 					# update the d with current row
 					d["col"] = col
@@ -111,6 +127,7 @@ def trumergeLTR(rmgff,outfile):
 					d["col"] = []
 					d["start"] = 0
 					d["end"] = 0
+					d["size"] = 0
 					d["strand"] = ""
 					d["LTRgroup"] = ""
 					tag = False
@@ -119,7 +136,12 @@ def trumergeLTR(rmgff,outfile):
 				else:  # Last row has no tag
 					print(*col, sep="\t")
 
-	# print the last row
-	#print(*d["col"],sep="\t")
+	# print the last row (flush the final accumulated cluster, if any)
+	if len(d["col"]) > 0:
+		col2p = d["col"]
+		col2p[3] = d["start"]
+		col2p[4] = d["end"]
+		col2p[6] = d["strand"]
+		print(*col2p, sep="\t")
 	sys.stdout.close()
 	sys.stdout = stdout

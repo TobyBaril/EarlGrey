@@ -30,6 +30,10 @@ parser.add_argument('-t', '--cores', type=int, default=4,
                     help='Number of cores')
 parser.add_argument('-k', '--timeout', type=int, default=30,
                     help='Seconds after which matcher will be cancelled and repeat treated as unalignable')
+parser.add_argument('-c', '--chunk_factor', type=int, default=4,
+                    help='Number of work chunks to create per core for load balancing (default 4). '
+                         'Higher values give finer-grained scheduling when per-repeat alignment '
+                         'times are uneven, at the cost of slightly more worker restarts.')
 
 args = parser.parse_args()
 
@@ -74,36 +78,86 @@ def file_name_generator():
     file_name = ''.join(random.sample(string.ascii_letters, 12))+'.tmp'
     return(file_name)
 
+# Map each ordered base pair to its category once, at import time, so Kimura80
+# does a single O(1) dict lookup per aligned base instead of three list scans.
+_BASE_PAIR_CATEGORY = {pair: "MATCH" for pair in ("AA", "GG", "CC", "TT")}
+_BASE_PAIR_CATEGORY.update({pair: "TRANSITION" for pair in ("AG", "GA", "CT", "TC")})
+_BASE_PAIR_CATEGORY.update({pair: "TRANSVERSION" for pair in (
+    "AC", "CA", "AT", "TA", "GC", "CG", "GT", "TG")})
+
+
 def Kimura80(qseq, sseq):
     """
     Calculations adapted from https://github.com/kgori/python_tools_on_github/blob/master/pairwise_distances.py
     """
-    # define transitions, transversions, matches
-    transitions = [ "AG", "GA", "CT", "TC"]
-    transversions = [ "AC", "CA", "AT", "TA",
-                    "GC", "CG", "GT", "TG" ]
-    matches = [ "AA", "GG", "CC", "TT"]
     # set counters to 0
     m,ts,tv=0,0,0
-    # count transitions, transversions, matches
+    # count transitions, transversions, matches via a single dict lookup per base
+    # (pairs not in the table -- gaps, Ns, mismatching ambiguity codes -- score 0)
     for i, j in zip(qseq, sseq):
-        if i+j in matches: m+=1
-        if i+j in transitions: ts+=1
-        if i+j in transversions: tv+=1
+        category = _BASE_PAIR_CATEGORY.get(i+j)
+        if category == "MATCH": m+=1
+        elif category == "TRANSITION": ts+=1
+        elif category == "TRANSVERSION": tv+=1
     # count number of bp which align (excludes gaps, Ns)
     aln_len = m + ts + tv
     
     if aln_len != 0:
-        # calculate p and q 
+        # calculate p and q
         p = ts/aln_len
         q = tv/aln_len
-    
-        # calculate Kimura distance
-        Kimura_dist = -0.5 * log((1 - 2*p - q) * sqrt( 1 - 2*q ))
+
+        # The Kimura-2-parameter distance is only defined while both inner terms
+        # stay positive. Saturated (highly divergent) alignments drive them to or
+        # below zero, where the distance diverges -- guard against this so log()/
+        # sqrt() never raise a math domain error and crash the worker. Such cases
+        # are reported as NA, consistent with the unalignable case below.
+        term1 = 1 - 2*p - q
+        term2 = 1 - 2*q
+        if term1 > 0 and term2 > 0:
+            Kimura_dist = -0.5 * log(term1 * sqrt(term2))
+        else:
+            Kimura_dist = "NA"
     else:
         Kimura_dist = "NA"
-    
+
     return(Kimura_dist)
+
+def batch_getfasta(gff, genome_path):
+    """Extract every query sequence for a chunk in a single bedtools getfasta call.
+
+    Returns a dict mapping the GFF row index (as a string) to its extracted
+    sequence. Extraction is strand-aware (-s), so minus-strand features are
+    reverse-complemented exactly as the previous per-row code did. The row index
+    is carried in the BED name column and recovered from the FASTA header, so the
+    mapping is robust to bedtools reordering, header-format differences between
+    bedtools versions, or any record it declines to emit.
+    """
+    bed_lines = []
+    for idx, r in gff.iterrows():
+        # GFF is 1-based inclusive; BED is 0-based half-open -> start - 1
+        bed_lines.append("\t".join([
+            str(r['seqnames']), str(int(r['start']) - 1), str(int(r['end'])),
+            str(idx), ".", str(r['strand'])
+        ]))
+    if not bed_lines:
+        return {}
+    seqs = {}
+    try:
+        bed = pybedtools.BedTool("\n".join(bed_lines) + "\n", from_string=True)
+        fasta = bed.sequence(fi=genome_path, s=True, name=True)
+        for record in SeqIO.parse(fasta.seqfn, "fasta"):
+            # Header is one of 'idx', 'idx::chr:start-end(strand)', 'idx(strand)'
+            # depending on bedtools version; strip the coordinate/strand suffixes.
+            key = record.id.split("::")[0].split("(")[0]
+            seqs[key] = str(record.seq)
+    except Exception:
+        # A whole-batch failure (rare samtools/bedtools error) returns an empty
+        # map; the caller then marks each affected row as failed -> NA, matching
+        # the original per-row error handling.
+        return {}
+    return seqs
+
 
 def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
     # Set pybedtools temp directory within this worker (required when using forkserver).
@@ -117,7 +171,11 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
     generated_name = file_name_generator()
     holder_file_name = os.path.join(temp_dir, generated_name)
     failed_file_name = os.path.join(temp_dir, "failed_" + generated_name)
-    row_counter = 0
+    # Extract all query sequences for this chunk in a single bedtools getfasta
+    # call (one genome open per chunk instead of one per row).
+    query_seqs = batch_getfasta(gff, genome_path)
+    # Release the single getfasta temp file now that it has been read into memory.
+    pybedtools.cleanup(remove_all=False)
     with open(holder_file_name, 'w') as tmp_out:
         header = list(gff.columns.values)[1:] + ["Kimura"]
         header = "\t".join(header)+"\n"
@@ -125,21 +183,17 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
         for row in gff.iterrows():
             # Set index
             idx = row[0]
-            row_counter += 1
-            # Periodically release pybedtools temp files to prevent gradual memory growth.
-            if row_counter % 500 == 0:
-                pybedtools.cleanup(remove_all=False)
             # Set scaffold, coordinates, strand, repeat family
             seqnames, start, end, strand, repeat_family = str(row[1]['seqnames']), str(row[1]['start'] - 1), str(row[1]['end']), str(row[1]['strand']), str(row[1]['repeat_family'])
-            # Create BED string for BEDtools
-            bed_str = " ".join([seqnames, start, end, ".", ".", strand])
             # Set path for query sequence
             query_path = os.path.join(temp_dir, "qseqs", str(idx))
-            # Create bedtools command and getfasta
-            a=pybedtools.BedTool(bed_str, from_string=True)
-            try:
-                a = a.sequence(fi=genome_path, fo=query_path, s=True)
-            except: # Occasionally a samtools error occurs, this overcomes this
+            # Write this row's query sequence (from the batched extraction) to file
+            # for matcher; a missing sequence is treated as a getfasta failure.
+            seq = query_seqs.get(str(idx))
+            if seq:
+                with open(query_path, "w") as qf:
+                    qf.write(">" + str(idx) + "\n" + seq + "\n")
+            else:
                 with open(failed_file_name, "a") as failed_file:
                     failed_file.write(seqnames+":"+start+"-"+end+"_"+strand+"_"+repeat_family+"\n")
             if exists(query_path) is True and getsize(query_path) > 0:
@@ -189,13 +243,12 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
     return(holder_file_name)
 
 def tmp_out_parser(file_list, simple_gff, other_gff):
-    # Loop through results 
-    gff=pd.DataFrame()
-    for file in file_list:
-        # read in gff
-        in_gff = pd.read_csv(file, sep = "\t")
-        # concatenate gff
-        gff = pd.concat([gff, in_gff], ignore_index=True)
+    # Read every per-worker result file, then concatenate once. The previous
+    # version concatenated onto a growing frame inside the loop, reallocating it on
+    # each iteration (O(n^2)); collecting into a list and doing a single concat is
+    # linear and also avoids concatenating onto an empty DataFrame.
+    frames = [pd.read_csv(file, sep="\t") for file in file_list]
+    gff = pd.concat(frames, ignore_index=True)
     # Convert numbers to strings for concatenation
     gff['Kimura'] = gff['Kimura'].astype(str)
     # Convert new data onto metadata
@@ -238,8 +291,13 @@ if __name__ == "__main__":
     # create as many processes as instructed cores
     num_processes = args.cores
 
-    # break into exactly num_processes chunks, distributing any remainder evenly
-    chunks = [in_gff.iloc[idx] for idx in np.array_split(range(len(in_gff)), num_processes)]
+    # Split into more chunks than workers (chunk_factor per core) so imap_unordered
+    # can rebalance dynamically: a worker that finishes a light chunk immediately
+    # picks up another instead of idling while one worker grinds through a chunk
+    # full of slow or timeout-prone alignments. Cap so there is at most one chunk
+    # per row (and at least one chunk overall).
+    n_chunks = min(max(num_processes * args.chunk_factor, 1), max(len(in_gff), 1))
+    chunks = [in_gff.iloc[idx] for idx in np.array_split(range(len(in_gff)), n_chunks)]
 
     # Write chunks to temp TSV files so the parent DataFrame can be freed before workers
     # are created. Workers read from disk rather than receiving pickled DataFrames via IPC.

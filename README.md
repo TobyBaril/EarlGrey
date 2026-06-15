@@ -234,6 +234,7 @@ It is now possible to run some subroutines in Earl Grey (run either of these new
 - `earlGreyAnnotationOnly` can be used to run the final annotation and defragmentation steps in Earl Grey. This is useful if you have already run the BEAT process and have a library of _de novo_ TE consensus sequences that you would like to use to annotate a given genome. This script is also compatible with the `-r` flag to take known repeats from the databases used to configure RepeatMasker in addition to the custom repeat library.
 - *EXPERIMENTAL FEATURE:* I have also added an option to run [HELIANO](https://github.com/Zhenlisme/heliano) for improved detection of Helitrons, which are notoriously difficult to detect and classify using homology methods. This can be implemented by adding `-e yes` to the command line options after upgrading to v5.0.0. Currently, HELIANO annotations replace those which they overlap following the RepeatMasker run, which is performed during defragmentation (in a similar way to full-length LTRs being dealt with in `RepeatCraft`). Feedback is welcomed on this implementation, and I am continuing to test and improve the implementation of HELIANO within Earl Grey.
 - The settings used for HELIANO are: `--nearest -dn 6000 -flank_sim 0.5 -w 10000`. These can be modified in the earlGrey script of your specific installation.
+- *RESUME BEHAVIOUR:* Re-running Earl Grey into an existing output directory already skips stages whose outputs are present. By default this skip is based on output existence only, so reusing an output directory with a **different** input genome could reuse stale results. Adding `-v yes` enables checksum-validated resume: when a stage completes, the sha256 of the input genome is recorded under `<output>/<species>_EarlGrey/.earlGrey_stamps/`, and on restart any stage is rerun if its recorded checksum is missing or no longer matches the current genome. This is off by default (`-v no`), and with it off the pipeline behaves exactly as before. Note that a stale stage re-executes over its existing stage directory and does not automatically clear prior outputs, so for a changed genome a fresh output directory is still the safest choice.
 
 Thank you for your continued support and enthusiasm for Earl Grey!
 
@@ -296,6 +297,7 @@ Required Parameters:
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
+		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
 		-h == Show help
 ```
 

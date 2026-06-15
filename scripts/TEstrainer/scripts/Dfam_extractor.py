@@ -18,27 +18,17 @@ args = parser.parse_args()
 if(exists(args.library) == False):
   sys.exit('Input fasta not found')
 if(exists(args.directory) == False):
-  os.mkdir(args.out_dir)
+  os.mkdir(args.directory)
 
 # name of out file
 out_library=args.directory+'/'+sub('.*/', '', args.library)
 nondfam_library=args.directory+'/non-dfam.'+sub('.*/', '', args.library)
 
-# write Dfam pseudo-curated sequences to out_library
-# sequence headers beginning with DR and having digits between "DR" and "#" treated as as Dfam
-with open(out_library, 'w') as out_handle:
+# Split the library into Dfam pseudo-curated and non-Dfam sequences in a single pass.
+# A sequence is treated as Dfam when its header begins with "DR" and the text
+# between "DR" and "#" is all digits; everything else is non-Dfam.
+with open(out_library, 'w') as dfam_handle, open(nondfam_library, 'w') as nondfam_handle:
   with open(args.library, 'r') as in_handle:
     for record in SeqIO.parse(in_handle, "fasta"):
-      if record.name.startswith("DR"):
-        if sub('DR', '', sub('#.*', '', record.name)).isdigit():
-          SeqIO.write(record, out_handle, "fasta")
-
-# write non-Dfam sequences to out_library
-# sequence headers beginning with DR and having digits between "DR" and "#" treated as as Dfam
-with open(nondfam_library, 'w') as out_handle:
-  with open(args.library, 'r') as in_handle:
-    for record in SeqIO.parse(in_handle, "fasta"):
-      if record.name.startswith("DR") is False:
-        SeqIO.write(record, out_handle, "fasta")
-      elif sub('DR', '', sub('#.*', '', record.name)).isdigit() is False:
-        SeqIO.write(record, out_handle, "fasta")
+      is_dfam = record.name.startswith("DR") and sub('DR', '', sub('#.*', '', record.name)).isdigit()
+      SeqIO.write(record, dfam_handle if is_dfam else nondfam_handle, "fasta")
