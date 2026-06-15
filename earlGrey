@@ -4,7 +4,7 @@ set -eo pipefail
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.2.6
+	earlGrey version 7.2.6-hyphaltip
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -195,12 +195,14 @@ strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
 	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q")
-	latestStrainDir="$(ls -td -- ${OUTDIR}/${species}_strainer/*/ 2>/dev/null | head -n 1)"
+	# pick the most recently modified TS_ output dir matching this library
+	latestStrainDir="$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*" -printf '%T@\t%p\n' 2>/dev/null | sort -nr | head -n 1 | cut -f2-)"
 	if [ -z "$latestStrainDir" ]; then
 		echo "ERROR: No TEstrainer output directory found in ${OUTDIR}/${species}_strainer/ - TEstrainer may have failed"
 		exit 2
 	fi
-	latestFile="$(realpath "$latestStrainDir")/${species}-families.fa.strained"
+	latestStrainDir="$(realpath "$latestStrainDir")"
+	latestFile="${latestStrainDir}/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
 
@@ -209,17 +211,19 @@ strainer()
 strainerResume() {
 	cd ${OUTDIR}/${species}_strainer/
 	strainDataDir=$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*")
-	if [ -z "$strainDataDir" ] || [ ! $(echo "$strainDataDir" | wc -l) -eq 1 ]; then
-		echo "ERROR: There are more TEstrainer directories than expected present"
+	dirCount=$(printf '%s\n' "$strainDataDir" | grep -c .)
+	if [ -z "$strainDataDir" ]; then
+		echo "ERROR: No TEstrainer TS_ directory found in ${OUTDIR}/${species}_strainer/ to resume"
+		exit 2
+	elif [ "$dirCount" -ne 1 ]; then
+		echo "ERROR: Expected exactly one TEstrainer directory, found ${dirCount} in ${OUTDIR}/${species}_strainer/"
 		exit 2
 	fi
+	# resolve to a fully-normalised absolute path while cwd is still the strainer dir
+	latestStrainDir="$(realpath "$strainDataDir")"
 	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q") -d ${strainDataDir} -R
-	latestStrainDir="$(ls -td -- ${OUTDIR}/${species}_strainer/*/ 2>/dev/null | head -n 1)"
-	if [ -z "$latestStrainDir" ]; then
-		echo "ERROR: No TEstrainer output directory found in ${OUTDIR}/${species}_strainer/ - TEstrainer resume may have failed"
-		exit 2
-	fi
-	latestFile="$(realpath "$latestStrainDir")/${species}-families.fa.strained"
+	cd -
+	latestFile="${latestStrainDir}/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
 }
 
@@ -675,11 +679,15 @@ if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ] || sta
 	if [ -f ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
 		strainer
-	elif [ -d ${OUTDIR}/${species}_strainer/TS_${species}-families.fa_* ]; then
-		stage="Resuming TEstrainer" && runningTea
-		strainerResume
 	else
-		strainer
+		# locate an existing TEstrainer working dir to resume (handles 0/1/many safely)
+		strainResumeDir=$(find "${OUTDIR}/${species}_strainer" -maxdepth 1 -type d -name "TS_${species}-families.fa_*" 2>/dev/null)
+		if [ -n "$strainResumeDir" ]; then
+			stage="Resuming TEstrainer" && runningTea
+			strainerResume
+		else
+			strainer
+		fi
 	fi
 	if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		echo "WARNING: TEstrainer failed to produce a strain file, please check the log file for more information. If you have run an intial mask with known repeats, this could be due RepeatModeler2 failing to identify any new repeats. Please check if this is expected."

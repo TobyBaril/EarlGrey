@@ -94,6 +94,62 @@ drop output. These are now fixed:
   directory and does not auto-clear prior outputs, so for a changed genome a fresh
   output directory remains the safest choice.
 
+## Bug fixes — TEstrainer directory selection (`earlGrey`, `earlGreyLibConstruct`)
+
+The `strainer()` and `strainerResume()` subprocesses locate the TEstrainer output
+directory (`TS_<species>-families.fa_<timestamp>`) differently and had a few
+fragile spots; both are now hardened and made consistent across the two driver
+scripts (`earlGreyAnnotationOnly` has neither subprocess).
+
+- **`strainerResume()` accepted a missing/empty directory.** The guard
+  `[ ! $(echo "$strainDataDir" | wc -l) -eq 1 ]` treated the empty case as a
+  single match (`echo ""` is one line), so a missing `TS_` directory passed the
+  check and an empty `-d` was handed to TEstrainer (in `earlGreyLibConstruct` the
+  `-z` check was absent entirely). The guard now distinguishes **zero** directories
+  from **more than one**, with an accurate message for each, and counts matches via
+  `grep -c .` instead of `wc -l` on a possibly-empty string.
+- **Path was not fully resolved.** `strainerResume()` built
+  `latestStrainDir=${OUTDIR}/${species}_strainer/${strainDataDir}`, where
+  `find` returns a `./TS_...` prefix, producing a stray `/./` in the path. It now
+  resolves the directory with `realpath` up front (while the cwd is still the
+  strainer dir) so the downstream `latestFile` is a clean absolute path. The dead
+  `[ -z "$latestStrainDir" ]` check (never true once the literal `$OUTDIR` prefix
+  is present) was removed.
+- **`strainer()` aligned with `strainerResume()`.** Directory discovery switched
+  from `ls -td -- .../*/ | head -n 1` (which matches *any* subdirectory) to a
+  `find -name "TS_${species}-families.fa_*" -printf '%T@\t%p\n' | sort -nr | head`
+  selection that restricts to TEstrainer output dirs while preserving the
+  "newest first" behaviour, then resolves with `realpath`.
+- **Unsafe glob-into-`test` in the step 4 resume check (`earlGrey`).** The branch
+  `elif [ -d ${OUTDIR}/${species}_strainer/TS_${species}-families.fa_* ]` fed a
+  glob and unquoted variables to `test -d`: multiple matching directories expanded
+  to several words and triggered `[: too many arguments` (the test then returned
+  false and TEstrainer silently restarted from scratch instead of resuming), and
+  whitespace in `$OUTDIR`/`$species` word-split the path. Replaced with a quoted
+  `find -maxdepth 1 -type d -name "TS_${species}-families.fa_*"` whose result is
+  tested with `[ -n ... ]`, so 0/1/many matches are all handled; the multi-dir case
+  is left to `strainerResume()`, which already errors out explicitly.
+
+## Bug fixes / cleanup — TEtrim.py (`scripts/TEstrainer/scripts/TEtrim.py`)
+
+- **`TypeError` crash in debug mode.** Two `sys.exit(...)` messages concatenated
+  the integer `args.minimum_seq` into a string, raising
+  `TypeError: can only concatenate str (not "int") to str` whenever `-D TRUE` took
+  the "too few sequences" branch. Both now wrap the value in `str()`.
+- **Fragile Biopython version test.** `float(Bio.__version__) >= 1.79` (used twice)
+  misparses versions like `1.100` (→ `1.1`). Replaced with a single module-level
+  `_bio_modern` flag computed from an int-tuple parse of the version, de-duplicating
+  the two `ungap("-")` vs `replace("-", "")` branches.
+- **Shell-call path hardening.** The three `os.system(...)` invocations
+  (blastn|uniq, mafft, final blastn) concatenated unquoted paths, so a space in the
+  output directory or sequence name broke the command. Every interpolated path (and
+  `args.threads`) is now wrapped in `shlex.quote(...)`, consistent with the
+  whitespace-robustness work in the `earlGrey` wrappers; pipe/redirect behaviour is
+  otherwise unchanged.
+- **Minor tidy.** Removed the unused `import string`, simplified
+  `align[1:len(align)]` to `align[1:]` and `if df.empty is True:` to `if df.empty:`,
+  and stripped trailing whitespace.
+
 ## Bug fixes — RepeatCraft helpers (stderr messages)
 
 - **Missing newlines on `stderr.write`.** The `"Updated LTR.gff with LTRgroup
