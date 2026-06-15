@@ -816,3 +816,95 @@ grep -n 'releases/Dfam_3.9' earlGrey earlGreyLibConstruct earlGreyAnnotationOnly
 
 **Expected for check 2:** Six matches — the warning-message line and the curl-command line in each of the three scripts.
 
+# v7.3.0 update to enable compatibility with Dfam 4.0 and RepeatMasker 4.2.4
+
+First, I need to understand how the new RepeatMasker works with the separate famdb. I also need to understand how this works with RepeatModeler. Then, I need to update the conda packages for RepeatMasker and RepeatModeler, then test a local earl grey version, then update earl grey installation scripts to work with this new format. I also probably need to make a conda recipe for the FamDB tool so that this can be sourced as a dependency in RepeatMasker, RepeatModeler, and Earl Grey. I also need to update the documentation to reflect these changes and ensure that users are aware of the new dependencies when installing Earl Grey.
+
+## Testing FamDB 3.0
+
+Guidance is from: https://github.com/Dfam-consortium/FamDB/blob/master/QUICKSTART.md
+
+```
+cd /data/toby/testDIR/
+mkdir -p dfam40
+cd dfam40
+
+# make a dev environment
+mamba create -n earlgrey_730_dev -c conda-forge -c bioconda pip h5py trf rmblast hmmer python=3.10
+mamba activate earlgrey_730_dev
+
+# get the latest FamDB release
+wget https://github.com/Dfam-consortium/FamDB/archive/refs/tags/3.0.0.tar.gz
+tar -zxvf 3.0.0.tar.gz
+
+# this creates FamDB-3.0.0/
+# inside here, there is a Libraries directory that I think will be the new place storing the stuff. This could be complex in a conda env as it is inside the env, but maybe we can get it working this way for user friendliness.
+
+# try and download the Dfam components
+python /data/toby/testDIR/dfam40/FamDB-3.0.0/utils/download_dfam.py
+# this starts an interactive process, which is not great for automation. Let's see if there are options to make this non-interactive. If not, I may need to modify the script or write a wrapper to automate it.
+# there doesn't seem to be a non-interactive option in the help section. I will try and see if just specifying the partitions works
+python /data/toby/testDIR/dfam40/FamDB-3.0.0/utils/download_dfam.py all
+# this doesnt work, let's just try the interactive thing and see what happens
+python /data/toby/testDIR/dfam40/FamDB-3.0.0/utils/download_dfam.py
+
+# Okay, so this creates `/data/toby/testDIR/dfam40/FamDB-3.0.0/Libraries/famdb`
+# then downloads the gz partitions
+# the script is pretty slow, it is downloading the partitions sequentially. I will need to modify this to download in parallel for it to be usable in an automated installation process. For now, I will let it run and see if it completes successfully.
+# this downloads the gz files then uncompresses them in `/data/toby/testDIR/dfam40/FamDB-3.0.0/Libraries/famdb/`
+# this is at least consistent with 3.9
+```
+
+Now, I will see how the new RepeatMasker works with this external format.
+
+```
+cd /data/toby/testDIR/dfam40/
+wget https://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.2.4.tar.gz
+tar -zxvf RepeatMasker-4.2.4.tar.gz
+cd RepeatMasker
+
+perl ./configure \
+    -trf_prgm /data/toby/miniforge3/envs/earlgrey_730_dev/bin/trf \
+    -rmblast_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -hmmer_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -abblast_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -crossmatch_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -default_search_engine rmblast \
+    -famdb_dir /data/toby/testDIR/dfam40/FamDB-3.0.0/
+```
+
+Now, I will see how the new RepeatModeler works with this external format.
+Version 2.0.8 is already on conda, so I will source it and try the config.
+
+```
+mamba install repeatmodeler=2.0.8
+cd /data/toby/miniforge3/envs/earlgrey_730_dev/share/RepeatModeler/
+
+if [[ "$(uname -s)" == "Linux" ]]; then
+    LTR_STRUCTURAL_SEARCH="y"
+    CONFIG_OPTIONS+=" \
+    -ninja_dir ${PREFIX}/bin"
+else
+    LTR_STRUCTURAL_SEARCH="n"
+    # ninja_dir option not set for osx because package not available in bioconda
+fi
+
+# prompt 1: <PRESS ENTER TO CONTINUE>
+# prompt 2: confirm path to running perl interpreter
+# prompt 3: Configure for LTR structural search [y] or n?
+# Answering y for linux; n for osx because NINJA is not available for osx in bioconda
+printf "\n\n${LTR_STRUCTURAL_SEARCH}\n" | \
+    perl ./configure \
+    -mafft_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -ucsctools_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -recon_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -rscout_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -ninja_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -repeatmasker_dir /data/toby/testDIR/dfam40/RepeatMasker/ \
+    -trf_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -genometools_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -ltr_retriever_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -rmblast_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -repeatafterme_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/ \
+    -cdhit_dir /data/toby/miniforge3/envs/earlgrey_730_dev/bin/
+```

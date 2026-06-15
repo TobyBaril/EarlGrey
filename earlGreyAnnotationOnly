@@ -148,18 +148,24 @@ charts()
 calcDivRL()
 {
 	cd ${OUTDIR}/${species}_RepeatLandscape
-	if [ -z "$RepSpec" ]; then
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+	# divergence_calc.py calls pybedtools.set_tempdir() which sets tempfile.tempdir
+	# globally. forkserver creates its AF_UNIX socket under tempfile.tempdir, so a
+	# long output path can exceed the 108-char socket limit (OSError: AF_UNIX path
+	# too long). Pass a short per-species path in /tmp to avoid this.
+	divcalc_tmp="/tmp/egdiv_${species}"
+	mkdir -p "${divcalc_tmp}"
+	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
-		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		rm -rf "${divcalc_tmp}"
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	else
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum
+		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
 		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
 		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
-		rm -rf ${OUTDIR}/${species}_RepeatLandscape/tmp/
+		rm -rf "${divcalc_tmp}"
 		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
 		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 	fi
