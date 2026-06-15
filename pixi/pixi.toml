@@ -23,19 +23,14 @@ build-sassr = "git clone --depth 1 https://github.com/TobyBaril/SA-SSR && cd SA-
 #   `pixi install`/env reinstall, which restores the conda trf.
 build-trf = "git clone --depth 1 https://github.com/hyphaltip/TRF-64bit && cd TRF-64bit && ./build.sh && install -v -m 0755 trf $CONDA_PREFIX/bin && cd .. && rm -rf TRF-64bit"
 
-# --- source prep (run from this repo, since the env has only the deps) -------
-# Rewrite the hardcoded developer SCRIPT_DIR/STRAIN_SCRIPTS to self-locating
-# paths so EarlGrey works wherever the repo lives (cf. conda/build.sh).
-fix-scriptdir = "./fix-scriptdir.sh"
-
-# Remaining conda/build.sh source fixups: RepeatClassifier -pa removal and
-# tRNAdb extraction for LTR_FINDER.
-prepare = "./prepare.sh"
-
-# One-shot post-install: apply all source fixups and build SA-SSR. Run this
-# after every `pixi install`. (build-trf is intentionally NOT included; it is
-# an opt-in override of the conda trf - see above.)
-setup = { depends-on = ["fix-scriptdir", "prepare", "build-sassr"] }
+# Install EarlGrey *into the env*, mirroring conda/build.sh: stage the package
+# under $CONDA_PREFIX/share/earlgrey-<version>, rewrite the hardcoded developer
+# SCRIPT_DIR/STRAIN_SCRIPTS to that location, apply the source fixups
+# (RepeatClassifier -pa removal, tRNAdb extraction), and symlink the earlGrey*
+# executables into $CONDA_PREFIX/bin. Also builds SA-SSR. Run after every
+# `pixi install`. (build-trf is intentionally NOT included; it is an opt-in
+# override of the conda trf - see above.)
+install = { cmd = "./install.sh", depends-on = ["build-sassr"] }
 
 earlgrey = "earlGrey"
 
