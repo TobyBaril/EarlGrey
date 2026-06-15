@@ -106,7 +106,7 @@ def filtershortTE(rmgff,m,tesize,mapfile,outfile):
 				m[generalClass]
 			except KeyError:
 				m[generalClass] = 0
-				sys.stderr.write("'" + generalClass + "' is not in the mapfile. Skip filtering " + generalClass)
+				sys.stderr.write("'" + generalClass + "' is not in the mapfile. Skip filtering " + generalClass + "\n")
 			if teSize < m[generalClass]:
 				col[8] =  col[8] + ";shortTE=T"
 			else:
