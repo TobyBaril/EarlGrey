@@ -246,6 +246,11 @@ Checks()
                 usage; exit 1
         fi
 
+        if [[ "$species" = *[[:space:]]* ]]; then
+                echo "ERROR: The species name passed to -s contains whitespace (\"$species\"). This breaks directory paths and downstream commands. Please use an underscore or other separator instead, e.g. -s genus_species"
+                exit 1
+        fi
+
         if [ -z "$ProcNum" ] ; then
                 ProcNum=1; echo "$ProcNum Cores Will Be Used"
         else
