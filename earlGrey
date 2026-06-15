@@ -23,6 +23,7 @@ usage()
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
+		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
 		-h == Show help
 
 	Example Usage:
@@ -366,6 +367,37 @@ convertsecs()
 	printf "%02d:%02d:%05.2f\n" $h $m $s
 }
 
+# Subprocess: checksum-based resume invalidation (OPT-IN via -v yes)
+# When checksumResume != "yes" these are no-ops, so default behaviour is byte-for-byte
+# identical to upstream EarlGrey (existence-only skipping). When enabled, each completed
+# stage records a sha256 of the *input* genome ($genOrig); on restart a stage is rerun if
+# its recorded hash is missing or no longer matches the current genome (i.e. it changed).
+genomeHash()
+{
+	if [ -z "${_GENO_SHA:-}" ]; then
+		_GENO_SHA=$(sha256sum "${genOrig}" | cut -d' ' -f1)
+	fi
+	echo "${_GENO_SHA}"
+}
+
+# stageStale <stageKey> -> exit 0 (true => "must rerun") only when checksum resume is on
+# AND the stored genome hash for this stage is missing or differs from the current genome.
+stageStale()
+{
+	[ "${checksumResume}" == "yes" ] || return 1
+	local stampFile="${OUTDIR}/.earlGrey_stamps/${1}.sha256"
+	[ -f "${stampFile}" ] || return 0
+	[ "$(cat "${stampFile}")" == "$(genomeHash)" ] && return 1 || return 0
+}
+
+# stageStamp <stageKey> -> record current genome hash for this stage (no-op when off).
+stageStamp()
+{
+	[ "${checksumResume}" == "yes" ] || return 0
+	mkdir -p "${OUTDIR}/.earlGrey_stamps"
+	genomeHash > "${OUTDIR}/.earlGrey_stamps/${1}.sha256"
+}
+
 # Subprocess Checks
 Checks()
 {
@@ -457,6 +489,14 @@ Checks()
 		quietBar=no; echo "quietBar not specified using (yes/no). Using default parameter (no)."
 	fi
 
+	if [ "$checksumResume" == "yes" ] ; then
+		checksumResume=yes; echo "Checksum resume enabled: completed stages will be rerun if the input genome has changed since they last finished"
+	elif [ -z "$checksumResume" ] || [ "$checksumResume" == "no" ]; then
+		checksumResume=no; echo "Checksum resume disabled (default): completed stages are skipped on the basis of output existence only"
+	else
+		checksumResume=no; echo "checksumResume not specified using (yes/no). Using default parameter (no)."
+	fi
+
 	echo "Please cite the following paper when using this software:"
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
@@ -528,9 +568,9 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:h option
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:v:h option
 do
-	case "${option}" 
+	case "${option}"
 		in
 		g) genome=${OPTARG};;
 		s) species=${OPTARG};;
@@ -547,7 +587,8 @@ do
 		a) min_seq=${OPTARG};;
 		e) heli=${OPTARG};;
 		q) quietBar=${OPTARG};;
-		h) usage; exit 0;; 
+		v) checksumResume=${OPTARG};;
+		h) usage; exit 0;;
 	esac
 done
 
@@ -572,11 +613,12 @@ sleep 1
 if [ -z "$RepSpec" ]; then
 	sleep 1
 else
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ] || stageStale initialMask; then
 		stage="Getting RepeatMasker Sequences for $RepSpec and Saving as Fasta" && runningTea
 		getRepeatMaskerFasta
 		stage="Running Initial Mask with Known Repeats" && runningTea
 		firstMask
+		stageStamp initialMask
 	else
 		stage="Genome has already been masked, skipping..." && runningTea
 		getRepeatMaskerFasta
@@ -586,19 +628,21 @@ fi
 if [ -z "$startCust" ]; then
 	sleep 1
 else
-	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ]; then
+	if [ ! -f ${OUTDIR}/${species}_RepeatMasker/*.masked ] || stageStale initialMask; then
 		stage="Running Initial Mask with Known Repeats in Custom Library" && runningTea
 		firstMaskCustomLib
+		stageStamp initialMask
 	else
 		stage="Genome has already been masked, skipping..." && runningTea
 	fi
 fi
 
 # Step 3 - make a database from the genome, and then run a de novo TE annotation using RepeatModeler2
-if [ ! -f ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
+if [ ! -f ${OUTDIR}/${species}_Database/${species}-families.fa ] || stageStale deNovo; then
 	stage="Detecting Novel Repeats" && runningTea
 	buildDB
 	deNovo1
+	stageStamp deNovo
 	sleep 1
 else
 	stage="De novo repeats have already been detected, skipping..." && runningTea
@@ -606,7 +650,7 @@ else
 fi
 
 # Step 4 - run TEstrainer, which runs a BLAST, extract, extent, trim, on the the de novo repeat library to refine consensus sequences
-if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
+if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ] || stageStale strainer; then
 	stage="Straining TEs and Refining de novo Consensus Sequences" && runningTea
 	if [ -f ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		rm -r ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ${OUTDIR}/${species}_strainer/TS*
@@ -620,6 +664,7 @@ if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 	if [ ! -s ${OUTDIR}/${species}_strainer/${species}-families.fa.strained ]; then
 		echo "WARNING: TEstrainer failed to produce a strain file, please check the log file for more information. If you have run an intial mask with known repeats, this could be due RepeatModeler2 failing to identify any new repeats. Please check if this is expected."
 	fi
+	stageStamp strainer
 	sleep 1
 else
 	stage="TEs already strained, skipping..." && runningTea
@@ -636,12 +681,13 @@ if [ "$cluster" == "yes" ]; then
 fi
 
 # Stage 5 - run the final RepeatMasker annotation using the refined TE consensus library
-if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
+if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ] || stageStale novoMask; then
 	stage="Identifying Repeats Using Species-Specific Library" && runningTea
 	novoMask
 	if [ ! -f ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/*.tbl ]; then
 		echo "ERROR: RepeatMasker failed, please check logs" && exit 2
 	fi
+	stageStamp novoMask
 	sleep 1
 else
 	stage="Final masking already complete, skipping..." && runningTea
@@ -651,10 +697,11 @@ fi
 # Stage 5.5 - Run HELIANO as an optional step
 
 if [ "$heli" == "yes" ]; then
-	if [ ! -s ${OUTDIR}/${species}_heliano/*/RC.representative.gff ]; then
+	if [ ! -s ${OUTDIR}/${species}_heliano/*/RC.representative.gff ] || stageStale heliano; then
 		stage="Running HELIANO to Detect Helitrons" && runningTea
 		timestamp=$(date +"%Y%m%d_%H%M")
 		heliano_optional
+		stageStamp heliano
 	else
 		stage="HELITRON detection already complete, skipping..." && runningTea
 		helitron_gff="$(realpath $(ls -td -- ${OUTDIR}/${species}_heliano/*/ | head -n 1) || true)/RC.representative.gff"
@@ -664,9 +711,10 @@ if [ "$heli" == "yes" ]; then
 fi
 
 # Stage 6
-if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ] ; then
+if [ ! -f ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.bed ] || stageStale mergeRep; then
 	stage="Defragmenting Repeats" && runningTea
 	mergeRep
+	stageStamp mergeRep
 	sleep 1
 else
 	stage="Repeats already defragmented, skipping..." && runningTea
