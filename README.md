@@ -31,6 +31,10 @@ Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam p
 
 # Notes / Updates
 
+## IMPORTANT
+Recent updates to RepeatModeler `2.0.8` are broken in Bioconda. This version of RepeatModeler now requires RECON `1.10` which is not currently available. I have built and submitted this package to Bioconda but it might take some time to release. If you are having issues with RepeatModeler, please install Earl Grey as normal, then downgrade to RepeatModeler `2.0.7` to ensure stability in the RepeatModeler runs. I will update when Bioconda contains the latest RECON version.
+
+
 We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect, and be very RAM-hungry. As some generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks! Things will be running even if it doesn't look like they are. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters, and Earl Grey will skip completed steps. `TEstrainer` and the final `divergence calculator` use a lot of memory. Check carefully for OOM errors in the logs! As a rule of thumb, you need _at least_ 3GB of RAM _per thread_, with more being better. Therefore, 16 threads requires at least 48GB of RAM depending on repeat complexity of the input genome.
 
 We have been made aware of some instability in repeat annotation percentages when high numbers of CPUs are employed in certain server environments. Please be sure to check logs carefully for instances of interruption. Known cases so far will show the following message:
