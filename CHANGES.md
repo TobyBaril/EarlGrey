@@ -62,6 +62,14 @@ drop output. These are now fixed:
   message before any directory is created. Applied to all three entry points
   (`earlGrey`, `earlGreyAnnotationOnly`, `earlGreyLibConstruct`).
 
+- **`looseMerge` directory creation is now idempotent.** `mergeRep()` ("Defragmenting
+  Repeats") created its working directory with a bare
+  `mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge`, which aborts the stage with
+  `mkdir: cannot create directory ... File exists` on any rerun/resume where the
+  directory already exists. Changed to `mkdir -p` (and quoted the path) so the stage
+  re-enters cleanly. Applied to `earlGrey` and `earlGreyAnnotationOnly`; these were
+  the only two `mkdir` calls in the codebase still missing `-p`.
+
 - **Empty "latest run directory" globs no longer build garbage paths.** The
   `latestFile="$(realpath $(ls -td -- .../*/ | head -n 1) || true)/..."` idiom
   silently produced a bogus root-level path (e.g. `/<species>-families.fa.strained`)
