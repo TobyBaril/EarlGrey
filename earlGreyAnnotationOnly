@@ -104,7 +104,7 @@ heliano_optional()
 # Defragment repeat sequences to adjust for insertion times
 mergeRep()
 {
-	mkdir ${OUTDIR}/${species}_mergedRepeats/looseMerge
+	mkdir -p "${OUTDIR}/${species}_mergedRepeats/looseMerge"
 	if [ -s "$helitron_gff" ]; then
 		echo "Running loose merge with HELIANO output"
 		${SCRIPT_DIR}/rcMergeRepeatsLoose -f $genome -s $species -d ${OUTDIR}/${species}_mergedRepeats/looseMerge -u ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).out -q ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/$(basename $genome).tbl -t $ProcNum -b ${dict} -m $margin -e $helitron_gff
