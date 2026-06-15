@@ -54,6 +54,25 @@ drop output. These are now fixed:
   `RepeatMasker -pa 0`. All four occurrences now clamp to a minimum of 1
   (`(( rmthreads < 1 )) && rmthreads=1`).
 
+- **Whitespace in `-s`/`-o` rejected up front.** A species name or output
+  directory containing whitespace word-split the many unquoted
+  `cd ${OUTDIR}/${species}_...` calls into multiple arguments, producing the
+  cryptic `cd: too many arguments` failure mid-run. `Checks()` now validates both
+  `$species` and `$directory` against `*[[:space:]]*` and exits with a clear
+  message before any directory is created. Applied to all three entry points
+  (`earlGrey`, `earlGreyAnnotationOnly`, `earlGreyLibConstruct`).
+
+- **Empty "latest run directory" globs no longer build garbage paths.** The
+  `latestFile="$(realpath $(ls -td -- .../*/ | head -n 1) || true)/..."` idiom
+  silently produced a bogus root-level path (e.g. `/<species>-families.fa.strained`)
+  when the glob matched nothing — `|| true` swallowed the `realpath` error and the
+  run continued with a broken path. Each site (TEstrainer in `strainer`/
+  `strainerResume`, HELIANO resume) now captures the directory first, errors out
+  with `exit 2` if none is found, and quotes the `realpath` argument; `ls` stderr
+  is redirected to `/dev/null` so its "No such file" noise can no longer leak into
+  the path. Applied across `earlGrey`, `earlGreyAnnotationOnly`, and
+  `earlGreyLibConstruct`.
+
 ## New feature — checksum-validated resume (`earlGrey`)
 
 - **`-v yes/no` (default `no`).** Re-running into an existing output directory has
