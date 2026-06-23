@@ -32,6 +32,8 @@ Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam p
 # Notes / Updates
 
 ## IMPORTANT
+We are aware of the large changes to FamDB accommpanying RepeatModeler 2.0.9 and RepeatMasker 4.2.4. It will take some time before these packages become tested and available in conda, after which we will update Earl Grey to be able to use these new implementations. Toby is building the recipes and maintaining the conda packages for these dependencies, but it will be some time before he can test and update Earl Grey. Thank you for your continued patience!
+
 Recent updates to RepeatModeler `2.0.8` are broken in Bioconda. This version of RepeatModeler now requires RECON `1.10` which is not currently available. I have built and submitted this package to Bioconda but it might take some time to release. If you are having issues with RepeatModeler, please install Earl Grey as normal, then downgrade to RepeatModeler `2.0.7` to ensure stability in the RepeatModeler runs. I will update when Bioconda contains the latest RECON version.
 
 
