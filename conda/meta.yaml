@@ -30,6 +30,7 @@ requirements:
     - pyfaidx
     - pyranges
     - parallel
+    - blast >=2.17.0
     - repeatmasker >=4.2.4
     - ltr_retriever
     - mafft
@@ -57,10 +58,10 @@ requirements:
     - samtools
     - heliano
     - r-kableextra
+    - famdb
 
 test:
   commands:
-    - df -h
     - earlGrey -h
 
 about:

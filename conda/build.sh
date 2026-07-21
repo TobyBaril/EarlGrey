@@ -63,9 +63,6 @@ tar -zxf ${SCRIPT_DIR}/bin/LTR_FINDER.x86_64-1.0.7/tRNAdb.tar.gz --directory ${S
 # cleanly and must not fail the build.
 "${PYTHON:-python}" -m compileall -q -j 0 "${PACKAGE_HOME}" 2>/dev/null || true
 
-# test for conda
-df -h
-
 # Set PERL5LIB upon activate/deactivate
 for CHANGE in "activate" "deactivate";
 do

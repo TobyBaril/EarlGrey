@@ -888,12 +888,44 @@ perl configure # everything should already be there
 # Libraries get built in /data/toby/miniforge3/envs/famdb.test/share/RepeatMasker/Libraries/CONS-Dfam_4.0/
 ```
 
-## Sorting out RMBlast - WIP!!!
+## Sorting out RMBlast
 The new RepeatModeler needs rmblast 2.17.1 so I also need to get the new rmblast working in conda.
 
 ```
 mkdir -p /data/toby/testDIR/dfam40/rmblast.conda
 cd /data/toby/testDIR/dfam40/rmblast.conda
+
+# the build fails because of changes in the patches, I need to make these again and build from scratch
+```
+
+Fixing the patches:
+
+```
+mkdir -p /data/toby/testDIR/dfam40/fixingRMBLAST && cd /data/toby/testDIR/dfam40/fixingRMBLAST
+# 1. Get the new source and apply the rmblast patch
+wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.17.0/ncbi-blast-2.17.0+-src.tar.gz
+tar zxvf ncbi-blast-2.17.0+-src.tar.gz
+cd ncbi-blast-2.17.0+-src
+patch -p1 < /data/toby/testDIR/dfam40/rmblast.conda/isb-2.17.1+-rmblast.patch
+
+# 2. Apply all the other non-VDB patches that DO work
+patch -Np0 -i /data/toby/testDIR/dfam40/rmblast.conda/configurellvm.patch
+patch -Np1 -i /data/toby/testDIR/dfam40/rmblast.conda/get_species_taxids.patch
+patch -Np1 -i /data/toby/testDIR/dfam40/rmblast.conda/phonehome.patch
+patch -Np1 -i /data/toby/testDIR/dfam40/rmblast.conda/update_configsub.patch
+patch -Np1 -i /data/toby/testDIR/dfam40/rmblast.conda/project_tree_builder.patch
+
+# 3. Save the current state of configure as a baseline
+cp c++/src/build-system/configure c++/src/build-system/configure.orig
+
+# all patches work, vdb is not needed anymore, so remove it from the yaml
+```
+
+Try and add to the env and see if RepeatModeler is happy now:
+
+```
+conda activate famdb.test # this env has the famdb tool installed
+conda install rmblast --use-local
 ```
 
 ## Combining with RepeatModeler
@@ -906,17 +938,60 @@ mkdir -p repeatmodeler.conda
 cd repeatmodeler.conda
 
 conda build .
-conda activate famdb.test # this env has the famdb tool installed
-conda install -n famdb.test repeatmodeler=2.0.9 --use-local
 
 # test RepeatModeler
+conda activate famdb.test
+conda install -n famdb.test repeatmodeler=2.0.9 --use-local
 
+cd /data/toby/testDIR/dfam40
+BuildDatabase -name dfamTest /data/toby/testDIR/test.fasta
+RepeatModeler -database dfamTest -threads 16 
 ```
 
+All these packages are working now. 
 
+Now, I need to update Earl Grey to work with the new Dfam libraries. This will require updating the conda recipe to add the new tool dependencies. This will also require changes to the Earl Grey install guide/scripts to use the new Dfam download tool that they have made (this should be simpler than my current method...).
 
+First, I have updated the conda recipe and I will try and build the new package locally.
 
+```
+cd /data/toby/EarlGrey
+conda build conda/
 
+conda create -n earlgrey_730 -c conda-forge -c bioconda earlgrey=7.3.0 --use-local
+
+# try trigger a run, this should stop and signal config is required
+cd /data/toby/testDIR/
+earlGrey -g test.fasta -s test_730 -o . -t 16
+```
+
+The tools crash as BuildDatabase and RepeatModeler do not work properly. I will clear my build cache and try and install all things from Bioconda except earlgrey and RepeatModeler...
+
+```
+conda deactivate
+conda-build purge-all
+
+# build RepeatMasker 4.2.4
+conda build /data/toby/testDIR/dfam40/repeatmasker.conda/
+
+# build rmblast 2.17.1
+conda build /data/toby/testDIR/dfam40/rmblast.conda/
+
+# build RepeatModeler 2.0.9
+## recipe is stored at: /data/toby/testDIR/dfam40/repeatmodeler.conda
+conda build /data/toby/testDIR/dfam40/repeatmodeler.conda/
+
+# build Earl Grey 7.3.0
+conda build /data/toby/EarlGrey/conda/
+```
+
+In this test, RMBlast is fixed, now I need to fix RepeatModeler and test Earl Grey
+
+Now, try and make a new environment and install Earl Grey 7.3.0 with the new dependencies:
+
+```
+conda create -n earlgrey_730_test -c conda-forge -c bioconda earlgrey=7.3.0 --use-local
+conda activate earlgrey_730_test
 
 
 
