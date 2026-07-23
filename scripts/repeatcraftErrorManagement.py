@@ -158,7 +158,7 @@ try:
 	outputnamemerge = outputname + ".rmerge.gff"
 	outputnamemerge_tobesort = outputname + ".rmerge.gff.tmp"
 	if checkltr:
-		truemergeltrm.trumergeLTR(rmgff=outputnamelabel, outfile="ltrmerge.tmp.gff")
+		truemergeltrmErrorManagement.trumergeLTR(rmgff=outputnamelabel, outfile="ltrmerge.tmp.gff")
 		if mergemode == "strict":
 			truemergetem.truemergete(rmgff="ltrmerge.tmp.gff", outfile=strictoutputnamemerge)
 		else:

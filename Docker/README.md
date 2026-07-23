@@ -1,27 +1,20 @@
 # Docker Container 
 
-A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
+A Docker container is provided without pre-downloaded Dfam partitions.
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in `/usr/local/share/RepeatMasker/Libraries/famdb/` when the container is running.
+I try to keep an up-to-date container in Docker Hub, but uploads may lag behind code releases. Currently, the recommended image ready for use is the `-nodfam` version. When running `earlGrey` interactively, instructions are printed to `stdout` and a helper script (`configure_dfam40.sh`) is generated in your working directory.
 
 ```
 # Interactive mode
-# Version 7.2.6 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.3.0 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/
 # run earlGrey to make the configuration script
 earlGrey
 
-# then alter script with required partitions and run the configuration script
-# change 0-16 to whichever you require, but at least 0. This relates to the partitions of Dfam 3.9 (https://www.dfam.org/releases/Dfam_3.9/families/FamDB/)
-##### e.g. for 0-5:
-sed -i '/^curl/ s/0-16/0-5/g' configure_dfam39.sh
-##### e.g for 1,3,5:
-sed -i '/^curl/ s/0-16/1,3,5/g' configure_dfam39.sh
-
-# run the configuration script
-bash configure_dfam39.sh
+# run the configuration script (uses interactive FamDB downloader)
+bash configure_dfam40.sh
 
 # return to your data directory
 cd /data/
