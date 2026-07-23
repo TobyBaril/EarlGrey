@@ -971,11 +971,14 @@ The tools crash as BuildDatabase and RepeatModeler do not work properly. I will 
 conda deactivate
 conda-build purge-all
 
-# build RepeatMasker 4.2.4
+# build RepeatMasker 4.2.4 (SUCCESSFUL)
 conda build /data/toby/testDIR/dfam40/repeatmasker.conda/
 
-# build rmblast 2.17.1
+# build rmblast 2.17.1 (SUCCESSFUL)
 conda build /data/toby/testDIR/dfam40/rmblast.conda/
+
+# build heliano (modified with rmblast in place of BLAST) (SUCCESSFUL)
+conda build /data/toby/testDIR/dfam40/heliano.conda/
 
 # build RepeatModeler 2.0.9
 ## recipe is stored at: /data/toby/testDIR/dfam40/repeatmodeler.conda
@@ -993,8 +996,13 @@ Now, try and make a new environment and install Earl Grey 7.3.0 with the new dep
 conda create -n earlgrey_730_test -c conda-forge -c bioconda earlgrey=7.3.0 --use-local
 conda activate earlgrey_730_test
 
+cd /data/toby/testDIR/
+download_dfam.py
+earlGrey -g test.fasta -s test_730 -o . -t 8 -e yes
+```
+ This now all worked! So now I need to update all the appropriate recipes to get this behaving as expected.
 
-
+ The recipes have been updated. Now, Earl Grey 7.3.0 can be released.
 
 ## Patches and Improvements contributed by @hyphaltip
 Summary of additions and changes on this branch (`hyphaltip_explore_claudeImprove`)

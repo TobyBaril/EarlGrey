@@ -23,7 +23,7 @@ usage()
 
         Example Usage:
 
-        earlGrey -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -t 16
+        earlGreyLibConstruct -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -t 16
 
         Queries can be sent to:
         tobias.baril[at]unine.ch

@@ -27,12 +27,12 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Important Considerations
 
-Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome. Please make use of issues and discussions tabs if you have questions about this, we are always happy to help!
+Earl Grey v7.3.0 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
 
 # Notes / Updates
 
 ## IMPORTANT
-Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.3.0. If you want to ensure reproducibiltiy with earlier analyses, please use Earl Grey 7.2.6 with Dfam 3.9.
+Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.3.0. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
 
 We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect, and be very RAM-hungry. As some generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks! Things will be running even if it doesn't look like they are. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters, and Earl Grey will skip completed steps. `TEstrainer` and the final `divergence calculator` use a lot of memory. Check carefully for OOM errors in the logs! As a rule of thumb, you need _at least_ 3GB of RAM _per thread_, with more being better. Therefore, 16 threads requires at least 48GB of RAM depending on repeat complexity of the input genome.
 
@@ -440,20 +440,19 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 # Recommended Installation with Conda or Mamba
 
-Earl Grey version 6 uses Dfam 3.9. After installation, you MUST configure Dfam partitions as needed. Earl Grey will generate the script to do this and provide guidance when you run it for the first time. You need to specify which partitions of Dfam and/or RepBase to configure Earl Grey with. Choose partitions carefully as the combination will highly influence your results, especially if you want to pre-mask your input genome.
-
-Earl Grey version 7.2.6 (latest stable release) with all required and configured dependencies is found in the `biooconda` conda channel. To install, simply run the following depending on your installation:
+Earl Grey v7.3.0 (current release) with required dependencies is available from the `bioconda` channel. Install with:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.2.6
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.0
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.2.6
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.0
 
 # Then run
 earlGrey
 
-# a script will be output to stdout and generated in the current directory to aid in setup
+# first run will print instructions and generate configure_dfam40.sh in your current directory
+# run that helper to download required Dfam 4.0 partitions via download_dfam.py
 ```
 
 # Recommended Installation on ARM-based Mac Systems (M chips) Using Docker
@@ -483,28 +482,21 @@ After this, you are ready to go! Just remember to activate the _intel_ terminal 
 
 # Docker Container 
 
-A Docker container has been generated with none of Dfam 3.9, but with script generation to source required partitions
+A Docker container is provided without pre-downloaded Dfam partitions.
 
-I try to keep an up-to-date container in docker hub, but this might not always be the case depending on if I have had time to build and upload a new image. Currently, the recommended image ready for use is `-nodfam` version. Upon running the container interactively and running the command `earlGrey`, instructions will print to `stdout` and a script that you can use will be placed in your current working directory. After an initial setup and configuration in an interative version of the container, you can commit the changes (i.e. the Dfam configuration) using `docker commit [container_ID] yourdockerusername/earlgrey:version7.2.6-configured`. Then, you can run this container interactively, or non-interatively, to annotate focal genomes.
+I try to keep an up-to-date container in Docker Hub, but uploads may lag behind code releases. Use the `-nodfam` image and configure Dfam after starting the container. Running `earlGrey` interactively prints instructions and generates `configure_dfam40.sh` in your working directory. After initial setup, you can commit the configured container and reuse it for interactive or non-interactive runs.
 
 ```
 # Interactive mode
-# Version 7.2.6 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.3.0 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/
 # run earlGrey to make the configuration script
 earlGrey
 
-# then alter script with required partitions and run the configuration script
-# change 0-16 to whichever you require, but at least 0. This relates to the partitions of Dfam 3.9 (https://www.dfam.org/releases/Dfam_3.9/families/FamDB/)
-##### e.g. for 0-5:
-sed -i '/^curl/ s/0-16/0-5/g' configure_dfam39.sh
-##### e.g for 1,3,5:
-sed -i '/^curl/ s/0-16/1,3,5/g' configure_dfam39.sh
-
-# run the configuration script
-bash configure_dfam39.sh
+# run the configuration script (this uses the interactive FamDB downloader)
+bash configure_dfam40.sh
 
 # return to your data directory
 cd /data/
@@ -516,12 +508,12 @@ cd /data/
 docker ps -a
 
 # commit the modified container so you can use at will (replace yourdockerusername with your docker username)
-docker commit [container_ID] yourdockerusername/earlgrey:version7.2.6-configured
+docker commit [container_ID] yourdockerusername/earlgrey:version7.3.0-configured
 
 # you can then run non-interatively if required:
-docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.2.6-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
+docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.3.0-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # alternatively you can still run interactive sessions
-docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.2.6-configured
+docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.3.0-configured
 ``` 
 
