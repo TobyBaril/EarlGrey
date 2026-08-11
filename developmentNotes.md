@@ -1322,3 +1322,32 @@ the gap widens with genome size and thread count (both increase the chunk count)
 - **Added `.vscode/settings.json`** enforcing tab indentation (this is a
   tab-indented Python project): `insertSpaces: false`, `detectIndentation:
   false`, `tabSize: 4`, applied globally and for `[python]`.
+
+---
+
+# v7.3.1 release prep and documentation update
+
+## Version bump
+
+Updated version references for the 7.3.1 release in packaging and user-facing entry points:
+
+- `conda/meta.yaml` version set to `7.3.1`
+- `pixi/pixi.toml` workspace version set to `7.3.1`
+- usage banners in `earlGrey`, `earlGreyLibConstruct`, and `earlGreyAnnotationOnly` updated to report `7.3.1`
+
+## Release-facing fixes captured in docs
+
+The README "Changes in Latest Release" section now describes v7.3.1 fixes:
+
+- robust FamDB path resolution for both `share/famdb-*/Libraries/famdb/` and `share/RepeatMasker/Libraries/famdb/`
+- stable first-run Dfam marker creation with a concrete resolved path (avoids wildcard `touch` failures)
+- `LTR_FINDER_parallel` shebang switched to `#!/usr/bin/env perl` for conda Perl module compatibility
+- conda BLAST pinning guidance for reproducible installs
+
+## README structure updates
+
+- moved the previous v7.3.0 narrative out of "latest" and into the "Previous Changes" section
+- updated current-release install examples to `earlgrey=7.3.1`
+- updated Docker example tags/references from `version7.3.0-configured` to `version7.3.1-configured`
+
+No FamDB interactive configuration behavior was changed in this patch; setup remains managed by standard FamDB tooling (`download_dfam.py` and `famdb.conf`).

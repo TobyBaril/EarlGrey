@@ -6,7 +6,7 @@ I try to keep an up-to-date container in Docker Hub, but uploads may lag behind 
 
 ```
 # Interactive mode
-# Version 7.3.0 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.3.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/

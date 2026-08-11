@@ -27,12 +27,12 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Important Considerations
 
-Earl Grey v7.3.0 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
+Earl Grey v7.3.1 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
 
 # Notes / Updates
 
 ## IMPORTANT
-Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.3.0. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
+Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.3.1. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
 
 We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect, and be very RAM-hungry. As some generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks! Things will be running even if it doesn't look like they are. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters, and Earl Grey will skip completed steps. `TEstrainer` and the final `divergence calculator` use a lot of memory. Check carefully for OOM errors in the logs! As a rule of thumb, you need _at least_ 3GB of RAM _per thread_, with more being better. Therefore, 16 threads requires at least 48GB of RAM depending on repeat complexity of the input genome.
 
@@ -51,6 +51,13 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 ```
 
 # Changes in Latest Release
+Earl Grey v7.3.1 focuses on installation and first-run robustness while retaining the Dfam 4.0 / FamDB workflow introduced in v7.3.0.
+
+- **FamDB path resolution hardened** (`earlGrey`, `earlGreyLibConstruct`, `earlGreyAnnotationOnly`): path detection now supports both layouts seen in active installations: standalone FamDB under `share/famdb-*/Libraries/famdb/` and legacy embedded libraries under `share/RepeatMasker/Libraries/famdb/`. This prevents false "famdb directory not found" failures when tools are installed from newer Bioconda recipes.
+- **Dfam first-run check stabilized** (`earlGrey`, `earlGreyLibConstruct`, `earlGreyAnnotationOnly`): the configuration marker file is now written to a concrete resolved directory rather than a wildcard path, preventing first-run failures like `touch: cannot touch ... famdb-*/Libraries/.earlgrey.config.complete`.
+- **LTR_FINDER_parallel now uses environment Perl** (`scripts/LTR_FINDER_parallel`): shebang changed to `#!/usr/bin/env perl`, ensuring conda environments provide the Perl modules used by the wrapper (`Thread::Queue`), rather than defaulting to `/usr/bin/perl`.
+
+### Previous Changes
 Earl Grey v7.3.0 updates all scripts for compatibility with RepeatMasker 4.2.4 and RepeatModeler 2.0.9, which use Dfam 4.0. The Dfam 4.0 release includes a new database structure and new TE families, which may affect the results of Earl Grey runs. Users should be aware that results may differ from previous versions of Earl Grey due to these changes. In addition, these new versions require the database to be configured with the FamDB package, which is a new dependency and method of storing required libraries externally.
 
 Version 7.3.0 also includes many fixes and small improvements submitted by @hyphaltip. Full release details can be found in the release notes.
@@ -440,13 +447,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 # Recommended Installation with Conda or Mamba
 
-Earl Grey v7.3.0 (current release) with required dependencies is available from the `bioconda` channel. Install with:
+Earl Grey v7.3.1 (current release) with required dependencies is available from the `bioconda` channel. Install with:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.0
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.1
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.0
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.1
 
 # Then run
 earlGrey
@@ -488,7 +495,7 @@ I try to keep an up-to-date container in Docker Hub, but uploads may lag behind 
 
 ```
 # Interactive mode
-# Version 7.3.0 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
+# Version 7.3.1 with no preconfigured partitions (RECOMMENDED!) - bind a directory, in my case the current directory using pwd
 docker run -it -v 'pwd':/data/ tobybaril/earlgrey:latest-nodfam
 # change to library directory
 cd /data/
@@ -508,12 +515,12 @@ cd /data/
 docker ps -a
 
 # commit the modified container so you can use at will (replace yourdockerusername with your docker username)
-docker commit [container_ID] yourdockerusername/earlgrey:version7.3.0-configured
+docker commit [container_ID] yourdockerusername/earlgrey:version7.3.1-configured
 
 # you can then run non-interatively if required:
-docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.3.0-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
+docker run -v 'pwd':/data/ yourdockerusername/earlgrey:version7.3.1-configured earlGrey -g /data/GENOME.fasta -s nonInteractiveTest -o /data/ -t 8
 
 # alternatively you can still run interactive sessions
-docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.3.0-configured
+docker run -it -v 'pwd':/data/ yourdockerusername/earlgrey:version7.3.1-configured
 ``` 
 
