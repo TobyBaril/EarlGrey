@@ -181,7 +181,18 @@ deNovo1()
                 SAMPLE_FLAG="-genomeSampleSizeMax 3000000"
         fi
 
-        RepeatModeler -threads ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} ${SAMPLE_FLAG}
+        # On a restart, RepeatModeler leaves behind an RM_<pid>.<date> working
+        # directory. If one exists, resume that run with -recoverDir rather than
+        # starting from scratch. Pick the most recently modified RM_ dir (handles
+        # 0/1/many safely).
+        RECOVER_FLAG=""
+        recoverDir="$(find ${OUTDIR}/${species}_RepeatModeler -maxdepth 1 -type d -name "RM_*" -printf '%T@\t%p\n' 2>/dev/null | sort -nr | head -n 1 | cut -f2-)"
+        if [ -n "$recoverDir" ]; then
+                echo "Found existing RepeatModeler working directory, resuming with -recoverDir ${recoverDir}"
+                RECOVER_FLAG="-recoverDir ${recoverDir}"
+        fi
+
+        RepeatModeler -threads ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} ${SAMPLE_FLAG} ${RECOVER_FLAG}
 
         if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
                 echo "ERROR: RepeatModeler Failed"
