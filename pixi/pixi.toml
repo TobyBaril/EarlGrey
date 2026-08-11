@@ -2,7 +2,7 @@
 channels = ["conda-forge", "bioconda"]
 name = "earlgrey"
 platforms = ["linux-64"]
-version = "7.2.6"
+version = "7.3.1"
 
 # RepeatMasker/RepeatModeler ship their Perl libs under share/; EarlGrey needs
 # them on PERL5LIB. This is the pixi equivalent of the activate.d/deactivate.d
