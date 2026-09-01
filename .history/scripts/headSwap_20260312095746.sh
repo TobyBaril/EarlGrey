@@ -13,8 +13,8 @@ done
 # 1 - Create Dictionary
 SCRIPT_DIR=/data/toby/EarlGrey/scripts
 
-grep ">" "$input" | awk '{print substr($0,2)"\t""ctg_"NR}' > "${input}.dict"
-tr -d $'\r' < "${input}.dict" > "${input}.dict.1" && mv "${input}.dict"{.1,}
+grep ">" $input | awk '{printf("ctg_%01d %s\n", NR, $0)}'  | sed 's/ /\t/g; s/>//g' | awk '{OFS="\t"}{print $2, $1}' > ${input}.dict
+tr -d $'\r' < ${input}.dict > ${input}.dict.1 && mv ${input}.dict{.1,}
 
 # 2 - Replace Fasta Headers
 

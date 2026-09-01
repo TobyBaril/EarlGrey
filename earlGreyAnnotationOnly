@@ -9,11 +9,13 @@ usage()
 		-g == genome.fasta
 		-s == species name
 		-o == output directory
-        -l == Starting consensus library for annotation (in fasta format)
+        -l == Starting consensus library for annotation (in fasta format) [required if -r not provided]
+
+	One of -l or -r (or both) must be provided:
 
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
-       	-r == RepeatMasker species for addition to custom library (Default: None)
+       	-r == RepeatMasker species for annotation, or addition to custom library (Default: None)
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
@@ -22,6 +24,8 @@ usage()
 	Example Usage:
 
 	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -l bombyx-families.fa.strained -t 16
+	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -r bombyx -t 16
+	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -l bombyx-families.fa.strained -r bombyx -t 16
 
 	Queries can be sent to:
 	tobias.baril[at]unine.ch
@@ -74,19 +78,15 @@ prepGenome()
 # Run RepeatMasker with the final processed library
 novoMask()
 {
-	if [ -z "$RepSpec" ]; then
-		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
-		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
-	else
+	if [ ! -z "$RepSpec" ] && [ ! -z "$startCust" ]; then
 		mkdir -p $OUTDIR/${species}_Curated_Library/
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
-		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
-		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
+	cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
+	rmthreads=$(( ProcNum / 4 ))
+	RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 }
 
 # Subprocess heliano
@@ -154,21 +154,12 @@ calcDivRL()
 	# too long). Pass a short per-species path in /tmp to avoid this.
 	divcalc_tmp="/tmp/egdiv_${species}"
 	mkdir -p "${divcalc_tmp}"
-	if [ -z "$RepSpec" ] && [ -z "$startCust" ]; then
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
-		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
-		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
-		rm -rf "${divcalc_tmp}"
-		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
-		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
-	else
-		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l ${OUTDIR}/${species}_Curated_Library/${species}_combined_library.fasta -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
-		Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
-		awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
-		rm -rf "${divcalc_tmp}"
-		cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
-		cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
-	fi
+	python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
+	Rscript ${SCRIPT_DIR}/divergenceCalc/divergence_plot.R -s $species -g ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -o ${OUTDIR}/${species}_RepeatLandscape/ && \
+	awk -F'\t' 'BEGIN{OFS="\t"} {gsub("NAME=","Name=",$9); gsub("TSTART=","tstart=",$9); gsub("TEND=","tend=",$9); gsub("SHORTTE=","shortte=",$9); gsub("TEGROUP=","tegroup=",$9); gsub("KIMURA80=","kimura80=",$9); gsub("NESTED=", "nested=", $9); print}' ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff > ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff
+	rm -rf "${divcalc_tmp}"
+	cp ${OUTDIR}/${species}_RepeatLandscape/*.pdf ${OUTDIR}/${species}_summaryFiles/
+	cp ${OUTDIR}/${species}_RepeatLandscape/*_summary_table.tsv ${OUTDIR}/${species}_summaryFiles/${species}_divergence_summary_table.tsv
 }
 
 # Subprocess sweepUp
@@ -217,7 +208,11 @@ convertsecs()
 # Subprocess Checks
 Checks()
 {
-	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] || [ -z "$startCust" ] ; then
+	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] ; then
+		usage; exit 1
+	fi
+	if [ -z "$startCust" ] && [ -z "$RepSpec" ] ; then
+		echo "ERROR: At least one of -l (custom library) or -r (RepeatMasker species) must be provided"
 		usage; exit 1
 	fi
 
@@ -238,9 +233,11 @@ Checks()
 	fi
 
 	if [ -z "$RepSpec" ]; then
-		echo "RepeatMasker species not specified, running Earl Grey without known repeats"
+		echo "RepeatMasker species not specified, running Earl Grey with custom library only"
+	elif [ -z "$startCust" ]; then
+		echo "Running Earl Grey with RepeatMasker species library only"
 	else
-		echo "Running Earl Grey with sequences from configured databases in addition to custom library"
+		echo "Running Earl Grey with custom library combined with sequences from configured databases"
 	fi
 	
 	if [ -z "$softMask" ] || [ "$softMask" == "no" ] ; then
@@ -374,14 +371,19 @@ prepGenome
 sleep 1
 
 # Stage 2 - Assign libraries to variables
-latestFile=$(realpath $startCust)
+if [ ! -z "$startCust" ]; then
+	latestFile=$(realpath $startCust)
+fi
 if [ ! -z "$RepSpec" ]; then
 	resolveFamdbPath
 	if [ -d "$rm_share" ]; then
 		PATH=$PATH:"$rm_share"
 	fi
-    famdb.py -i "$libpath" families -f fasta_name --include-class-in-name -a -d --curated $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+	famdb.py -i "$libpath" families -f fasta_name --include-class-in-name -a -d --curated $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+	if [ -z "$startCust" ]; then
+		latestFile=$RepSub
+	fi
 fi
 
 # Stage 5 - run the final RepeatMasker annotation using the refined TE consensus library
