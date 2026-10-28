@@ -36,21 +36,21 @@ write.table(mergedRepeatsOut, file = output, quote = FALSE, row.names = FALSE, s
 # Generate RM style summary table for all unnested repeats, and nested ones too
 
 sine <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-line <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+line <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope|^PLE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 ltr <- mergedRepeats %>% filter(str_detect(Repeat, "LTR")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 dna <- mergedRepeats %>% filter(str_detect(Repeat, "DNA")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 rc <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-ple <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+ple <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other <- other[! other$Repeat == "SINE",]
 
 sine.nest <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 ltr.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LTR")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 dna.nest <- mergedRepeats %>% filter(str_detect(Repeat, "DNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 rc.nest <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-ple.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+ple.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other.nest <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other.nest <- other.nest[! other.nest$Repeat == "SINE",]
@@ -155,21 +155,21 @@ write.table(filteredRepeatsOut2, file = filtBed, quote = FALSE, row.names = FALS
 # Generate RM style summary table for large Repeats
 
 sine <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-line <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+line <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope|^PLE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 ltr <- mergedRepeats %>% filter(str_detect(Repeat, "LTR")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 dna <- mergedRepeats %>% filter(str_detect(Repeat, "DNA")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 rc <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-ple <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+ple <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other <- other[! other$Repeat == "SINE",]
 
 sine.nest <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 ltr.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LTR")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 dna.nest <- mergedRepeats %>% filter(str_detect(Repeat, "DNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 rc.nest <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-ple.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
+ple.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other.nest <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other.nest <- other.nest[! other.nest$Repeat == "SINE",]
