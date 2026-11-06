@@ -303,6 +303,7 @@ Required Parameters:
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
 		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
+		-w == Temporary directory for RepeatModeler, TEstrainer and divergence working files, e.g. /tmp (Default: use output directory)
 		-h == Show help
 ```
 
