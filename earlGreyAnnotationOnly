@@ -4,16 +4,18 @@ set -eo pipefail
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.3.1
+	earlGrey version 7.3.2
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
 		-o == output directory
-        -l == Starting consensus library for annotation (in fasta format)
+        -l == Starting consensus library for annotation (in fasta format) [required if -r not provided]
+
+	One of -l or -r (or both) must be provided:
 
 	Optional Parameters:
 		-t == Number of Threads (DO NOT specify more than are available)
-       	-r == RepeatMasker species for addition to custom library (Default: None)
+       	-r == RepeatMasker species for annotation, or addition to custom library (Default: None)
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
@@ -22,6 +24,8 @@ usage()
 	Example Usage:
 
 	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -l bombyx-families.fa.strained -t 16
+	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -r bombyx -t 16
+	earlGreyAnnotationOnly -g bombyxMori.fasta -s bombyxMori -o /home/toby/bombyxMori/repeatAnnotation/ -l bombyx-families.fa.strained -r bombyx -t 16
 
 	Queries can be sent to:
 	tobias.baril[at]unine.ch
@@ -74,19 +78,15 @@ prepGenome()
 # Run RepeatMasker with the final processed library
 novoMask()
 {
-	if [ -z "$RepSpec" ]; then
-		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
-		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
-	else
+	if [ ! -z "$RepSpec" ] && [ ! -z "$startCust" ]; then
 		mkdir -p $OUTDIR/${species}_Curated_Library/
 		cd ${OUTDIR}/${species}_Curated_Library/
 		cat $latestFile $RepSub > ${species}_combined_library.fasta
 		latestFile=$(realpath ${species}_combined_library.fasta)
-		cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
-		rmthreads=$(( ProcNum / 4 ))
-		RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 	fi
+	cd ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/
+	rmthreads=$(( ProcNum / 4 ))
+	RepeatMasker -lib $latestFile -no_is -lcambig -s -a -pa $rmthreads -dir ${OUTDIR}/${species}_RepeatMasker_Against_Custom_Library/ $genome
 }
 
 # Subprocess heliano
@@ -217,7 +217,11 @@ convertsecs()
 # Subprocess Checks
 Checks()
 {
-	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] || [ -z "$startCust" ] ; then
+	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] ; then
+		usage; exit 1
+	fi
+	if [ -z "$startCust" ] && [ -z "$RepSpec" ] ; then
+		echo "ERROR: At least one of -l (custom library) or -r (RepeatMasker species) must be provided"
 		usage; exit 1
 	fi
 
@@ -238,9 +242,11 @@ Checks()
 	fi
 
 	if [ -z "$RepSpec" ]; then
-		echo "RepeatMasker species not specified, running Earl Grey without known repeats"
+		echo "RepeatMasker species not specified, running Earl Grey with custom library only"
+	elif [ -z "$startCust" ]; then
+		echo "Running Earl Grey with RepeatMasker species library only"
 	else
-		echo "Running Earl Grey with sequences from configured databases in addition to custom library"
+		echo "Running Earl Grey with custom library combined with sequences from configured databases"
 	fi
 	
 	if [ -z "$softMask" ] || [ "$softMask" == "no" ] ; then
@@ -303,7 +309,7 @@ dfamCheck()
 	resolveFamdbPath
 	expected_file="${libpath}dfam40.0.h5"
 	if [ ! -f "$expected_file" ] ; then
-	    	echo "WARNING: Earl Grey v7.3.1 uses Dfam v4.0."
+		echo "WARNING: Earl Grey v7.3.2 uses Dfam v4.0."
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/Dfam_4.0/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
     		echo "I have written the required commands for you to faciliate the process."
@@ -376,14 +382,19 @@ prepGenome
 sleep 1
 
 # Stage 2 - Assign libraries to variables
-latestFile=$(realpath $startCust)
+if [ ! -z "$startCust" ]; then
+	latestFile=$(realpath $startCust)
+fi
 if [ ! -z "$RepSpec" ]; then
 	resolveFamdbPath
 	if [ -d "$rm_share" ]; then
 		PATH=$PATH:"$rm_share"
 	fi
-    famdb.py -i "$libpath" families -f fasta_name --include-class-in-name -a -d --curated $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+	famdb.py -i "$libpath" families -f fasta_name --include-class-in-name -a -d --curated $RepSpec > ${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
 	RepSub=${OUTDIR}/${species}_Curated_Library/${RepSpec}.RepeatMasker.lib
+	if [ -z "$startCust" ]; then
+		latestFile=$RepSub
+	fi
 fi
 
 # Stage 5 - run the final RepeatMasker annotation using the refined TE consensus library
