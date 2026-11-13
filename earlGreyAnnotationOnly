@@ -285,7 +285,6 @@ Checks()
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
 
-
 	# Resolve FamDB and RepeatMasker paths for both legacy and standalone FamDB layouts
 resolveFamdbPath()
 {
