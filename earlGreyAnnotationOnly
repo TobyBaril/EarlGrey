@@ -4,7 +4,7 @@ set -eo pipefail
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.3.1
+	earlGrey version 7.3.2
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -285,6 +285,7 @@ Checks()
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
 
+
 	# Resolve FamDB and RepeatMasker paths for both legacy and standalone FamDB layouts
 resolveFamdbPath()
 {
@@ -309,7 +310,7 @@ dfamCheck()
 	resolveFamdbPath
 	expected_file="${libpath}dfam40.0.h5"
 	if [ ! -f "$expected_file" ] ; then
-	    	echo "WARNING: Earl Grey v7.3.1 uses Dfam v4.0."
+		echo "WARNING: Earl Grey v7.3.2 uses Dfam v4.0."
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/Dfam_4.0/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
     		echo "I have written the required commands for you to faciliate the process."
