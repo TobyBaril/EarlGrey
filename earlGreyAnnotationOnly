@@ -19,6 +19,7 @@ usage()
 		-m == Remove putative spurious TE annotations <100bp? (yes/no, Default: no)
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
+		-w == Temporary directory for RepeatModeler, TEstrainer and divergence working files, e.g. /tmp (Default: use output directory)
 		-h == Show help
 
 	Example Usage:
@@ -152,7 +153,7 @@ calcDivRL()
 	# globally. forkserver creates its AF_UNIX socket under tempfile.tempdir, so a
 	# long output path can exceed the 108-char socket limit (OSError: AF_UNIX path
 	# too long). Pass a short per-species path in /tmp to avoid this.
-	divcalc_tmp="/tmp/egdiv_${species}"
+	divcalc_tmp="${workDir:-/tmp}/egdiv_${species}"
 	mkdir -p "${divcalc_tmp}"
 	if [ -z "$RepSpec" ]; then
 		python ${SCRIPT_DIR}/divergenceCalc/divergence_calc.py -l $latestFile -g $genOrig -i ${OUTDIR}/${species}_mergedRepeats/looseMerge/${species}.filteredRepeats.gff -o ${OUTDIR}/${species}_RepeatLandscape/${species}.filteredRepeats.withDivergence.gff -t $ProcNum -tmp "${divcalc_tmp}"
@@ -281,6 +282,13 @@ Checks()
 		heli=no; echo "HELITRON detection not specified using (yes/no). Using default parameter (no)."
 	fi
 
+   	if [ -n "$workDir" ]; then
+   		if [ ! -d "$workDir" ] || [ ! -w "$workDir" ]; then
+   			echo "ERROR: -w directory ($workDir) does not exist or is not writable"; exit 1
+   		fi
+   		echo "RepeatModeler, TEstrainer and divergence working files will be written under $workDir"
+   	fi
+
 	echo "Please cite the following paper when using this software:"
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
@@ -343,7 +351,7 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:r:l:m:d:e:h option
+while getopts g:s:o:t:r:l:m:d:e:w:h option
 do
 	case "${option}" 
 		in
@@ -361,6 +369,7 @@ do
 		n) no_seq=${OPTARG};;
 		a) min_seq=${OPTARG};;
 		e) heli=${OPTARG};;
+		w) workDir=${OPTARG};;
 		h) usage; exit 0;; 
 	esac
 done

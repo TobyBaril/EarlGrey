@@ -19,6 +19,7 @@ usage()
                 -n == Max number of sequences used to generate consensus sequences (Default: 20)
                 -a == minimum number of sequences required to build a consensus sequence (Default: 3)
                 -q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
+				-w == Temporary directory for RepeatModeler, TEstrainer and divergence working files, e.g. /tmp (Default: use output directory)
                 -h == Show help
 
         Example Usage:
@@ -148,7 +149,14 @@ buildDB()
 # to avoid RepeatModeler failures on small or fragmented genomes.
 deNovo1()
 {
-        cd ${OUTDIR}/${species}_RepeatModeler
+		if [ -n "${workDir:-}" ]; then
+			rmWork=$(mktemp -d "${workDir%/}/earlgrey_${species}_RM.XXXXXX")
+			trap 'rm -rf "${rmWork}"' EXIT
+			trap 'rm -rf "${rmWork}"; exit 143' TERM INT
+			cd "${rmWork}"
+		else
+			cd ${OUTDIR}/${species}_RepeatModeler
+		fi
 
         # Compute samplable genome size: sum of contigs >= 40 kb only.
         # RepeatModeler discards contigs shorter than 40 kb during sampling, so using
@@ -183,6 +191,12 @@ deNovo1()
 
         RepeatModeler -threads ${ProcNum} -database ${OUTDIR}/${species}_Database/${species} ${SAMPLE_FLAG}
 
+		if [ -n "${rmWork:-}" ]; then
+			cd ${OUTDIR}/${species}_RepeatModeler
+			rm -rf "${rmWork}"
+			trap - EXIT TERM INT
+		fi
+
         if [ ! -e ${OUTDIR}/${species}_Database/${species}-families.fa ]; then
                 echo "ERROR: RepeatModeler Failed"
                 exit 2
@@ -193,15 +207,32 @@ deNovo1()
 # contains the BLAST, Extract, Extend, Trim pipeline from James Galbraith
 strainer()
 {
-        cd ${OUTDIR}/${species}_strainer/
+		if [ -n "${workDir:-}" ]; then
+			tsWork=$(mktemp -d "${workDir%/}/earlgrey_${species}_TS.XXXXXX")
+			trap 'rc=$?; [ $rc -ne 0 ] && cp -r "${tsWork}"/TS_* ${OUTDIR}/${species}_strainer/ 2>/dev/null; rm -rf "${tsWork}"' EXIT
+			trap 'rm -rf "${tsWork}"; exit 143' TERM INT
+			cd "${tsWork}"
+		else
+			cd ${OUTDIR}/${species}_strainer/
+		fi
+
         ${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q")
         # pick the most recently modified TS_ output dir matching this library
         latestStrainDir="$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*" -printf '%T@\t%p\n' 2>/dev/null | sort -nr | head -n 1 | cut -f2-)"
         if [ -z "$latestStrainDir" ]; then
-                echo "ERROR: No TEstrainer output directory found in ${OUTDIR}/${species}_strainer/ - TEstrainer may have failed"
+                echo "ERROR: No TEstrainer output directory found in $(pwd)/ - TEstrainer may have failed"
                 exit 2
         fi
         latestStrainDir="$(realpath "$latestStrainDir")"
+
+		if [ -n "${tsWork:-}" ]; then
+			cp -r "$latestStrainDir" ${OUTDIR}/${species}_strainer/
+			latestStrainDir=${OUTDIR}/${species}_strainer/$(basename "$latestStrainDir")
+			cd ${OUTDIR}/${species}_strainer/
+			rm -rf "${tsWork}"
+			trap - EXIT TERM INT
+		fi
+
         latestFile="${latestStrainDir}/${species}-families.fa.strained"
         cp $latestFile ${OUTDIR}/${species}_strainer/
 }
@@ -332,6 +363,13 @@ Checks()
                 quietBar=no; echo "quietBar not specified using (yes/no). Using default parameter (no)."
         fi
 
+		if [ -n "$workDir" ]; then
+			if [ ! -d "$workDir" ] || [ ! -w "$workDir" ]; then
+				echo "ERROR: -w directory ($workDir) does not exist or is not writable"; exit 1
+			fi
+			echo "RepeatModeler, TEstrainer and divergence working files will be written under $workDir"
+		fi
+
 	echo "Please cite the following paper when using this software:"
 	echo "Baril, T., Galbraith, J. and Hayward, A., 2024. Earl Grey: a fully automated user-friendly transposable element annotation and analysis pipeline. Molecular Biology and Evolution, 41(4), p.msae068."
 }
@@ -377,7 +415,7 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:l:n:a:q:h option
+while getopts g:s:o:t:f:i:r:l:n:a:q:w:h option
 do
         case "${option}" 
                 in
@@ -392,6 +430,7 @@ do
                 n) no_seq=${OPTARG};;
                 a) min_seq=${OPTARG};;
                 q) quietBar=${OPTARG};;
+				w) workDir=${OPTARG};;
                 h) usage; exit 0;; 
         esac
 done
