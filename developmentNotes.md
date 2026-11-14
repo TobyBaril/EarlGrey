@@ -329,7 +329,7 @@ GENOME=/data/toby/testDIR/test.fasta
 | 4       | 897,860      |
 | 32      | 891,420      |
 
-Peak RSS is effectively identical between 4 and 32 threads (~877 MB). Without `--memfree` throttling, the 32-thread run would dispatch all jobs simultaneously and peak RSS would scale with the number of concurrent Python interpreter startups. The flat result confirms that GNU parallel is correctly queuing jobs when free RAM drops below the `MEM_FREE` threshold, keeping concurrent memory usage stable regardless of the requested thread count.
+Correction: `/usr/bin/time` reports the maximum RSS of an individual child, not the simultaneous peak RSS of the whole process tree. These values therefore do not demonstrate that aggregate memory was bounded or that GNU parallel throttled jobs.
 
 ---
 

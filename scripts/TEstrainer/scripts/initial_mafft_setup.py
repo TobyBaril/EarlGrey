@@ -3,6 +3,7 @@
 import argparse
 import sys
 import os
+import subprocess
 from os.path import exists
 
 parser = argparse.ArgumentParser()
@@ -38,7 +39,6 @@ file_check((args.directory+'/run_'+args.iteration+'/self_search/'), args.debug) 
 file_check((args.directory+'/run_'+args.iteration+'/to_align/'), args.debug) # final output folder
 file_check((args.directory+'/run_'+args.iteration+'/TEtrim_complete/'), args.debug) # alternate final output folder
 
-from os import system
 import re
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -139,7 +139,7 @@ elif (trf_pr.length/te_len > 0.5) & (len(start_seq.seq) > 500):
   exit()
 
 # perform initial blast
-system("blastn -task dc-megablast -query "+args.directory+"/run_"+args.iteration+"/raw/"+args.seq_name+" -db "+args.genome+" -evalue 1e-5 -outfmt \"6 qseqid sseqid pident length qstart qend qlen sstart send slen evalue bitscore qcovs\" -out "+args.directory+"/run_"+args.iteration+"/initial_blast/"+args.seq_name+".out -num_threads 1")
+subprocess.run(["blastn", "-task", "dc-megablast", "-query", args.directory+"/run_"+args.iteration+"/raw/"+args.seq_name, "-db", args.genome, "-evalue", "1e-5", "-outfmt", "6 qseqid sseqid pident length qstart qend qlen sstart send slen evalue bitscore qcovs", "-out", args.directory+"/run_"+args.iteration+"/initial_blast/"+args.seq_name+".out", "-num_threads", "1"], check=True)
 
 # check if any hits found, if not write to file and exit
 if os.path.getsize(args.directory+'/run_'+args.iteration+'/initial_blast/'+args.seq_name+'.out') == 0:
@@ -147,17 +147,22 @@ if os.path.getsize(args.directory+'/run_'+args.iteration+'/initial_blast/'+args.
         SeqIO.write(start_seq, o, "fasta-2line")
   sys.exit()
 
-# read in blast table and filter
-blast_df = pd.read_table((args.directory+'/run_'+args.iteration+'/initial_blast/'+args.seq_name+'.out'), names=['qseqid', 'Chromosome', 'pident', 'length', 'qstart', 'qend', 'qlen', 'Start', 'End', 'slen', 'evalue', 'bitscore', 'qcovs'])
-blast_df = blast_df.query('pident >= 70 & qcovs >= 50').copy()
-size_check(blast_df, 3)
+# Filter and retain the best hits in bounded chunks instead of loading the
+# complete genome-wide BLAST table into every preparation worker.
+blast_columns = ['qseqid', 'Chromosome', 'pident', 'length', 'qstart', 'qend', 'qlen', 'Start', 'End', 'slen', 'evalue', 'bitscore', 'qcovs']
+blast_df = pd.DataFrame(columns=blast_columns)
+passing_hits = 0
+for chunk in pd.read_table((args.directory+'/run_'+args.iteration+'/initial_blast/'+args.seq_name+'.out'), names=blast_columns, chunksize=50000):
+  chunk = chunk.query('pident >= 70 & qcovs >= 50')
+  passing_hits += len(chunk)
+  blast_df = pd.concat([blast_df, chunk]).sort_values(by='bitscore', ascending=False, kind='stable').head(args.no_seq)
+if passing_hits < 3:
+  size_check(range(passing_hits), 3)
 
 # adjust for coordinates direction, convert to base 0
 blast_to_bed(blast_df)
 
 # select 50 best, add flanks and convert to ranges
-blast_df = blast_df.sort_values(by = 'bitscore', ascending=False)
-blast_df = blast_df.iloc[:args.no_seq]
 blast_df['Start'] = blast_df['Start'] - args.flank
 blast_df['End'] = blast_df['End'] + args.flank
 blast_df.loc[blast_df['Start'] < 1, 'Start'] = 0
@@ -182,13 +187,13 @@ best_hits_outpath = (args.directory+'/run_'+args.iteration+'/self_search/'+args.
 df_to_fasta(best_hits_df, best_hits_outpath, False, True)
 
 # blast against og sequence,read in and filter
-system("blastn -task dc-megablast -query "+args.directory+'/run_0/og/'+args.seq_name+" -subject "+args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_1 -outfmt \"6 sseqid pident qcovs\" -out "+args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_1.out")
-check_df = pd.read_table((args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_1.out"), names=['Chromosome', 'pident', 'qcovs'])
-check_df = check_df.query('pident >= 70 & qcovs >= 50')
+subprocess.run(["blastn", "-task", "dc-megablast", "-query", args.directory+'/run_0/og/'+args.seq_name, "-subject", args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_1", "-outfmt", "6 sseqid pident qcovs", "-out", args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_1.out"], check=True)
+check_df = pd.DataFrame(columns=['Chromosome', 'pident', 'qcovs'])
+for chunk in pd.read_table((args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_1.out"), names=['Chromosome', 'pident', 'qcovs'], chunksize=50000):
+  chunk = chunk.query('pident >= 70 & qcovs >= 50')
+  check_df = pd.concat([check_df, chunk]).drop_duplicates(subset=['Chromosome'], keep='first')
 size_check(check_df, 3)
-
-# select one instance of each sequence
-check_df = check_df.groupby(['Chromosome']).head(n=1).reset_index()
+check_df = check_df.reset_index()
 check_df[['Chromosome', 'bitscore']] = check_df['Chromosome'].str.split('#', n=1, expand = True)
 best_hits_df[['Name', 'bitscore']] = best_hits_df['Name'].str.split('#', n=1, expand = True)
 size_check(check_df, 3)
@@ -203,17 +208,20 @@ correct_df_path = (args.directory+'/run_'+args.iteration+'/self_search/'+args.se
 df_to_fasta(correct_df, correct_df_path, False, True)
 
 # self blast
-system("blastn -task dc-megablast -query "+correct_df_path+" -subject "+correct_df_path+" -outfmt \"6 qseqid sseqid length pident qstart qend bitscore\" -out "+correct_df_path+".out")
-self_blast_df = pd.read_table((args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_2.out"), names=['Chromosome', 'sseqid', 'length', 'pident', 'Start', 'End', 'bitscore'])
+subprocess.run(["blastn", "-task", "dc-megablast", "-query", correct_df_path, "-subject", correct_df_path, "-outfmt", "6 qseqid sseqid length pident qstart qend bitscore", "-out", correct_df_path+".out"], check=True)
+self_hits = []
+for chunk in pd.read_table((args.directory+"/run_"+args.iteration+"/self_search/"+args.seq_name+"_check_2.out"), names=['Chromosome', 'sseqid', 'length', 'pident', 'Start', 'End', 'bitscore'], chunksize=50000):
+  chunk = chunk[(chunk.Chromosome != chunk.sseqid) & (chunk.length >= (0.5 * len(start_seq)))]
+  if not chunk.empty:
+    self_hits.append(chunk)
+if not self_hits:
+  size_check(self_hits, 3)
+self_blast_df = pd.concat(self_hits, ignore_index=True)
+del self_hits
 size_check(self_blast_df, 3)
 
 # fix coordinates
 self_blast_df.Start = self_blast_df.Start - 1
-
-# filter self hits, small hits
-self_blast_df = self_blast_df[self_blast_df.Chromosome != self_blast_df.sseqid].copy()
-self_blast_df = self_blast_df[self_blast_df.length >= (0.5*len(start_seq))].copy()
-size_check(self_blast_df, 3)
 
 # calculate and filter quantiles
 self_blast_df['q1'] = self_blast_df.groupby('Chromosome').Start.transform(lambda x: x.quantile(0.1))
