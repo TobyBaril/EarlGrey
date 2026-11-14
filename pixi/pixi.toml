@@ -43,14 +43,14 @@ hmmer = "*"
 trf = "*"          # default trf; can be overridden by the fork via `pixi run build-trf` (see below)
 cd-hit = "*"
 genometools-genometools = "*"
-repeatmasker = ">=4.2.3"
+repeatmasker = ">=4.2.4"
 ltr_retriever = "*"
 mafft = "*"
 mreps = "*"
 ninja-nj = "*"
 repeatscout = "*"
 recon = "*"
-repeatmodeler = ">=2.0.4"
+repeatmodeler = ">=2.0.9"
 heliano = "*"
 
 # Sequence utilities
