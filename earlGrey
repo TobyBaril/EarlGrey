@@ -4,7 +4,7 @@ set -eo pipefail
 usage()
 {
 	echo "	#############################
-	earlGrey version 7.3.2
+	earlGrey version 7.4.0
 	Required Parameters:
 		-g == genome.fasta
 		-s == species name
@@ -21,6 +21,9 @@ usage()
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
+		-B == TEstrainer memory budget in GiB (Default: 64)
+		-J == Override maximum concurrent TEstrainer MAFFT jobs (Default: auto)
+		-A == TEstrainer alignment mode: localpair or fast (Default: localpair)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
 		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
@@ -205,7 +208,9 @@ deNovo1()
 strainer()
 {
 	cd ${OUTDIR}/${species}_strainer/
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq $([ "$quietBar" == "yes" ] && echo " -q")
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq -B "$strainMemory" -J "$strainJobs" -A "$strainAlignment" $([ "$quietBar" == "yes" ] && echo " -q") || {
+		echo "ERROR: TEstrainer failed" >&2; exit 2
+	}
 	# pick the most recently modified TS_ output dir matching this library
 	latestStrainDir="$(find . -maxdepth 1 -type d -name "TS_${species}-families.fa_*" -printf '%T@\t%p\n' 2>/dev/null | sort -nr | head -n 1 | cut -f2-)"
 	if [ -z "$latestStrainDir" ]; then
@@ -232,7 +237,9 @@ strainerResume() {
 	fi
 	# resolve to a fully-normalised absolute path while cwd is still the strainer dir
 	latestStrainDir="$(realpath "$strainDataDir")"
-	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq$([ "$quietBar" == "yes" ] && echo " -q") -d ${strainDataDir} -R
+	${SCRIPT_DIR}/TEstrainer/TEstrainer_for_earlGrey.sh -g $genome -l ${OUTDIR}/${species}_Database/${species}-families.fa -t ${ProcNum} -f $Flank -r $num -n $no_seq -m $min_seq -B "$strainMemory" -J "$strainJobs" -A "$strainAlignment" $([ "$quietBar" == "yes" ] && echo " -q") -d ${strainDataDir} -R || {
+		echo "ERROR: TEstrainer failed" >&2; exit 2
+	}
 	cd -
 	latestFile="${latestStrainDir}/${species}-families.fa.strained"
 	cp $latestFile ${OUTDIR}/${species}_strainer/
@@ -426,6 +433,15 @@ stageStamp()
 # Subprocess Checks
 Checks()
 {
+	if ! [[ "$strainMemory" =~ ^[1-9][0-9]*$ ]]; then
+		echo "ERROR: -B must be a positive integer" >&2; exit 1
+	fi
+	if [[ "$strainJobs" != auto ]] && ! [[ "$strainJobs" =~ ^[1-9][0-9]*$ ]]; then
+		echo "ERROR: -J must be a positive integer or auto" >&2; exit 1
+	fi
+	if [[ "$strainAlignment" != "localpair" && "$strainAlignment" != "fast" ]]; then
+		echo "ERROR: -A must be localpair or fast" >&2; exit 1
+	fi
 	if [ -z "$genome" ] || [ -z "$species" ] || [ -z "$directory" ] ; then
 		usage; exit 1
 	fi
@@ -543,7 +559,7 @@ dfamCheck()
 	resolveFamdbPath
 	expected_file="${libpath}dfam40.0.h5"
 	if [ ! -f "$expected_file" ] ; then
-		echo "WARNING: Earl Grey v7.3.2 uses Dfam v4.0."
+		echo "WARNING: Earl Grey v7.4.0 uses Dfam v4.0."
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/Dfam_4.0/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
     		echo "I have written the required commands for you to faciliate the process."
@@ -577,7 +593,10 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:v:h option
+strainMemory=64
+strainJobs=auto
+strainAlignment=localpair
+while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:v:B:J:A:h option
 do
 	case "${option}"
 		in
@@ -597,6 +616,9 @@ do
 		e) heli=${OPTARG};;
 		q) quietBar=${OPTARG};;
 		v) checksumResume=${OPTARG};;
+		B) strainMemory=${OPTARG};;
+		J) strainJobs=${OPTARG};;
+		A) strainAlignment=${OPTARG};;
 		h) usage; exit 0;;
 	esac
 done

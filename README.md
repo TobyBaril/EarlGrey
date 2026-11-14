@@ -27,14 +27,28 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Important Considerations
 
-Earl Grey v7.3.2 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
+Earl Grey v7.4.0 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
 
 # Notes / Updates
 
 ## IMPORTANT
-Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.3.2. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
+Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.4.0. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
 
-We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect, and be very RAM-hungry. As some generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks! Things will be running even if it doesn't look like they are. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters, and Earl Grey will skip completed steps. `TEstrainer` and the final `divergence calculator` use a lot of memory. Check carefully for OOM errors in the logs! As a rule of thumb, you need _at least_ 3GB of RAM _per thread_, with more being better. Therefore, 16 threads requires at least 48GB of RAM depending on repeat complexity of the input genome.
+We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect. As generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters. `TEstrainer` and the final `divergence calculator` can use substantial memory. Check logs carefully for OOM errors.
+
+### TEstrainer memory controls
+
+`earlGrey` and `earlGreyLibConstruct` accept `-B` (TEstrainer memory budget in GiB, default 64) and `-J` (override for maximum concurrent MAFFT jobs, default `auto`). Automatically, the number of MAFFT jobs is the smaller of `-t` and one job per 8 GiB of usable memory, with at least one job. This is a conservative scheduling heuristic, not a guarantee of how much an individual family needs. An explicit `-J` remains capped by `-t` and available memory; for example, `-B 32 -J 1` gives one alignment job a larger share of a 32 GiB budget. Preparation is limited to four concurrent jobs; each MAFFT uses one CPU thread. This may increase runtime compared with earlier releases. The budget applies to TEstrainer, not the other Earl Grey stages or other concurrently running assemblies.
+
+At startup TEstrainer considers the requested budget, available host memory and detected Linux cgroup memory limits, and reserves one eighth for overhead. It divides the remainder between concurrent jobs and monitors each job's process-group RSS. RSS counts shared pages more than once, and sampling cannot prevent every sudden allocation or account for all filesystem cache. **This is not a hard memory limit**: request adequate memory from the scheduler and use its cgroup limit as a backstop. If a family exceeds its share during iterative TRF, preparation, alignment or trimming, TEstrainer logs a warning, retains the sequence entering that round, and skips its remaining alignment rounds. The retained sequence still undergoes final repeat filtering and classification, which can alter its sequence or classification. Memory-limit failures in whole-library or final-processing stages, and other errors, still stop the run. To refine more families instead of using this fallback, try `-J 1` or a larger `-B` within the scheduler allocation. The standalone wrapper retains `-M` as GNU parallel's free-memory threshold; it is not the memory budget.
+
+The guard runs locally and in Slurm jobs on Linux. It detects applicable cgroup limits when available, but does not read Slurm allocation variables directly. Set `-B` below the Slurm memory request to leave headroom for other processes and unmonitored memory; the scheduler may still terminate a job before a sudden spike is detected.
+
+By default, both alignments use MAFFT `--large --localpair`, retaining the local-pair strategy while moving some intermediate data to disk. The `--large` option can change gap placement and resulting consensus sequences compared with earlier releases. Set `MAFFT_TMPDIR` to a writable disk-backed scratch directory with sufficient free space; otherwise the TEstrainer temporary directory is used. MAFFT 7.525 was used to test these options. For particularly large families, `-A fast` explicitly selects MAFFT's progressive `--6merpair --memsave` mode and faster direction detection. This mode can also change alignments and consensus sequences; it is not an automatic fallback. Start a fresh run when changing alignment mode rather than mixing modes across resumed rounds. The chunked BLAST hit selection resolves equal-score ties in input order, which can select different hits from earlier releases.
+
+Failed runs retain their intermediate files for diagnosis. Copy the interrupted working directory before resuming if those files are needed: resume restarts and removes the interrupted round.
+
+If mreps reports too many ambiguous bases in a sequence, TEstrainer warns that its mreps results may be incomplete and continues with any partial results alongside TRF and SA-SSR. Other mreps failures stop the run.
 
 We have been made aware of some instability in repeat annotation percentages when high numbers of CPUs are employed in certain server environments. Please be sure to check logs carefully for instances of interruption. Known cases so far will show the following message:
 
@@ -44,13 +58,17 @@ OpenBLAS blas_thread_init: ensure that your address space and process count limi
 OpenBLAS blas_thread_init: or set a smaller OPENBLAS_NUM_THREADS to fit into what you have available
 ```
 
-If you see this message, re-run analysis with less threads. Alternatively, you can modify your instance of the TEstrainer script `initial_mafft_setup.py` to add the following after `import os`:
-
-```
-os.environ['OPENBLAS_NUM_THREADS'] = '1'
-```
+TEstrainer limits BLAS/OpenMP threads to one per subprocess. If this message appears in another stage, try rerunning with fewer threads.
 
 # Changes in Latest Release
+Earl Grey v7.4.0 reduces TEstrainer memory pressure and adds controls for large families:
+
+- **Memory-aware scheduling**: `-B` sets a TEstrainer budget, and MAFFT concurrency scales with `-t` and usable memory unless overridden with `-J`.
+- **Per-family fallback**: when a monitored iterative job exceeds its memory share, its round-input sequence is retained and excluded from subsequent alignment rounds, with a warning.
+- **Lower-memory processing**: local-pair MAFFT uses disk-backed `--large`; `-A fast` opts into progressive alignment. BLAST preparation and trimming use less memory, and failed jobs are reported rather than silently accepted.
+- **Resumable processing**: completed rounds are checkpointed, intermediate files are retained on failure, and alignment modes cannot be mixed when resuming.
+
+### Previous Changes
 Earl Grey v7.3.2 fixes annotation-only startup and several issues in curation and repeat summaries:
 
 - **Annotation-only startup fixed** ([#328](https://github.com/TobyBaril/EarlGrey/issues/328)): a missing closing brace caused `earlGreyAnnotationOnly` to fail with an unexpected end-of-file syntax error.
@@ -58,7 +76,6 @@ Earl Grey v7.3.2 fixes annotation-only startup and several issues in curation an
 - **TEstrainer invocation corrected** (`earlGrey`): the optional quiet-bar argument is separated from the minimum-sequence argument.
 - **Penelope-like repeat summaries updated**: repeat classifications beginning with `PLE` are included in Penelope summaries and excluded from LINE summaries, including nested repeats.
 
-### Previous Changes
 Earl Grey v7.3.1 focuses on installation and first-run robustness while retaining the Dfam 4.0 / FamDB workflow introduced in v7.3.0.
 
 - **FamDB path resolution hardened** (`earlGrey`, `earlGreyLibConstruct`, `earlGreyAnnotationOnly`): path detection now supports both layouts seen in active installations: standalone FamDB under `share/famdb-*/Libraries/famdb/` and legacy embedded libraries under `share/RepeatMasker/Libraries/famdb/`. This prevents false "famdb directory not found" failures when tools are installed from newer Bioconda recipes.
@@ -97,7 +114,7 @@ Earl Grey v7.2.3 fixes five bugs reported by users:
 
 Earl Grey v7.2.1 patches a bug where the curated library directory was not created when an existing library was supplied via `-l` (without `-r`). In this case, `earlGreyAnnotationOnly` could fail when attempting to change into the directory during the final masking step. The directory is now created with `mkdir -p` before use, matching the fix already applied to the main `earlGrey` script.
 
-Earl Grey v7.2.0 significantly reduces peak RAM usage in two RAM-intensive components: TEstrainer and divergence_calc.py. These changes prevent OOM kills when running with large thread counts on memory-constrained compute nodes, with no change to output.
+Earl Grey v7.2.0 introduced memory-management changes in TEstrainer and divergence_calc.py. The TEstrainer controls in that release did not guarantee prevention of OOM kills.
 
 **TEstrainer / TEstrainer_for_earlGrey.sh:**
 - The default `MEM_FREE` threshold raised from `200M` to `1G`. The previous value was lower than the startup cost of a single Python interpreter with heavy scientific libraries, making the guard ineffective.
@@ -112,7 +129,7 @@ Earl Grey v7.2.0 significantly reduces peak RAM usage in two RAM-intensive compo
 - Periodic `pybedtools.cleanup()` every 500 rows prevents temp-file accumulation in long-running workers.
 - A pre-existing bug was fixed: `os.remove(query_path)` was called unconditionally in both cleanup branches even when the file was never created (e.g. when `pybedtools.sequence()` raised a samtools exception). Both removal calls are now guarded with `if exists(query_path)`.
 
-Benchmarked results confirm peak RSS for `divergence_calc.py` is flat at ~76 MB across 1–16 threads (previously scaling linearly), and TEstrainer peak RSS is ~877 MB at both 4 and 32 threads (previously unbounded with thread count).
+The earlier TEstrainer benchmark measured the maximum RSS of an individual process, not the simultaneous peak of the entire process tree; it does not establish a workflow memory ceiling.
 
 Earl Grey v7.1.1 patches a small bug in TEstrainer where consensus sequences comprised of tandem repeats were triggering a warning due to the change to `pandas >2.0`. The output results were not affected. The codebase has now been updated to handle these cases without throwing warnings, with the same expected behaviour and handling of tandem repeats as before.
 
@@ -307,6 +324,9 @@ Required Parameters:
 		-d == Create soft-masked genome at the end? (yes/no, Default: no)
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
+		-B == TEstrainer memory budget in GiB (Default: 64)
+		-J == Override maximum concurrent TEstrainer MAFFT jobs (Default: auto)
+		-A == TEstrainer alignment mode: localpair or fast (Default: localpair)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
 		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
@@ -449,13 +469,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 # Recommended Installation with Conda or Mamba
 
-Once Earl Grey v7.3.2 is available from the `bioconda` channel, install it with its required dependencies using:
+Once Earl Grey v7.4.0 is available from the `bioconda` channel, install it with its required dependencies using:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.2
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.4.0
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.3.2
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.4.0
 
 # Then run
 earlGrey

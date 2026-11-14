@@ -4,6 +4,8 @@ import shlex
 import statistics
 import argparse
 import re
+import subprocess
+import tempfile
 import Bio
 from Bio import SeqIO, AlignIO
 from Bio.Align import AlignInfo, MultipleSeqAlignment
@@ -32,6 +34,11 @@ parser.add_argument('-w', '--window', type=int,
                     help='Window size for blocks', default=5)
 parser.add_argument('-m', '--minimum_seq', type=int,
                     help='Minimum sequences required for MSA', default=3)
+mafft_mode = parser.add_mutually_exclusive_group()
+mafft_mode.add_argument('--large', action='store_true',
+                        help='Use MAFFT disk-backed pairwise alignment')
+mafft_mode.add_argument('--fast', action='store_true',
+                        help='Use MAFFT progressive alignment instead of local pairwise alignment')
 
 args = parser.parse_args()
 
@@ -42,9 +49,10 @@ args = parser.parse_args()
 def single_trim(aln_in):
   if len(aln_in) == 0:
     return aln_in
-  arr = np.array([list(str(rec.seq)) for rec in aln_in], dtype='<U1')
-  keep = (arr != '-').sum(axis=0) > 1
-  records = [SeqRecord(Seq(''.join(arr[i, keep])),
+  arr = np.frombuffer(b''.join(str(rec.seq).encode('ascii') for rec in aln_in),
+                      dtype=np.uint8).reshape(len(aln_in), aln_in.get_alignment_length())
+  keep = (arr != ord('-')).sum(axis=0) > 1
+  records = [SeqRecord(Seq(arr[i, keep].tobytes().decode('ascii')),
                        id=r.id, name=r.name, description=r.description)
              for i, r in enumerate(aln_in)]
   return MultipleSeqAlignment(records)
@@ -56,14 +64,15 @@ def single_trim(aln_in):
 def con_maker(aln_in):
   if len(aln_in) == 0:
     return Seq("")
-  arru = np.char.upper(np.array([list(str(rec.seq)) for rec in aln_in], dtype='<U1'))
-  bases = np.array(['A', 'T', 'C', 'G'])
+  arru = np.frombuffer(b''.join(str(rec.seq).upper().encode('ascii') for rec in aln_in),
+                       dtype=np.uint8).reshape(len(aln_in), aln_in.get_alignment_length())
+  bases = np.array([ord('A'), ord('T'), ord('C'), ord('G')], dtype=np.uint8)
   counts = np.stack([(arru == b).sum(axis=0) for b in bases])
-  nongap = len(aln_in) - (arru == '-').sum(axis=0)
+  nongap = len(aln_in) - (arru == ord('-')).sum(axis=0)
   keep = nongap > 2
   maxc = counts.max(axis=0)
-  chosen = np.where((counts == maxc).sum(axis=0) > 1, 'n', bases[counts.argmax(axis=0)])
-  return Seq(''.join(chosen[keep]))
+  chosen = np.where((counts == maxc).sum(axis=0) > 1, ord('n'), bases[counts.argmax(axis=0)])
+  return Seq(chosen[keep].astype(np.uint8).tobytes().decode('ascii'))
 # set names
 seq_name=re.sub('.*/', '', args.in_seq)
 run_dir=args.directory+'/run_'+args.iteration
@@ -99,6 +108,7 @@ if args.debug == 'TRUE':
 # single bp trim
 bp_trimmed=single_trim(align)
 SeqIO.write(bp_trimmed, (args.directory+'/run_'+args.iteration+'/TEtrim_bp/trimmed_'+seq_name),"fasta")
+del align, bp_trimmed
 # create unaligned sequences
 if args.debug == 'TRUE':
   print('Creating unaligned sequences')
@@ -113,7 +123,7 @@ with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/temp_'+seq_name)
 ### run blast ###
 if args.debug == 'TRUE':
   print('Determining number of sequences')
-os.system('blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_unaln/temp_'+seq_name)+' -outfmt "6 qseqid sseqid qcovs" -task blastn | uniq > '+shlex.quote(run_dir+'/TEtrim_blast/'+seq_name+'.tsv'))
+subprocess.run('set -o pipefail; blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_unaln/temp_'+seq_name)+' -outfmt "6 qseqid sseqid qcovs" -task blastn | uniq > '+shlex.quote(run_dir+'/TEtrim_blast/'+seq_name+'.tsv'), shell=True, executable='/bin/bash', check=True)
 # read initial blast, determine acceptable passed on coverage >50% mean of coverage
 if args.debug == 'TRUE':
   print('Reading initial blast')
@@ -145,7 +155,26 @@ with open((args.directory+'/run_'+args.iteration+'/TEtrim_unaln/unaln_'+seq_name
 ### run mafft ###
 if args.debug == 'TRUE':
   print('Running initial mafft')
-os.system('mafft --quiet --thread '+shlex.quote(str(args.threads))+' --localpair '+shlex.quote(run_dir+'/TEtrim_unaln/unaln_'+seq_name)+' > '+shlex.quote(run_dir+'/TEtrim_mafft/mafft_'+seq_name))
+mafft_command = ['mafft', '--quiet', '--thread', str(args.threads)]
+if args.fast:
+  mafft_command.extend(['--6merpair', '--memsave'])
+else:
+  mafft_command.append('--localpair')
+if args.large:
+  mafft_command.append('--large')
+mafft_command.append(run_dir+'/TEtrim_unaln/unaln_'+seq_name)
+mafft_output = run_dir+'/TEtrim_mafft/mafft_'+seq_name
+with tempfile.NamedTemporaryFile(mode='w', dir=os.path.dirname(mafft_output), delete=False) as output:
+  temp_output = output.name
+  try:
+    subprocess.run(mafft_command, stdout=output, check=True)
+    output.flush()
+    if os.path.getsize(temp_output) == 0:
+      raise RuntimeError('MAFFT produced an empty alignment for '+seq_name)
+  except (OSError, subprocess.SubprocessError, RuntimeError):
+    os.unlink(temp_output)
+    raise
+os.replace(temp_output, mafft_output)
 # read new alignment, make consensus
 if args.debug == 'TRUE':
   print('Reading new alignment and making consensus')
@@ -155,7 +184,7 @@ SeqIO.write(con_2, (args.directory+'/run_'+args.iteration+'/TEtrim_con/cleaned_'
 # Run final blast
 if args.debug == 'TRUE':
   print('Final blast')
-os.system('blastn -query '+shlex.quote(run_dir+'/TEtrim_con/og_'+seq_name)+' -subject '+shlex.quote(run_dir+'/TEtrim_con/cleaned_'+seq_name)+' -outfmt "6 length qlen slen qcovs" -task dc-megablast -out '+shlex.quote(run_dir+'/TEtrim_blast/check_'+seq_name+'.tsv'))
+subprocess.run(['blastn', '-query', run_dir+'/TEtrim_con/og_'+seq_name, '-subject', run_dir+'/TEtrim_con/cleaned_'+seq_name, '-outfmt', '6 length qlen slen qcovs', '-task', 'dc-megablast', '-out', run_dir+'/TEtrim_blast/check_'+seq_name+'.tsv'], check=True)
 if os.path.getsize(args.directory+'/run_'+args.iteration+'/TEtrim_blast/check_'+seq_name+'.tsv') == 0:
   SeqIO.write(og_con, (args.directory+'/run_'+args.iteration+'/TEtrim_complete/'+seq_name),"fasta")
   if args.debug == 'TRUE':
