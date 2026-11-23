@@ -27,12 +27,12 @@ Earl Grey is a full-automated transposable element (TE) annotation pipeline, lev
 
 # Important Considerations
 
-Earl Grey v7.4.0 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
+Earl Grey v7.4.1 uses Dfam 4.0 through the FamDB package. After installation, you MUST download the required Dfam partitions before running analyses. Earl Grey will generate a helper script (`configure_dfam40.sh`) and provide guidance when you run it for the first time. Choose partitions carefully, as the selected subset can influence annotation results and disk usage.
 
 # Notes / Updates
 
 ## IMPORTANT
-Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.4.0. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
+Recent updates to RepeatModeler `2.0.9` bring large changes to Dfam. Please ensure you are happy to use Dfam 4.0 and latest tool versions if you want to use Earl Grey 7.4.1. If you want to ensure reproducibility with earlier analyses, use Earl Grey 7.2.6 with Dfam 3.9.
 
 We often get questions related to runtime. TE curation and annotation remains resource and time intensive. Fast is not necessarily better, and runtime is highly dependent on genome size, complexity, and repeat content. Runs will likely take longer than you might expect. As generic benchmarks, a 40Mb genome can take anywhere from a few hours to a day, 400Mb up to around 4-5 days, a 3Gb genome ~a week, and a 25Gb genome several weeks. Each step checkpoints, so if you have server limits, you can resubmit the same script with the same parameters. `TEstrainer` and the final `divergence calculator` can use substantial memory. Check logs carefully for OOM errors.
 
@@ -61,6 +61,11 @@ OpenBLAS blas_thread_init: or set a smaller OPENBLAS_NUM_THREADS to fit into wha
 TEstrainer limits BLAS/OpenMP threads to one per subprocess. If this message appears in another stage, try rerunning with fewer threads.
 
 # Changes in Latest Release
+Earl Grey v7.4.1 fixes repeat summary double-counting of SINE subclasses ([#335](https://github.com/TobyBaril/EarlGrey/issues/335)):
+
+- **SINE subclasses excluded from “Other”** (`scripts/mergeRepeats.R`): tRNA-derived SINEs matched the broad RNA pattern and were counted in both “SINE” and “Other,” inflating total repeat coverage and understating unmasked sequence. The filter now excludes all SINE subclasses from “Other” in both nested and unnested summaries.
+
+### Previous Changes
 Earl Grey v7.4.0 reduces TEstrainer memory pressure and adds controls for large families:
 
 - **Memory-aware scheduling**: `-B` sets a TEstrainer budget, and MAFFT concurrency scales with `-t` and usable memory unless overridden with `-J`.
@@ -68,7 +73,6 @@ Earl Grey v7.4.0 reduces TEstrainer memory pressure and adds controls for large 
 - **Lower-memory processing**: local-pair MAFFT uses disk-backed `--large`; `-A fast` opts into progressive alignment. BLAST preparation and trimming use less memory, and failed jobs are reported rather than silently accepted.
 - **Resumable processing**: completed rounds are checkpointed, intermediate files are retained on failure, and alignment modes cannot be mixed when resuming.
 
-### Previous Changes
 Earl Grey v7.3.2 fixes annotation-only startup and several issues in curation and repeat summaries:
 
 - **Annotation-only startup fixed** ([#328](https://github.com/TobyBaril/EarlGrey/issues/328)): a missing closing brace caused `earlGreyAnnotationOnly` to fail with an unexpected end-of-file syntax error.
@@ -469,13 +473,13 @@ If you would like to try Earl Grey, or prefer to use it in a browser, you can do
 
 # Recommended Installation with Conda or Mamba
 
-Once Earl Grey v7.4.0 is available from the `bioconda` channel, install it with its required dependencies using:
+Once Earl Grey v7.4.1 is available from the `bioconda` channel, install it with its required dependencies using:
 ```
 # With conda
-conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.4.0
+conda create -n earlgrey -c conda-forge -c bioconda earlgrey=7.4.1
 
 # With mamba
-mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.4.0
+mamba create -n earlgrey -c conda-forge -c bioconda earlgrey=7.4.1
 
 # Then run
 earlGrey
