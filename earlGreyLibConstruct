@@ -4,7 +4,7 @@ set -eo pipefail
 usage()
 {
         echo "  #############################
-        earlGrey version 7.4.0
+        earlGrey version 7.4.1
         Required Parameters:
                 -g == genome.fasta
                 -s == species name
@@ -359,7 +359,7 @@ dfamCheck()
         resolveFamdbPath
         expected_file="${libpath}dfam40.0.h5"
         if [ ! -f "$expected_file" ] ; then
-		echo "WARNING: Earl Grey v7.4.0 uses Dfam v4.0."
+		echo "WARNING: Earl Grey v7.4.1 uses Dfam v4.0."
     		echo "Before using Earl Grey, you MUST download the required partitions from Dfam (https://dfam.org/releases/Dfam_4.0/families/FamDB/)"
     		echo "These must be located at ${library_path}/. Then, you must reconfigure RepeatMasker before using Earl Grey."
     		echo "I have written the required commands for you to faciliate the process."

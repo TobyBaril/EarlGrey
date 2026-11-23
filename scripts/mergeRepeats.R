@@ -43,7 +43,7 @@ rc <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(! str_detect
 ple <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-other <- other[! other$Repeat == "SINE",]
+other <- other %>% filter(! str_detect(Repeat, "^SINE"))
 
 sine.nest <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
@@ -53,7 +53,7 @@ rc.nest <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(str_det
 ple.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other.nest <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-other.nest <- other.nest[! other.nest$Repeat == "SINE",]
+other.nest <- other.nest %>% filter(! str_detect(Repeat, "^SINE"))
 
 # Total bp coverage of each class
 sineCov <- sum(as.numeric(as.character(sine$size)))
@@ -162,7 +162,7 @@ rc <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(! str_detect
 ple <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(! str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-other <- other[! other$Repeat == "SINE",]
+other <- other %>% filter(! str_detect(Repeat, "^SINE"))
 
 sine.nest <- mergedRepeats %>% filter(str_detect(Repeat, "SINE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 line.nest <- mergedRepeats %>% filter(str_detect(Repeat, "LINE")) %>% filter(! str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
@@ -172,7 +172,7 @@ rc.nest <- mergedRepeats %>% filter(str_detect(Repeat, "RC")) %>% filter(str_det
 ple.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Penelope|^PLE")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 unknown.nest <- mergedRepeats %>% filter(str_detect(Repeat, "Unknown")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
 other.nest <- mergedRepeats %>% filter(str_detect(Repeat, "ARTEFACT|Low|Retrop|Satellite|Simple|RNA")) %>% filter(str_detect(Desc, "FULLY_NESTED")) %>% distinct()
-other.nest <- other.nest[! other.nest$Repeat == "SINE",]
+other.nest <- other.nest %>% filter(! str_detect(Repeat, "^SINE"))
 
 # Total bp coverage of each class
 sineCov <- sum(as.numeric(as.character(sine$size)))
